@@ -1,0 +1,85 @@
+{
+    "Name": "IDWR field data",
+    "FirstLineIsHeader": true,
+    "LocationColumn": {
+        "ColumnHeader": "Please type in the site name:"
+    },
+    "CommentColumns": [
+        {
+            "ColumnHeader": "Comments:"
+        },
+        {
+            "Prefix": "Maintenance Issues: ",
+            "ColumnHeader": "Maintenance Issues:"
+        }
+    ],
+    "PartyColumns": [
+        {
+            "ColumnHeader": "Examiner:"
+        }
+    ],
+    "TimestampColumns": [
+        {
+            "Format": "M/d/yyyy h:m:s tt",
+            "Type": "DateAndOffset",
+            "ColumnHeader": "Visit Date:"
+        },
+        {
+            "Format": "H:m",
+            "Type": "Time",
+            "ColumnHeader": "Visit Time:"
+        }
+    ],
+    "ReadingColumns": [
+        {
+            "ParameterId": "HG",
+            "UnitId": "ft",
+            "ColumnHeader": "Staff Gage Reading 1 (ft):"
+        },
+        {
+            "ParameterId": "HG",
+            "UnitId": "ft",
+            "ColumnHeader": "Staff Gage Reading 2 (ft):"
+        },
+        {
+            "ParameterId": "HG",
+            "UnitId": "ft",
+            "ColumnHeader": "Logger Staff Reading 1 (ft):"
+        },
+        {
+            "ParameterId": "HG",
+            "UnitId": "ft",
+            "ColumnHeader": "Logger Staff Reading 2 (ft):"
+        },
+        {
+            "ParameterId": "QR",
+            "UnitId": "ft^3/s",
+            "ColumnHeader": "Flow Meter Reading 1 (cfs):"
+        },
+        {
+            "ParameterId": "QR",
+            "UnitId": "ft^3/s",
+            "ColumnHeader": "Logger Gage Reading 1 (cfs):"
+        },
+        {
+            "ParameterId": "QR",
+            "UnitId": "ft^3/s",
+            "ColumnHeader": "Flow Meter Reading 2 (cfs):"
+        },
+        {
+            "ParameterId": "QR",
+            "UnitId": "ft^3/s",
+            "ColumnHeader": "Logger Gage Reading 2 (cfs):"
+        },
+        {
+            "ParameterId": "VB",
+            "UnitId": "V",
+            "ColumnHeader": "Battery Voltage (V):"
+        },
+        {
+            "ParameterId": "VB",
+            "UnitId": "V",
+            "ColumnHeader": "Internal Battery Voltage (V):"
+        }
+    ]
+}
