@@ -21,12 +21,12 @@
     "TimestampColumns": [
         {
             "Format": "M/d/yyyy h:m:s tt",
-            "Type": "DateAndOffset",
+            "Type": "DateAndSurvey123Offset",
             "ColumnHeader": "Visit Date:"
         },
         {
             "Format": "H:m",
-            "Type": "Time",
+            "Type": "TimeOnly",
             "ColumnHeader": "Visit Time:"
         }
     ],
@@ -34,51 +34,61 @@
         {
             "ParameterId": "HG",
             "UnitId": "ft",
+            "CommentPrefix": "#1 Staff Gage",
             "ColumnHeader": "Staff Gage Reading 1 (ft):"
         },
         {
             "ParameterId": "HG",
             "UnitId": "ft",
+            "CommentPrefix": "#2 Staff Gage",
             "ColumnHeader": "Staff Gage Reading 2 (ft):"
         },
         {
             "ParameterId": "HG",
             "UnitId": "ft",
+            "CommentPrefix": "#1 Logger Staff",
             "ColumnHeader": "Logger Staff Reading 1 (ft):"
         },
         {
             "ParameterId": "HG",
             "UnitId": "ft",
+            "CommentPrefix": "#2 Logger Staff",
             "ColumnHeader": "Logger Staff Reading 2 (ft):"
         },
         {
             "ParameterId": "QR",
             "UnitId": "ft^3/s",
+            "CommentPrefix": "#1 Flow Meter",
             "ColumnHeader": "Flow Meter Reading 1 (cfs):"
         },
         {
             "ParameterId": "QR",
             "UnitId": "ft^3/s",
+            "CommentPrefix": "#1 Logger Gage",
             "ColumnHeader": "Logger Gage Reading 1 (cfs):"
         },
         {
             "ParameterId": "QR",
             "UnitId": "ft^3/s",
+            "CommentPrefix": "#2 Flow Meter",
             "ColumnHeader": "Flow Meter Reading 2 (cfs):"
         },
         {
             "ParameterId": "QR",
             "UnitId": "ft^3/s",
+            "CommentPrefix": "#2 Logger Gage",
             "ColumnHeader": "Logger Gage Reading 2 (cfs):"
         },
         {
             "ParameterId": "VB",
             "UnitId": "V",
+            "CommentPrefix": "Battery Voltage",
             "ColumnHeader": "Battery Voltage (V):"
         },
         {
             "ParameterId": "VB",
             "UnitId": "V",
+            "CommentPrefix": "Internal voltage",
             "ColumnHeader": "Internal Battery Voltage (V):"
         }
     ]
