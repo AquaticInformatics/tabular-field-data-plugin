@@ -50,13 +50,13 @@ namespace Survey123
                     {
                         ColumnHeader = "Visit Date:",
                         Format = "M/d/yyyy h:m:s tt",
-                        Type = TimestampType.DateAndOffset
+                        Type = TimestampType.DateAndSurvey123Offset
                     },
                     new TimestampColumnDefinition
                     {
                         ColumnHeader = "Visit Time:",
                         Format = "H:m",
-                        Type = TimestampType.Time
+                        Type = TimestampType.TimeOnly
                     },
                 },
                 ReadingColumns = new List<ReadingColumnDefinition>
@@ -64,60 +64,70 @@ namespace Survey123
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Staff Gage Reading 1 (ft):",
+                        CommentPrefix = "#1 Staff Gage",
                         ParameterId = "HG",
                         UnitId = "ft",
                     },
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Staff Gage Reading 2 (ft):",
+                        CommentPrefix = "#2 Staff Gage",
                         ParameterId = "HG",
                         UnitId = "ft",
                     },
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Logger Staff Reading 1 (ft):",
+                        CommentPrefix = "#1 Logger Staff",
                         ParameterId = "HG",
                         UnitId = "ft",
                     },
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Logger Staff Reading 2 (ft):",
+                        CommentPrefix = "#2 Logger Staff",
                         ParameterId = "HG",
                         UnitId = "ft",
                     },
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Flow Meter Reading 1 (cfs):",
+                        CommentPrefix = "#1 Flow Meter",
                         ParameterId = "QR",
                         UnitId = "ft^3/s",
                     },
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Logger Gage Reading 1 (cfs):",
+                        CommentPrefix = "#1 Logger Gage",
                         ParameterId = "QR",
                         UnitId = "ft^3/s",
                     },
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Flow Meter Reading 2 (cfs):",
+                        CommentPrefix = "#2 Flow Meter",
                         ParameterId = "QR",
                         UnitId = "ft^3/s",
                     },
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Logger Gage Reading 2 (cfs):",
+                        CommentPrefix = "#2 Logger Gage",
                         ParameterId = "QR",
                         UnitId = "ft^3/s",
                     },
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Battery Voltage (V):",
+                        CommentPrefix = "Battery Voltage",
                         ParameterId = "VB",
                         UnitId = "V",
                     },
                     new ReadingColumnDefinition
                     {
                         ColumnHeader = "Internal Battery Voltage (V):",
+                        CommentPrefix = "Internal voltage",
                         ParameterId = "VB",
                         UnitId = "V",
                     },

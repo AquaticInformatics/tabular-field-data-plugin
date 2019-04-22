@@ -46,15 +46,16 @@ namespace Survey123
     {
         public string ParameterId { get; set; }
         public string UnitId { get; set; }
+        public string CommentPrefix { get; set; }
     }
 
     public enum TimestampType
     {
         Unknown,
-        Date,
-        Time,
-        DateTime,
+        DateOnly,
+        TimeOnly,
+        DateTimeOnly,
         DateTimeOffset,
-        DateAndOffset,
+        DateAndSurvey123Offset,
     }
 }

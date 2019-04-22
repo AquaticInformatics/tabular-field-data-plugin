@@ -138,6 +138,7 @@ namespace Survey123
             var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
                 new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
                 {
+                    Comments = comments,
                     Party = party
                 });
 
@@ -147,7 +148,7 @@ namespace Survey123
 
                 if (reading == null) continue;
 
-                reading.Comments = comments;
+                reading.DateTimeOffset = timestamp;
 
                 ResultsAppender.AddReading(fieldVisitInfo, reading);
             }
@@ -196,11 +197,11 @@ namespace Survey123
             TimestampParsers =
                 new Dictionary<TimestampType, Func<DateTimeOffset, DateTimeOffset, DateTimeOffset>>
                 {
-                    {TimestampType.Time, MergeTime},
-                    {TimestampType.Date, MergeDate},
-                    {TimestampType.DateAndOffset, MergeDateAndOffset},
-                    {TimestampType.DateTime, MergeDateTime},
+                    {TimestampType.TimeOnly, MergeTime},
+                    {TimestampType.DateOnly, MergeDate},
+                    {TimestampType.DateTimeOnly, MergeDateTime},
                     {TimestampType.DateTimeOffset, ReplaceDateTimeOffset},
+                    {TimestampType.DateAndSurvey123Offset, MergeDateAndSurvey123Offset},
                 };
 
         private static DateTimeOffset MergeTime(DateTimeOffset existing, DateTimeOffset value)
@@ -219,14 +220,6 @@ namespace Survey123
                 .Add(value.TimeOfDay);
         }
 
-        private static DateTimeOffset MergeDateAndOffset(DateTimeOffset existing, DateTimeOffset value)
-        {
-            return new DateTimeOffset(
-                value.Date,
-                value.TimeOfDay)
-                .Add(existing.TimeOfDay);
-        }
-
         private static DateTimeOffset MergeDateTime(DateTimeOffset existing, DateTimeOffset value)
         {
             return new DateTimeOffset(value.DateTime, existing.Offset);
@@ -235,6 +228,14 @@ namespace Survey123
         private static DateTimeOffset ReplaceDateTimeOffset(DateTimeOffset existing, DateTimeOffset value)
         {
             return value;
+        }
+
+        private static DateTimeOffset MergeDateAndSurvey123Offset(DateTimeOffset existing, DateTimeOffset value)
+        {
+            return new DateTimeOffset(
+                    value.Date,
+                    value.TimeOfDay.Negate())
+                .Add(existing.TimeOfDay);
         }
 
         private Reading ParseReading(ReadingColumnDefinition readingColumn)
@@ -248,6 +249,11 @@ namespace Survey123
                 throw new Exception($"Line {LineNumber}: '{valueText}' is an invalid number for '{readingColumn.Name()}'");
 
             var reading = new Reading(readingColumn.ParameterId, new Measurement(value, readingColumn.UnitId));
+
+            if (!string.IsNullOrWhiteSpace(readingColumn.CommentPrefix))
+            {
+                reading.Comments = readingColumn.CommentPrefix;
+            }
 
             // TODO: Support other reading properties like readingType, uncertainty, device, sublocation, etc.
             return reading;
