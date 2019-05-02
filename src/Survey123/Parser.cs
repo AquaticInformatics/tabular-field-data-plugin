@@ -35,6 +35,8 @@ namespace Survey123
             if (csvText == null)
                 return ParseFileResult.CannotParse();
 
+            var lineCount = 0;
+
             try
             {
                 LocationInfo = locationInfo;
@@ -50,7 +52,7 @@ namespace Survey123
                 {
                     var rowParser = GetCsvParser(reader);
 
-                    for (var lineCount = 0; !rowParser.EndOfData; ++lineCount)
+                    for (; !rowParser.EndOfData; ++lineCount)
                     {
                         LineNumber = rowParser.LineNumber;
 
@@ -81,6 +83,12 @@ namespace Survey123
             }
             catch (Exception exception)
             {
+                if (lineCount == 0)
+                {
+                    // We'll hit this when the plugin tries to parse a text file that is not CSV, like 
+                    return ParseFileResult.CannotParse();
+                }
+
                 return ParseFileResult.SuccessfullyParsedButDataInvalid(exception);
             }
         }
@@ -130,6 +138,12 @@ namespace Survey123
         private void ParseRow()
         {
             var locationIdentifier = GetColumnValue(Survey.LocationColumn);
+
+            if (Survey.LocationAliases.TryGetValue(locationIdentifier, out var aliasedIdentifier))
+            {
+                locationIdentifier = aliasedIdentifier;
+            }
+
             var locationInfo = ResultsAppender.GetLocationByIdentifier(locationIdentifier);
             var comments = MergeTextColumns(Survey.CommentColumns);
             var party = MergeTextColumns(Survey.PartyColumns);

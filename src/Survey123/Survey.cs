@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Survey123
 {
@@ -11,6 +12,7 @@ namespace Survey123
         public List<MergingTextColumnDefinition> PartyColumns { get; set; } = new List<MergingTextColumnDefinition>();
         public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
         public List<ReadingColumnDefinition> ReadingColumns { get; set; } = new List<ReadingColumnDefinition>();
+        public Dictionary<string,string> LocationAliases { get; set; } = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
     }
 
     public class ColumnDefinition

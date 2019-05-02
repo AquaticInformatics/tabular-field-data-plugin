@@ -44,28 +44,10 @@
             "ColumnHeader": "Staff Gage Reading 2 (ft):"
         },
         {
-            "ParameterId": "HG",
-            "UnitId": "ft",
-            "CommentPrefix": "#1 Logger Staff",
-            "ColumnHeader": "Logger Staff Reading 1 (ft):"
-        },
-        {
-            "ParameterId": "HG",
-            "UnitId": "ft",
-            "CommentPrefix": "#2 Logger Staff",
-            "ColumnHeader": "Logger Staff Reading 2 (ft):"
-        },
-        {
             "ParameterId": "QR",
             "UnitId": "ft^3/s",
             "CommentPrefix": "#1 Flow Meter",
             "ColumnHeader": "Flow Meter Reading 1 (cfs):"
-        },
-        {
-            "ParameterId": "QR",
-            "UnitId": "ft^3/s",
-            "CommentPrefix": "#1 Logger Gage",
-            "ColumnHeader": "Logger Gage Reading 1 (cfs):"
         },
         {
             "ParameterId": "QR",
@@ -76,20 +58,10 @@
         {
             "ParameterId": "QR",
             "UnitId": "ft^3/s",
-            "CommentPrefix": "#2 Logger Gage",
-            "ColumnHeader": "Logger Gage Reading 2 (cfs):"
-        },
-        {
-            "ParameterId": "VB",
-            "UnitId": "V",
-            "CommentPrefix": "Battery Voltage",
-            "ColumnHeader": "Battery Voltage (V):"
-        },
-        {
-            "ParameterId": "VB",
-            "UnitId": "V",
-            "CommentPrefix": "Internal voltage",
-            "ColumnHeader": "Internal Battery Voltage (V):"
+            "CommentPrefix": "Measured discharge",
+            "ColumnHeader": "Discharge Measured in CFS"
         }
-    ]
+    ],
+    "LocationAliases": {
+    }
 }

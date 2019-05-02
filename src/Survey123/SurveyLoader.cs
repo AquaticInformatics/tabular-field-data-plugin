@@ -12,7 +12,12 @@ namespace Survey123
             if (!File.Exists(path))
                 throw new Exception($"'{path}' does not exist.");
 
-            return File.ReadAllText(path).FromJson<Survey>();
+            var survey = File.ReadAllText(path).FromJson<Survey>();
+
+            // Ensure that the alias dictionary is case insensitive
+            survey.LocationAliases = new Dictionary<string, string>(survey.LocationAliases, StringComparer.InvariantCultureIgnoreCase);
+
+            return survey;
         }
 
         public Survey CreateDefaultSurvey()
@@ -77,29 +82,8 @@ namespace Survey123
                     },
                     new ReadingColumnDefinition
                     {
-                        ColumnHeader = "Logger Staff Reading 1 (ft):",
-                        CommentPrefix = "#1 Logger Staff",
-                        ParameterId = "HG",
-                        UnitId = "ft",
-                    },
-                    new ReadingColumnDefinition
-                    {
-                        ColumnHeader = "Logger Staff Reading 2 (ft):",
-                        CommentPrefix = "#2 Logger Staff",
-                        ParameterId = "HG",
-                        UnitId = "ft",
-                    },
-                    new ReadingColumnDefinition
-                    {
                         ColumnHeader = "Flow Meter Reading 1 (cfs):",
                         CommentPrefix = "#1 Flow Meter",
-                        ParameterId = "QR",
-                        UnitId = "ft^3/s",
-                    },
-                    new ReadingColumnDefinition
-                    {
-                        ColumnHeader = "Logger Gage Reading 1 (cfs):",
-                        CommentPrefix = "#1 Logger Gage",
                         ParameterId = "QR",
                         UnitId = "ft^3/s",
                     },
@@ -112,25 +96,16 @@ namespace Survey123
                     },
                     new ReadingColumnDefinition
                     {
-                        ColumnHeader = "Logger Gage Reading 2 (cfs):",
-                        CommentPrefix = "#2 Logger Gage",
+                        ColumnHeader = "Discharge Measured in CFS",
+                        CommentPrefix = "Measured discharge",
                         ParameterId = "QR",
                         UnitId = "ft^3/s",
                     },
-                    new ReadingColumnDefinition
-                    {
-                        ColumnHeader = "Battery Voltage (V):",
-                        CommentPrefix = "Battery Voltage",
-                        ParameterId = "VB",
-                        UnitId = "V",
-                    },
-                    new ReadingColumnDefinition
-                    {
-                        ColumnHeader = "Internal Battery Voltage (V):",
-                        CommentPrefix = "Internal voltage",
-                        ParameterId = "VB",
-                        UnitId = "V",
-                    },
+                },
+                LocationAliases = new Dictionary<string, string>
+                {
+                    { "SurveyId", "LocationIdentifier" },
+                    { "LoggerSiteId", "AqtsLocationIdentifier" },
                 }
             };
         }
