@@ -55,16 +55,11 @@
     <Compile Include="SurveyValidator.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Surveys\Survey.json">
+    <None Include="Survey.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
     <None Include="Readme.md" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Surveys\AddYourSurveyJsonFilesHere.txt">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

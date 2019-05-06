@@ -10,11 +10,11 @@ Each survey you configure in Survey123 will yield a different CSV format, with d
 
 So you will need to configure a JSON document which describes which columns in the CSV file map to which activities in AQTS.
 
-### The `Surveys` directory can contain many Survey JSON configurations
+### The plugin directory can contain many Survey JSON configurations
 
-When you install the Survey123 plugin, a subdirectory named "Surveys" is scanned for JSON configurations of surveys.
+When you install the Survey123 plugin, a plugin's directory is scanned for JSON configurations of surveys.
 
-All the `Surveys\*.json` files will be loaded, and each CSV file given to the plugin will be matched against one of the survey definitions.
+All the `*.json` files in that directory will be loaded, and each CSV file given to the plugin will be matched against one of the survey definitions.
 
 ### JSON editing tips
 
