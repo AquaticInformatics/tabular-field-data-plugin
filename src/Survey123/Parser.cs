@@ -23,6 +23,7 @@ namespace Survey123
         private ILog Log { get; }
         private DelayedAppender ResultsAppender { get; }
         private LocationInfo LocationInfo { get; set; }
+        private List<Survey> Surveys { get; set; }
         private Survey Survey { get; set; }
         private long LineNumber { get; set; }
         private string[] Fields { get; set; }
@@ -35,61 +36,81 @@ namespace Survey123
             if (csvText == null)
                 return ParseFileResult.CannotParse();
 
-            var lineCount = 0;
-
             try
             {
                 LocationInfo = locationInfo;
 
-                Survey = LoadSurvey();
-
-                var validator = new SurveyValidator {Survey = Survey};
-
-                validator.Validate();
+                Surveys = LoadSurveys();
 
                 using (ResultsAppender)
-                using (var reader = new StringReader(csvText))
                 {
-                    var rowParser = GetCsvParser(reader);
-
-                    for (; !rowParser.EndOfData; ++lineCount)
+                    foreach (var survey in Surveys)
                     {
-                        LineNumber = rowParser.LineNumber;
+                        Survey = survey;
+                        var result = ParseSurvey(csvText);
 
-                        Fields = rowParser.ReadFields();
+                        if (result.Status == ParseFileStatus.CannotParse) continue;
 
-                        if (Fields == null) continue;
-
-                        if (lineCount == 0 && Survey.FirstLineIsHeader)
-                        {
-                            try
-                            {
-                                HeaderMap = validator.BuildHeaderMap(Fields);
-                                continue;
-                            }
-                            catch (Exception)
-                            {
-                                // Most Survey123 files have a header.
-                                // So a problem mapping the header is a strong indicator that this CSV file is not intended for us.
-                                return ParseFileResult.CannotParse();
-                            }
-                        }
-
-                        ParseRow();
+                        return result;
                     }
 
-                    return ParseFileResult.SuccessfullyParsedAndDataValid();
+                    return ParseFileResult.CannotParse();
                 }
             }
             catch (Exception exception)
             {
-                if (lineCount == 0)
+                return ParseFileResult.SuccessfullyParsedButDataInvalid(exception);
+            }
+        }
+
+        private ParseFileResult ParseSurvey(string csvText)
+        {
+            var validator = new SurveyValidator {Survey = Survey};
+
+            var lineCount = 0;
+
+            using (var reader = new StringReader(csvText))
+            {
+                var rowParser = GetCsvParser(reader);
+
+                for (; !rowParser.EndOfData; ++lineCount)
                 {
-                    // We'll hit this when the plugin tries to parse a text file that is not CSV, like 
-                    return ParseFileResult.CannotParse();
+                    LineNumber = rowParser.LineNumber;
+
+                    try
+                    {
+                        Fields = rowParser.ReadFields();
+                    }
+                    catch (Exception)
+                    {
+                        if (lineCount == 0)
+                        {
+                            // We'll hit this when the plugin tries to parse a text file that is not CSV, like a JSON document.
+                            return ParseFileResult.CannotParse();
+                        }
+                    }
+
+                    if (Fields == null) continue;
+
+                    if (lineCount == 0 && Survey.FirstLineIsHeader)
+                    {
+                        try
+                        {
+                            HeaderMap = validator.BuildHeaderMap(Fields);
+                            continue;
+                        }
+                        catch (Exception)
+                        {
+                            // Most Survey123 files have a header.
+                            // So a problem mapping the header is a strong indicator that this CSV file is not intended for us.
+                            return ParseFileResult.CannotParse();
+                        }
+                    }
+
+                    ParseRow();
                 }
 
-                return ParseFileResult.SuccessfullyParsedButDataInvalid(exception);
+                return ParseFileResult.SuccessfullyParsedAndDataValid();
             }
         }
 
@@ -120,14 +141,35 @@ namespace Survey123
             }
         }
 
-        private Survey LoadSurvey()
+        private List<Survey> LoadSurveys()
         {
             var surveyPath = Path.Combine(
                 GetPluginDirectory(),
-                $"{nameof(Survey)}.json");
+                "Surveys");
 
-            return new SurveyLoader()
-                .Load(surveyPath);
+            if (!Directory.Exists(surveyPath))
+                throw new Exception($"Can't find '{surveyPath}' folder");
+
+            var surveyDirectory = new DirectoryInfo(surveyPath);
+
+            var surveyLoader = new SurveyLoader();
+
+            var surveys = surveyDirectory
+                .GetFiles("*.json")
+                .Select(fi => surveyLoader.Load(fi.FullName))
+                .Where(s => s != null)
+                .ToList();
+
+            if (!surveys.Any())
+                throw new Exception($"No survey definitions found at '{surveyPath}\\*.json'");
+
+            foreach (var survey in surveys)
+            {
+                new SurveyValidator { Survey = survey}
+                    .Validate();
+            }
+
+            return surveys;
         }
 
         private string GetPluginDirectory()
