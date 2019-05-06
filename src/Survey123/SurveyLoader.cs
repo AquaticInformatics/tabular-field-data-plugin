@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using ServiceStack;
 
 namespace Survey123
@@ -14,10 +15,24 @@ namespace Survey123
 
             var survey = File.ReadAllText(path).FromJson<Survey>();
 
+            if (IsEmpty(survey))
+                return null;
+
             // Ensure that the alias dictionary is case insensitive
             survey.LocationAliases = new Dictionary<string, string>(survey.LocationAliases, StringComparer.InvariantCultureIgnoreCase);
 
             return survey;
+        }
+
+        private static bool IsEmpty(Survey survey)
+        {
+            return survey.Name == null
+                   && survey.LocationColumn == null
+                   && !survey.LocationAliases.Any()
+                   && !survey.CommentColumns.Any()
+                   && !survey.PartyColumns.Any()
+                   && !survey.ReadingColumns.Any()
+                   && !survey.TimestampColumns.Any();
         }
 
         public Survey CreateDefaultSurvey()

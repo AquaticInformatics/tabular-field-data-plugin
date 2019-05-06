@@ -63,5 +63,8 @@
         }
     ],
     "LocationAliases": {
+        "Aberdeen_Waste": "Aberdeen Waste",
+        "SNK_RVR_ID": "SNK RVR ID",
+        "Sterling_Waste": "Sterling Waste"
     }
 }

@@ -143,14 +143,7 @@ namespace Survey123
 
         private List<Survey> LoadSurveys()
         {
-            var surveyPath = Path.Combine(
-                GetPluginDirectory(),
-                "Surveys");
-
-            if (!Directory.Exists(surveyPath))
-                throw new Exception($"Can't find '{surveyPath}' folder");
-
-            var surveyDirectory = new DirectoryInfo(surveyPath);
+            var surveyDirectory = new DirectoryInfo(GetPluginDirectory());
 
             var surveyLoader = new SurveyLoader();
 
@@ -161,7 +154,7 @@ namespace Survey123
                 .ToList();
 
             if (!surveys.Any())
-                throw new Exception($"No survey definitions found at '{surveyPath}\\*.json'");
+                throw new Exception($"No survey definitions found at '{surveyDirectory.FullName}\\*.json'");
 
             foreach (var survey in surveys)
             {
