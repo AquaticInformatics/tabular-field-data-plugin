@@ -10,18 +10,66 @@ Each survey you configure in Survey123 will yield a different CSV format, with d
 
 So you will need to configure a JSON document which describes which columns in the CSV file map to which activities in AQTS.
 
+### The `Surveys` directory can contain many Survey JSON configurations
+
+When you install the Survey123 plugin, a subdirectory named "Surveys" is scanned for JSON configurations of surveys.
+
+All the `Surveys\*.json` files will be loaded, and each CSV file given to the plugin will be matched against one of the survey definitions.
+
+### JSON editing tips
+
+Editing [JSON](https://json.org) can be a tricky thing.
+
+Sometimes the plugin code can detect a poorly formatted JSON document and report a decent error, but sometimes a poorly formatted JSON document will appear to the plugin as just an empty document.
+
+Here are some tips to help eliminate common JSON config errors:
+- Edit JSON in a real text editor. Notepad is fine, [Notepad++](https://notepad-plus-plus.org/) or [Visual Studio Code](https://code.visualstudio.com/) are even better choices.
+- Don't try editing JSON in Microsoft Word. Word will mess up your quotes and you'll just have a bad time.
+- Try validating your JSON using the online [JSONLint validator](https://jsonlint.com/).
+- Whitespace between items is ignored. Your JSON document can be single (but very long!) line, but the convention is separate items on different lines, to make the text file more readable.
+- All property names must be enclosed in double-quotes (`"`). Don't use single quotes (`'`) or smart quotes (`“` or `”`), which are not that smart for JSON.
+- Avoid a trailing comma in lists. JSON is very fussy about using commas **between** list items, but rejects lists when a trailing comma is included. Only use a comma to separate items in the middle of a list.
+
+#### Adding comments to JSON
+
+The JSON spec doesn't support comments, which is unfortunate.
+
+However, the code will simply skip over properties it doesn't care about, so a common trick is to add a dummy property name/value string. The code won't care or complain, and you get to keep some notes close to other special values in your custom JSON document.
+
+Instead of this:
+
+```json
+{
+  "ExpectedPropertyName": "a value",
+  "AnotherExpectedProperty": 12.5 
+}
+```
+
+Try this:
+
+```json
+{
+  "_comment_": "Don't enter a value below 12, otherwise things break",
+  "ExpectedPropertyName": "a value",
+  "AnotherExpectedProperty": 12.5 
+}
+```
+
+Now your JSON has a comment to help you remember why you chose the `12.5` value.
+
 ## Configuration
 
 See [Survey.json](./Survey.json) for an example configuration which parses the [sample](../../data/survey_123_sample.csv) file.
 
 A survey is defined as these properties:
-- A `Name`, just used when displaying some error messages.
+- A `Name` value, which is used when displaying some error messages.
 - A `FirstLineIsHeader` boolean value, which tells the parser if the first row is a set of column names.
 - A single `LocationColumn`, which defines the CSV column containing AQTS location identifieres
 - A set of `TimestampColumns`, which define 1 or more columns from which timestamps will be extracted.
 - A set of `CommentColumns` and `PartyColumns`, which can define 0 or more columns containing comment and party values for the visit.
 - A set of `ReadingColumns`, which define 1 or more columns from which reading values are extracted.
-- 
+- A [`LocationAliases`](#configuring-locationaliases) map, which allows you to remap location identifiers in the CSV to different AQTS locations.
+
 ### Column configurations
 
 Each column can be configured with one of two properties:
@@ -31,6 +79,44 @@ Each column can be configured with one of two properties:
 Using a `ColumnHeader` is preferred, since it allows the CSV file to change its "shape", adding or removing unrelated columns, without breaking the parsing logic.
 
 A `ColumnHeader` value can only be used when the CSV file contains a header row (ie. if `FirstLineIsHeader` is `true`).
+
+### Configuring `LocationAliases`
+
+The `LocationAliases` property provides a way to accept CSV data from forms with incorrect location information.
+
+Adding a mapping in the `LocationAliases` property can avoid the burden of having to republish a new survey to your Survey123 users.
+
+In this JSON snippet, two locations are remapped.
+
+```json
+"LocationAliases": {
+  "Old name": "NewAQTSName",
+  "Station5": "Station18"
+}
+```
+
+Notes:
+- Editing JSON files [can be tricky](#json-editing-tips). Don't include a trailing comma after the last item in the list.
+- Alias lookups are case-insensitive. The above definition will remap "station5" and "STATION5" to "Station18".
+- If a location identifier is not found in the `LocationAliases`, then it is assumed to exist in AQTS.
+- If a location identifier is not found in AQTS, then its associated readings will not be imported.
+
+If you don't need to remap any locations, then you have two different ways to represent that:
+
+Just delete everything between the braces. Either of these are fine, because whitespace is ignored by JSON.
+
+```json
+"LocationAliases": {}
+```
+
+or:
+
+```json
+"LocationAliases": {
+}
+```
+
+Or you can completely remove the `LocationAliases` object from the JSON document.
 
 ### Timestamp columns
 
