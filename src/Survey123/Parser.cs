@@ -168,9 +168,17 @@ namespace Survey123
             if (!surveys.Any())
                 throw new Exception($"No survey definitions found at '{surveyDirectory.FullName}\\*.json'");
 
+            surveys = surveys
+                .Where(s => LocationInfo != null || s.LocationColumn != null)
+                .ToList();
+
             foreach (var survey in surveys)
             {
-                new SurveyValidator { Survey = survey}
+                new SurveyValidator
+                    {
+                        LocationInfo = LocationInfo,
+                        Survey = survey
+                    }
                     .Validate();
             }
 
@@ -191,7 +199,7 @@ namespace Survey123
                 locationIdentifier = aliasedIdentifier;
             }
 
-            var locationInfo = ResultsAppender.GetLocationByIdentifier(locationIdentifier);
+            var locationInfo = LocationInfo ?? ResultsAppender.GetLocationByIdentifier(locationIdentifier);
             var comments = MergeTextColumns(Survey.CommentColumns);
             var party = MergeTextColumns(Survey.PartyColumns);
             var timestamp = ParseTimestamp(locationInfo);

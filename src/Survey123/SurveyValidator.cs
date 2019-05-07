@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FieldDataPluginFramework.Context;
 using Humanizer;
 
 namespace Survey123
 {
     public class SurveyValidator
     {
+        public LocationInfo LocationInfo { get; set; }
         public Survey Survey { get; set; }
 
         public void Validate()
         {
-            if (Survey.LocationColumn == null)
+            if (LocationInfo == null && Survey.LocationColumn == null)
                 ThrowConfigurationException($"A {nameof(Survey.LocationColumn)} definition is required.");
 
             if (!Survey.TimestampColumns?.Any() ?? true)
@@ -53,6 +55,7 @@ namespace Survey123
                 .Concat(Survey.CommentColumns ?? new List<MergingTextColumnDefinition>())
                 .Concat(Survey.PartyColumns ?? new List<MergingTextColumnDefinition>())
                 .Concat(Survey.ReadingColumns ?? new List<ReadingColumnDefinition>())
+                .Where(columnDefinition => columnDefinition != null)
                 .ToList();
         }
 
