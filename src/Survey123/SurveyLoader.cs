@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.Serialization;
 using ServiceStack;
 
 namespace Survey123
@@ -13,9 +14,18 @@ namespace Survey123
             if (!File.Exists(path))
                 throw new Exception($"'{path}' does not exist.");
 
-            var survey = File.ReadAllText(path).FromJson<Survey>();
+            Survey survey;
 
-            if (IsEmpty(survey))
+            try
+            {
+                survey = File.ReadAllText(path).FromJson<Survey>();
+            }
+            catch (SerializationException)
+            {
+                return null;
+            }
+
+            if (survey == null || IsEmpty(survey))
                 return null;
 
             // Ensure that the alias dictionary is case insensitive
