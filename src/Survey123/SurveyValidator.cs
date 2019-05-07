@@ -68,9 +68,14 @@ namespace Survey123
                 .Where(column => !headerFields.Any(field => field.Equals(column.ColumnHeader, StringComparison.InvariantCultureIgnoreCase)))
                 .ToList();
 
+            var unknownHeadersMessage =
+                $"{"missing column".ToQuantity(unknownHeaderColumns.Count)}: {string.Join(", ", unknownHeaderColumns.Select(column => $"'{column.ColumnHeader}'"))}";
+
+            if (unknownHeaderColumns.Count == headerColumns.Count)
+                throw new AllHeadersMissingException(unknownHeadersMessage);
+
             if (unknownHeaderColumns.Any())
-                ThrowConfigurationException(
-                    $"{"missing column".ToQuantity(unknownHeaderColumns.Count)}: {string.Join(", ", unknownHeaderColumns.Select(column => $"'{column.ColumnHeader}'"))}");
+                ThrowConfigurationException(unknownHeadersMessage);
 
             var indexedColumns = columnDefinitions
                 .Where(c => c.ColumnIndex.HasValue)

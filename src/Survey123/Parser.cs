@@ -99,10 +99,22 @@ namespace Survey123
                             HeaderMap = validator.BuildHeaderMap(Fields);
                             continue;
                         }
-                        catch (Exception)
+                        catch (Exception exception)
                         {
                             // Most Survey123 files have a header.
                             // So a problem mapping the header is a strong indicator that this CSV file is not intended for us.
+                            if (exception is AllHeadersMissingException)
+                            {
+                                // When all headers are missing, then we should exit without logging anything special.
+                                // We'll just let the other plugins have a turn
+                            }
+                            else
+                            {
+                                // Some of the headers matched, so log a warning before returning CannotParse.
+                                // This might be the only hint in the log that the survey configuration JSON is incorrect.
+                                Log.Info($"Partial headers detected: {exception.Message}");
+                            }
+
                             return ParseFileResult.CannotParse();
                         }
                     }
