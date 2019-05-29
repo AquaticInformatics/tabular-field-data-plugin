@@ -141,7 +141,20 @@ namespace Survey123
 
         public void AddReading(FieldVisitInfo fieldVisit, Reading reading)
         {
+            if (fieldVisit.Readings.Any(r => AreEquivalent(r, reading)))
+                return;
+
             fieldVisit.Readings.Add(reading);
+        }
+
+        private static bool AreEquivalent(Reading r1, Reading r2)
+        {
+            return r1.DateTimeOffset == r2.DateTimeOffset
+                   && r1.ParameterId == r2.ParameterId
+                   && r1.Measurement.UnitId == r2.Measurement.UnitId
+                   // ReSharper disable once CompareOfFloatsByEqualityOperator
+                   && r1.Measurement.Value == r2.Measurement.Value
+                   && r1.ReadingType == r2.ReadingType;
         }
 
         public void AddCrossSectionSurvey(FieldVisitInfo fieldVisit, CrossSectionSurvey crossSectionSurvey)

@@ -217,6 +217,11 @@ namespace Survey123
                 .ReadingColumns
                 .Select(ParseReading)
                 .Where(r => r != null)
+                .Select(r =>
+                {
+                    r.DateTimeOffset = timestamp;
+                    return r;
+                })
                 .ToList();
 
             var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
@@ -228,8 +233,6 @@ namespace Survey123
 
             foreach (var reading in readings)
             {
-                reading.DateTimeOffset = timestamp;
-
                 ResultsAppender.AddReading(fieldVisitInfo, reading);
             }
         }
