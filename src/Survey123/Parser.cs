@@ -119,7 +119,16 @@ namespace Survey123
                         }
                     }
 
-                    ParseRow();
+                    try
+                    {
+                        ParseRow();
+                    }
+                    catch (Exception exception)
+                    {
+                        if (!ResultsAppender.AnyResultsAppended) throw;
+
+                        Log.Error($"Ignoring invalid CSV row: {exception.Message}");
+                    }
                 }
 
                 return ParseFileResult.SuccessfullyParsedAndDataValid();
@@ -204,6 +213,12 @@ namespace Survey123
             var party = MergeTextColumns(Survey.PartyColumns);
             var timestamp = ParseTimestamp(locationInfo);
 
+            var readings = Survey
+                .ReadingColumns
+                .Select(ParseReading)
+                .Where(r => r != null)
+                .ToList();
+
             var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
                 new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
                 {
@@ -211,12 +226,8 @@ namespace Survey123
                     Party = party
                 });
 
-            foreach (var readingColumn in Survey.ReadingColumns)
+            foreach (var reading in readings)
             {
-                var reading = ParseReading(readingColumn);
-
-                if (reading == null) continue;
-
                 reading.DateTimeOffset = timestamp;
 
                 ResultsAppender.AddReading(fieldVisitInfo, reading);

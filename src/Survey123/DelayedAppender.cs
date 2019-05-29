@@ -81,6 +81,8 @@ namespace Survey123
 
         private List<FieldVisitInfo> DelayedFieldVisits { get; } = new List<FieldVisitInfo>();
 
+        public bool AnyResultsAppended => DelayedFieldVisits.Any();
+
         public FieldVisitInfo AddFieldVisit(LocationInfo location, FieldVisitDetails fieldVisitDetails)
         {
             var existingVisit = DelayedFieldVisits
