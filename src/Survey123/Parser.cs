@@ -338,7 +338,9 @@ namespace Survey123
                 reading.Comments = readingColumn.CommentPrefix;
             }
 
-            // TODO: Support other reading properties like readingType, uncertainty, device, sublocation, etc.
+            reading.ReadingType = readingColumn.ReadingType ?? ReadingType.Routine;
+
+            // TODO: Support other reading properties like uncertainty, device, sublocation, etc.
             return reading;
         }
 

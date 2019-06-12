@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using FieldDataPluginFramework.DataModel.Readings;
 
 namespace Survey123
 {
@@ -49,6 +50,7 @@ namespace Survey123
         public string ParameterId { get; set; }
         public string UnitId { get; set; }
         public string CommentPrefix { get; set; }
+        public ReadingType? ReadingType { get; set; }
     }
 
     public enum TimestampType
