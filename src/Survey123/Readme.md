@@ -67,7 +67,7 @@ A survey is defined as these properties:
 - A single `LocationColumn`, which defines the CSV column containing AQTS location identifieres
 - A set of `TimestampColumns`, which define 1 or more columns from which timestamps will be extracted.
 - A set of `CommentColumns` and `PartyColumns`, which can define 0 or more columns containing comment and party values for the visit.
-- A set of `ReadingColumns`, which define 1 or more columns from which reading values are extracted.
+- A set of `ReadingColumns`, which define 1 or more columns from which reading values are extracted. Reading types default to `Routine`, but the survey definition's `ReadingColumn.ReadingType` can be set to any of the allowed values.
 - A [`LocationAliases`](#configuring-locationaliases) map, which allows you to remap location identifiers in the CSV to different AQTS locations.
 
 ### Column configurations
