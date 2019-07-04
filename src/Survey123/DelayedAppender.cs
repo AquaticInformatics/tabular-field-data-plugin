@@ -15,7 +15,7 @@ namespace Survey123
 {
     // The delayed appender class exists to solely to delay the creation of visits until merges have been resolved.
     // This will allow a visit to be created, then expanded (a widened Start or End timestamp) to include more activities.
-    public class DelayedAppender : IDisposable, IFieldDataResultsAppender
+    public class DelayedAppender : IDisposable
     {
         public class InternalConstructor<T> where T : class
         {
