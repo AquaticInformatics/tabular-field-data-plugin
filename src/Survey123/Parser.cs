@@ -270,15 +270,15 @@ namespace Survey123
                 if (!TimestampParsers.TryGetValue(timestampColumn.Type, out var timeParser))
                     throw new Exception($"{timestampColumn.Name()} Type={timestampColumn.Type} is not a supported time type");
 
-                timestamp = timeParser(timestamp, value);
+                timestamp = timeParser(timestampColumn.UtcOffset, timestamp, value);
             }
 
             return timestamp;
         }
 
-        private static readonly Dictionary<TimestampType, Func<DateTimeOffset, DateTimeOffset, DateTimeOffset>>
+        private static readonly Dictionary<TimestampType, Func<TimeSpan?, DateTimeOffset, DateTimeOffset, DateTimeOffset>>
             TimestampParsers =
-                new Dictionary<TimestampType, Func<DateTimeOffset, DateTimeOffset, DateTimeOffset>>
+                new Dictionary<TimestampType, Func<TimeSpan?, DateTimeOffset, DateTimeOffset, DateTimeOffset>>
                 {
                     {TimestampType.TimeOnly, MergeTime},
                     {TimestampType.DateOnly, MergeDate},
@@ -287,7 +287,7 @@ namespace Survey123
                     {TimestampType.DateAndSurvey123Offset, MergeDateAndSurvey123Offset},
                 };
 
-        private static DateTimeOffset MergeTime(DateTimeOffset existing, DateTimeOffset value)
+        private static DateTimeOffset MergeTime(TimeSpan? utcOffset, DateTimeOffset existing, DateTimeOffset value)
         {
             return new DateTimeOffset(
                     existing.Date,
@@ -295,7 +295,7 @@ namespace Survey123
                 .Add(value.TimeOfDay);
         }
 
-        private static DateTimeOffset MergeDate(DateTimeOffset existing, DateTimeOffset value)
+        private static DateTimeOffset MergeDate(TimeSpan? utcOffset, DateTimeOffset existing, DateTimeOffset value)
         {
             return new DateTimeOffset(
                 existing.Date,
@@ -303,21 +303,21 @@ namespace Survey123
                 .Add(value.TimeOfDay);
         }
 
-        private static DateTimeOffset MergeDateTime(DateTimeOffset existing, DateTimeOffset value)
+        private static DateTimeOffset MergeDateTime(TimeSpan? utcOffset, DateTimeOffset existing, DateTimeOffset value)
         {
             return new DateTimeOffset(value.DateTime, existing.Offset);
         }
 
-        private static DateTimeOffset ReplaceDateTimeOffset(DateTimeOffset existing, DateTimeOffset value)
+        private static DateTimeOffset ReplaceDateTimeOffset(TimeSpan? utcOffset, DateTimeOffset existing, DateTimeOffset value)
         {
             return value;
         }
 
-        private static DateTimeOffset MergeDateAndSurvey123Offset(DateTimeOffset existing, DateTimeOffset value)
+        private static DateTimeOffset MergeDateAndSurvey123Offset(TimeSpan? utcOffset, DateTimeOffset existing, DateTimeOffset value)
         {
             return new DateTimeOffset(
                     value.Date,
-                    value.TimeOfDay.Negate())
+                    utcOffset ?? value.TimeOfDay.Negate())
                 .Add(existing.TimeOfDay);
         }
 
