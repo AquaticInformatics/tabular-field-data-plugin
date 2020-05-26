@@ -109,9 +109,9 @@ namespace Survey123
                 laterPeriod = tempPeriod;
             }
 
-            var earlierEnd = EndOfDay(earlierPeriod.End);
+            var earlierEnd = earlierPeriod.End;
 
-            var laterStart = StartOfDay(laterPeriod.Start);
+            var laterStart = laterPeriod.Start;
 
             if (earlierEnd < laterStart)
                 return false;
@@ -120,18 +120,6 @@ namespace Survey123
                 return true;
 
             return false;
-        }
-
-        private static DateTimeOffset StartOfDay(DateTimeOffset dateTimeOffset)
-        {
-            return new DateTimeOffset(dateTimeOffset.Date, dateTimeOffset.Offset);
-        }
-
-        private static DateTimeOffset EndOfDay(DateTimeOffset dateTimeOffset)
-        {
-            var start = StartOfDay(dateTimeOffset);
-
-            return new DateTimeOffset(start.Year, start.Month, start.Day, 23, 59, 59, start.Offset);
         }
 
         public void AddDischargeActivity(FieldVisitInfo fieldVisit, DischargeActivity dischargeActivity)
