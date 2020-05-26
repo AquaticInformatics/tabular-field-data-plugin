@@ -43,6 +43,7 @@ namespace Survey123
     {
         public string Format { get; set; }
         public TimestampType Type { get; set; }
+        public TimeSpan? UtcOffset { get; set; }
     }
 
     public class ReadingColumnDefinition : ColumnDefinition
