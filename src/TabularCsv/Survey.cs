@@ -12,6 +12,7 @@ namespace TabularCsv
         public List<MergingTextColumnDefinition> PartyColumns { get; set; } = new List<MergingTextColumnDefinition>();
         public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
         public List<ReadingColumnDefinition> ReadingColumns { get; set; } = new List<ReadingColumnDefinition>();
+        public List<InspectionColumnDefinition> InspectionColumns { get; set; } = new List<InspectionColumnDefinition>();
 
         public List<ColumnDefinition> GetColumnDefinitions()
         {
@@ -19,6 +20,7 @@ namespace TabularCsv
             var commentColumns = CommentColumns ?? new List<MergingTextColumnDefinition>();
             var partyColumns = PartyColumns ?? new List<MergingTextColumnDefinition>();
             var readingColumns = ReadingColumns ?? new List<ReadingColumnDefinition>();
+            var inspectionColumns = InspectionColumns ?? new List<InspectionColumnDefinition>();
 
             return new[]
                 {
@@ -30,6 +32,8 @@ namespace TabularCsv
                 .Concat(partyColumns)
                 .Concat(readingColumns)
                 .Concat(readingColumns.SelectMany(rc => rc.GetColumnDefinitions()))
+                .Concat(inspectionColumns)
+                .Concat(inspectionColumns.SelectMany(rc => rc.GetColumnDefinitions()))
                 .Where(columnDefinition => columnDefinition != null)
                 .ToList();
         }
@@ -82,7 +86,24 @@ namespace TabularCsv
         }
     }
 
-    public class ReadingColumnDefinition : ColumnDefinition
+    public abstract class ActivityColumnDefinition : ColumnDefinition
+    {
+        public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
+
+        public virtual IEnumerable<ColumnDefinition> GetColumnDefinitions()
+        {
+            var timestampColumns = TimestampColumns ?? new List<TimestampColumnDefinition>();
+
+            return new ColumnDefinition[]
+                {
+                    this,
+                }
+                .Concat(timestampColumns)
+                .Concat(timestampColumns.SelectMany(tc => tc.GetColumnDefinitions()));
+        }
+    }
+
+    public class ReadingColumnDefinition : ActivityColumnDefinition
     {
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
@@ -107,15 +128,12 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDetailsHold { get; set; }
         public PropertyDefinition MeasurementDetailsTapeCorrection { get; set; }
         public PropertyDefinition MeasurementDetailsWaterLevel { get; set; }
-        public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
 
-        public IEnumerable<ColumnDefinition> GetColumnDefinitions()
+        public override IEnumerable<ColumnDefinition> GetColumnDefinitions()
         {
-            var timestampColumns = TimestampColumns ?? new List<TimestampColumnDefinition>();
-
-            return new ColumnDefinition[]
+            return base.GetColumnDefinitions()
+                .Concat(new ColumnDefinition[]
                 {
-                    this,
                     ParameterId,
                     UnitId,
                     ReadingType,
@@ -138,8 +156,29 @@ namespace TabularCsv
                     SensorUniqueId,
                     Uncertainty,
                     UseLocationDatumAsReference,
-                }
-                .Concat(timestampColumns);
+                });
+        }
+    }
+
+    public class InspectionColumnDefinition : ActivityColumnDefinition
+    {
+        public PropertyDefinition Comments { get; set; }
+        public PropertyDefinition SubLocation { get; set; }
+        public PropertyDefinition MeasurementDeviceManufacturer { get; set; }
+        public PropertyDefinition MeasurementDeviceModel { get; set; }
+        public PropertyDefinition MeasurementDeviceSerialNumber { get; set; }
+
+        public override IEnumerable<ColumnDefinition> GetColumnDefinitions()
+        {
+            return base.GetColumnDefinitions()
+                .Concat(new ColumnDefinition[]
+                {
+                    Comments,
+                    MeasurementDeviceManufacturer,
+                    MeasurementDeviceModel,
+                    MeasurementDeviceSerialNumber,
+                    SubLocation,
+                });
         }
     }
 

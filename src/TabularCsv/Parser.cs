@@ -7,6 +7,7 @@ using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
+using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.PickLists;
 using FieldDataPluginFramework.DataModel.Readings;
 using FieldDataPluginFramework.Results;
@@ -232,6 +233,17 @@ namespace TabularCsv
                 })
                 .ToList();
 
+            var inspections = Survey
+                .InspectionColumns
+                .Select(i => ParseInspection(locationInfo, i))
+                .Where(i => i != null)
+                .Select(i =>
+                {
+                    i.DateTimeOffset = i.DateTimeOffset ?? timestamp;
+                    return i;
+                })
+                .ToList();
+
             var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
                 new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
                 {
@@ -242,6 +254,11 @@ namespace TabularCsv
             foreach (var reading in readings)
             {
                 ResultsAppender.AddReading(fieldVisitInfo, reading);
+            }
+
+            foreach (var inspection in inspections)
+            {
+                ResultsAppender.AddInspection(fieldVisitInfo, inspection);
             }
         }
 
@@ -446,6 +463,45 @@ namespace TabularCsv
             }
 
             return reading;
+        }
+
+
+        private Inspection ParseInspection(LocationInfo locationInfo, InspectionColumnDefinition inspectionColumn)
+        {
+            var inspectionType = GetNullableEnum<InspectionType>(inspectionColumn);
+
+            if (!inspectionType.HasValue)
+                return null;
+
+            DateTimeOffset? inspectionTime = null;
+
+            if (inspectionColumn.TimestampColumns?.Any() ?? false)
+            {
+                inspectionTime = ParseTimestamp(locationInfo, inspectionColumn.TimestampColumns);
+            }
+
+            var inspection = new Inspection(inspectionType.Value)
+            {
+                DateTimeOffset = inspectionTime,
+                Comments = GetString(inspectionColumn.Comments),
+                SubLocation = GetString(inspectionColumn.SubLocation)
+            };
+
+            var measurementDeviceManufacturer = GetString(inspectionColumn.MeasurementDeviceManufacturer);
+            var measurementDeviceModel = GetString(inspectionColumn.MeasurementDeviceModel);
+            var measurementDeviceSerialNumber = GetString(inspectionColumn.MeasurementDeviceSerialNumber);
+
+            if (!string.IsNullOrEmpty(measurementDeviceManufacturer)
+                || !string.IsNullOrEmpty(measurementDeviceModel)
+                || !string.IsNullOrEmpty(measurementDeviceSerialNumber))
+            {
+                inspection.MeasurementDevice = new MeasurementDevice(
+                    measurementDeviceManufacturer,
+                    measurementDeviceModel,
+                    measurementDeviceSerialNumber);
+            }
+
+            return inspection;
         }
 
         private bool? GetNullableBoolean(ColumnDefinition column)

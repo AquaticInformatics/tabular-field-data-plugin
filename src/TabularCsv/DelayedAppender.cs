@@ -7,6 +7,7 @@ using FieldDataPluginFramework.DataModel;
 using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.CrossSection;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
+using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.LevelSurveys;
 using FieldDataPluginFramework.DataModel.Readings;
 using FieldDataPluginFramework.Results;
@@ -158,6 +159,11 @@ namespace TabularCsv
         public void AddControlCondition(FieldVisitInfo fieldVisit, ControlCondition controlCondition)
         {
             fieldVisit.ControlConditions.Add(controlCondition);
+        }
+
+        public void AddInspection(FieldVisitInfo fieldVisit, Inspection inspection)
+        {
+            fieldVisit.Inspections.Add(inspection);
         }
     }
 }
