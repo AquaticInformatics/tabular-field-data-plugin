@@ -1,6 +1,6 @@
 # Tabular CSV Field Data Plugin
 
-[![Build status](https://ci.appveyor.com/api/projects/status/p7dj87vw06sv8lq3/branch/master?svg=true)](https://ci.appveyor.com/project/SystemsAdministrator/survey123-field-data-plugin/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/rkpwslh6kmrt9pyr/branch/master?svg=true)](https://ci.appveyor.com/project/SystemsAdministrator/tabular-field-data-plugin/branch/master)
 
 An AQTS field data plugin for AQTS 2019.4-or-newer systems, which can read many CSV files of different shapes.
 
@@ -20,8 +20,8 @@ See the [plugin documentation](../../wiki) for CSV format and configuration info
 
 ## Building the plugin
 
-- Load the `src\Survey123.sln` file in Visual Studio and build the `Release` configuration.
-- The `src\Survey123\deploy\Release\Survey123.plugin` file can then be installed on your AQTS app server.
+- Load the `src\TabularCsv.sln` file in Visual Studio and build the `Release` configuration.
+- The `src\TabularCsv\deploy\Release\TabularCsv.plugin` file can then be installed on your AQTS app server.
 
 ## Testing the plugin within Visual Studio
 
