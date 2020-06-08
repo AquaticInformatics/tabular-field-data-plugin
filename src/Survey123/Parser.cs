@@ -169,7 +169,7 @@ namespace Survey123
             var surveyLoader = new SurveyLoader();
 
             var surveys = surveyDirectory
-                .GetFiles("*.json")
+                .GetFiles("*.toml")
                 .Select(fi => surveyLoader.Load(fi.FullName))
                 .Where(s => s != null)
                 .ToList();

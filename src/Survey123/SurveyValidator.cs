@@ -49,7 +49,7 @@ namespace Survey123
         {
             return new[]
                 {
-                    Survey.LocationColumn
+                    (ColumnDefinition)Survey.LocationColumn
                 }
                 .Concat(Survey.TimestampColumns ?? new List<TimestampColumnDefinition>())
                 .Concat(Survey.CommentColumns ?? new List<MergingTextColumnDefinition>())

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.Serialization;
+using System.Text;
+using Nett;
 using ServiceStack;
 
 namespace Survey123
@@ -14,16 +16,11 @@ namespace Survey123
             if (!File.Exists(path))
                 throw new Exception($"'{path}' does not exist.");
 
-            Survey survey;
+            var text = File.ReadAllText(path);
 
-            try
-            {
-                survey = File.ReadAllText(path).FromJson<Survey>();
-            }
-            catch (SerializationException)
-            {
-                return null;
-            }
+            var survey = path.EndsWith(".toml", StringComparison.InvariantCultureIgnoreCase)
+                ? LoadFromToml(text)
+                : LoadFromJson(text);
 
             if (survey == null || IsEmpty(survey))
                 return null;
@@ -32,6 +29,81 @@ namespace Survey123
             survey.LocationAliases = new Dictionary<string, string>(survey.LocationAliases, StringComparer.InvariantCultureIgnoreCase);
 
             return survey;
+        }
+
+        private Survey LoadFromJson(string jsonText)
+        {
+            try
+            {
+                return jsonText.FromJson<Survey>();
+            }
+            catch (SerializationException)
+            {
+                return null;
+            }
+        }
+
+        private Survey LoadFromToml(string tomlText)
+        {
+            var settings = CreateTomlSettings();
+
+            try
+            {
+                var x1 = Toml.ReadString<Survey>(@"[LocationColumn]
+ColumnHeader = 'fred'", settings);
+                var x2 = Toml.ReadString<Survey>("LocationColumn = 'fred'", settings);
+                var x3 = Toml.ReadString<Survey>("LocationColumn = { ColumnHeader = 'Thinger'}", settings);
+                return Toml.ReadString<Survey>(tomlText, settings);
+            }
+            catch (Exception)
+            {
+                return null;
+            }
+        }
+
+        private TomlSettings CreateTomlSettings()
+        {
+            var settings = TomlSettings.Create(s => s
+                .ConfigurePropertyMapping(m => m
+                    .UseTargetPropertySelector(standardSelectors => standardSelectors.IgnoreCase))
+                .ConfigureType<PropertyDefinition>(type => type
+                    .WithConversionFor<TomlString>(convert => convert
+                        .ToToml(ToToml)
+                        .FromToml(FromToml)))
+            );
+
+            return settings;
+        }
+
+        private string ToToml(PropertyDefinition propertyDefinition)
+        {
+            if (!string.IsNullOrEmpty(propertyDefinition.FixedValue))
+                return $"\"{propertyDefinition.FixedValue}\"";
+
+            var builder = new StringBuilder("{");
+
+            if (propertyDefinition.ColumnIndex.HasValue)
+                builder.Append($" {nameof(propertyDefinition.ColumnIndex)} = {propertyDefinition.ColumnIndex}");
+
+            if (!string.IsNullOrEmpty(propertyDefinition.ColumnHeader))
+                builder.Append($" {nameof(propertyDefinition.ColumnHeader)} = \"{propertyDefinition.ColumnHeader}\"");
+
+            builder.Append(" }");
+
+            return builder.ToString();
+        }
+
+        private PropertyDefinition FromToml(ITomlRoot root, TomlString tomlString)
+        {
+            return tomlString.TomlType == TomlObjectType.String
+                ? new PropertyDefinition
+                {
+                    FixedValue = tomlString.Value
+                }
+                : new PropertyDefinition
+                {
+
+                };
         }
 
         private static bool IsEmpty(Survey survey)
@@ -45,13 +117,14 @@ namespace Survey123
                    && !survey.TimestampColumns.Any();
         }
 
+        /*
         public Survey CreateDefaultSurvey()
         {
             return new Survey
             {
                 Name = "IDWR field data",
                 FirstLineIsHeader = true,
-                LocationColumn = new ColumnDefinition
+                LocationColumn = new PropertyDefinition
                 {
                     ColumnHeader = "Please type in the site name:"
                 },
@@ -134,5 +207,6 @@ namespace Survey123
                 }
             };
         }
+        */
     }
 }

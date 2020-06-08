@@ -8,7 +8,7 @@ namespace Survey123
     {
         public string Name { get; set; }
         public bool FirstLineIsHeader { get; set; }
-        public ColumnDefinition LocationColumn { get; set; }
+        public PropertyDefinition LocationColumn { get; set; }
         public List<MergingTextColumnDefinition> CommentColumns { get; set; } = new List<MergingTextColumnDefinition>();
         public List<MergingTextColumnDefinition> PartyColumns { get; set; } = new List<MergingTextColumnDefinition>();
         public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
@@ -16,14 +16,19 @@ namespace Survey123
         public Dictionary<string,string> LocationAliases { get; set; } = new Dictionary<string, string>(StringComparer.CurrentCultureIgnoreCase);
     }
 
-    public class ColumnDefinition
+    public class PropertyDefinition : ColumnDefinition
+    {
+    }
+
+    public abstract class ColumnDefinition
     {
         public int? ColumnIndex { get; set; }
         public string ColumnHeader { get; set; }
+        public string FixedValue { get; set; }
 
         public bool RequiresHeader()
         {
-            return !string.IsNullOrEmpty(ColumnHeader);
+            return !string.IsNullOrEmpty(ColumnHeader) && string.IsNullOrEmpty(FixedValue);
         }
 
         public string Name()

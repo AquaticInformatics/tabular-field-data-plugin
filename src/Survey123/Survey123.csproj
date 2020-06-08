@@ -32,13 +32,16 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FieldDataPluginFramework, Version=2.0.0.0, Culture=neutral, processorArchitecture=AMD64">
-      <HintPath>..\packages\Aquarius.FieldDataFramework.18.4.3\lib\net472\FieldDataPluginFramework.dll</HintPath>
+    <Reference Include="FieldDataPluginFramework, Version=2.7.0.0, Culture=neutral, processorArchitecture=AMD64">
+      <HintPath>..\packages\Aquarius.FieldDataFramework.19.4.5\lib\net472\FieldDataPluginFramework.dll</HintPath>
     </Reference>
     <Reference Include="Humanizer, Version=2.6.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
       <HintPath>..\packages\Humanizer.Core.2.6.2\lib\netstandard2.0\Humanizer.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualBasic" />
+    <Reference Include="Nett, Version=0.15.0.0, Culture=neutral, PublicKeyToken=605dcfe7a1d3365b, processorArchitecture=MSIL">
+      <HintPath>..\packages\Nett.0.15.0\lib\net40\Nett.dll</HintPath>
+    </Reference>
     <Reference Include="ServiceStack.Text, Version=4.5.14.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\ServiceStack.Text.4.5.14\lib\net45\ServiceStack.Text.dll</HintPath>
     </Reference>
@@ -61,10 +64,13 @@
     </None>
     <None Include="packages.config" />
     <None Include="Readme.md" />
+    <None Include="Survey.toml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(SolutionDir)packages\Aquarius.FieldDataFramework.18.4.3\tools\PluginPackager.exe $(TargetPath) /OutputPath=$(ProjectDir)deploy\$(Configuration)\$(TargetName).plugin
-$(SolutionDir)packages\Aquarius.FieldDataFramework.18.4.3\tools\PluginTester.exe /Plugin=$(TargetPath) /Data=$(SolutionDir)..\data\survey_123_sample.csv</PostBuildEvent>
+    <PostBuildEvent>$(SolutionDir)packages\Aquarius.FieldDataFramework.19.4.5\tools\PluginPackager.exe $(TargetPath) /OutputPath=$(ProjectDir)deploy\$(Configuration)\$(TargetName).plugin
+$(SolutionDir)packages\Aquarius.FieldDataFramework.19.4.5\tools\PluginTester.exe /Plugin=$(TargetPath) /Data=$(SolutionDir)..\data\survey_123_sample.csv</PostBuildEvent>
   </PropertyGroup>
 </Project>
