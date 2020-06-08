@@ -6,6 +6,8 @@ using System.Linq;
 using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
+using FieldDataPluginFramework.DataModel.DischargeActivities;
+using FieldDataPluginFramework.DataModel.PickLists;
 using FieldDataPluginFramework.DataModel.Readings;
 using FieldDataPluginFramework.Results;
 using Microsoft.VisualBasic.FileIO;
@@ -164,7 +166,13 @@ namespace TabularCsv
 
         private List<Survey> LoadSurveys()
         {
-            var surveyDirectory = new DirectoryInfo(GetPluginDirectory());
+            var surveyDirectory = GetConfigurationDirectory();
+
+            if (!surveyDirectory.Exists)
+            {
+                Log.Error($"'{surveyDirectory.FullName}' does not exist. No configurations loaded.");
+                return new List<Survey>();
+            }
 
             var surveyLoader = new SurveyLoader();
 
@@ -175,7 +183,10 @@ namespace TabularCsv
                 .ToList();
 
             if (!surveys.Any())
-                throw new Exception($"No survey definitions found at '{surveyDirectory.FullName}\\*.json'");
+            {
+                Log.Error($"No configurations found at '{surveyDirectory.FullName}\\*.toml'");
+                return new List<Survey>();
+            }
 
             surveys = surveys
                 .Where(s => LocationInfo != null || s.LocationColumn != null)
@@ -194,19 +205,16 @@ namespace TabularCsv
             return surveys;
         }
 
-        private string GetPluginDirectory()
+        private DirectoryInfo GetConfigurationDirectory()
         {
-            return Path.GetDirectoryName(GetType().Assembly.Location);
+            return new DirectoryInfo(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                @"Aquatic Informatics\AQUARIUS Server\Configuration\TabularCSV"));
         }
 
         private void ParseRow()
         {
-            var locationIdentifier = GetColumnValue(Survey.LocationColumn);
-
-            if (Survey.LocationAliases.TryGetValue(locationIdentifier, out var aliasedIdentifier))
-            {
-                locationIdentifier = aliasedIdentifier;
-            }
+            var locationIdentifier = GetString(Survey.LocationColumn);
 
             var locationInfo = LocationInfo ?? ResultsAppender.GetLocationByIdentifier(locationIdentifier);
             var comments = MergeTextColumns(Survey.CommentColumns);
@@ -243,7 +251,7 @@ namespace TabularCsv
 
             foreach (var column in columns)
             {
-                var value = GetColumnValue(column);
+                var value = GetString(column);
 
                 if (string.IsNullOrWhiteSpace(value)) continue;
 
@@ -261,7 +269,7 @@ namespace TabularCsv
 
             foreach (var timestampColumn in Survey.TimestampColumns)
             {
-                var timeText = GetColumnValue(timestampColumn);
+                var timeText = GetString(timestampColumn);
 
                 if (!DateTimeOffset.TryParseExact(timeText, timestampColumn.Format, CultureInfo.InvariantCulture,
                     DateTimeStyles.None, out var value))
@@ -270,7 +278,9 @@ namespace TabularCsv
                 if (!TimestampParsers.TryGetValue(timestampColumn.Type, out var timeParser))
                     throw new Exception($"{timestampColumn.Name()} Type={timestampColumn.Type} is not a supported time type");
 
-                timestamp = timeParser(timestampColumn.UtcOffset, timestamp, value);
+                var utcOffset = GetNullableTimeSpan(timestampColumn.UtcOffset);
+
+                timestamp = timeParser(utcOffset ?? LocationInfo?.UtcOffset, timestamp, value);
             }
 
             return timestamp;
@@ -323,35 +333,210 @@ namespace TabularCsv
 
         private Reading ParseReading(ReadingColumnDefinition readingColumn)
         {
-            var valueText = GetColumnValue(readingColumn);
+            var valueText = GetString(readingColumn);
 
             if (string.IsNullOrWhiteSpace(valueText))
                 return null;
 
-            if (!double.TryParse(valueText, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
-                throw new Exception($"Line {LineNumber}: '{valueText}' is an invalid number for '{readingColumn.Name()}'");
+            var readingValue = GetNullableDouble(readingColumn);
 
-            var reading = new Reading(readingColumn.ParameterId, new Measurement(value, readingColumn.UnitId));
+            if (!readingValue.HasValue)
+                throw new InvalidOperationException("Should never happen");
+
+            var reading = new Reading(
+                GetString(readingColumn.ParameterId),
+                new Measurement(readingValue.Value, GetString(readingColumn.UnitId)));
+
+            reading.Comments = GetString(readingColumn.Comments);
+            reading.ReferencePointName = GetString(readingColumn.ReferencePointName);
+            reading.SubLocation = GetString(readingColumn.SubLocation);
+            reading.SensorUniqueId = GetNullableGuid(readingColumn.SensorUniqueId);
+            reading.Uncertainty = GetNullableDouble(readingColumn.Uncertainty);
 
             if (!string.IsNullOrWhiteSpace(readingColumn.CommentPrefix))
             {
-                reading.Comments = readingColumn.CommentPrefix;
+                reading.Comments = $"{readingColumn.CommentPrefix}{reading.Comments}";
             }
 
-            reading.ReadingType = readingColumn.ReadingType ?? ReadingType.Routine;
+            var readingType = GetNullableEnum<ReadingType>(readingColumn.ReadingType);
 
-            // TODO: Support other reading properties like uncertainty, device, sublocation, etc.
+            if (readingType.HasValue)
+                reading.ReadingType = readingType.Value;
+
+            var publish = GetNullableBoolean(readingColumn.Publish);
+            var useLocationDatumAsReference = GetNullableBoolean(readingColumn.UseLocationDatumAsReference);
+
+            var method = GetString(readingColumn.Method);
+
+            if (!string.IsNullOrWhiteSpace(method))
+                reading.Method = method;
+
+            var gradeCode = GetNullableInteger(readingColumn.GradeCode);
+            var gradeName = GetString(readingColumn.GradeName);
+
+            if (gradeCode.HasValue)
+                reading.Grade = Grade.FromCode(gradeCode.Value);
+
+            if (!string.IsNullOrEmpty(gradeName))
+                reading.Grade = Grade.FromDisplayName(gradeName);
+
+            if (publish.HasValue)
+                reading.Publish = publish.Value;
+
+            if (useLocationDatumAsReference.HasValue)
+                reading.UseLocationDatumAsReference = useLocationDatumAsReference.Value;
+
+            var measurementDeviceManufacturer = GetString(readingColumn.MeasurementDeviceManufacturer);
+            var measurementDeviceModel = GetString(readingColumn.MeasurementDeviceModel);
+            var measurementDeviceSerialNumber = GetString(readingColumn.MeasurementDeviceSerialNumber);
+
+            if (!string.IsNullOrEmpty(measurementDeviceManufacturer)
+                || !string.IsNullOrEmpty(measurementDeviceModel)
+                || !string.IsNullOrEmpty(measurementDeviceSerialNumber))
+            {
+                reading.MeasurementDevice = new MeasurementDevice(
+                    measurementDeviceManufacturer,
+                    measurementDeviceModel,
+                    measurementDeviceSerialNumber);
+            }
+
+            var readingQualifierSeparators = GetString(readingColumn.ReadingQualifierSeparators);
+            var readingQualifiers = GetString(readingColumn.ReadingQualifiers);
+
+            if (!string.IsNullOrEmpty(readingQualifiers))
+            {
+                var qualifiers = new[] {readingQualifiers};
+
+                if (!string.IsNullOrWhiteSpace(readingQualifierSeparators))
+                {
+                    qualifiers = readingQualifiers
+                        .Split(readingQualifierSeparators.ToArray())
+                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .ToArray();
+                }
+
+                reading.ReadingQualifiers = qualifiers
+                    .Select(q => new ReadingQualifierPickList(q))
+                    .ToList();
+            }
+
+            var measurementDetailsCut = GetNullableDouble(readingColumn.MeasurementDetailsCut);
+            var measurementDetailsHold = GetNullableDouble(readingColumn.MeasurementDetailsHold);
+            var measurementDetailsTapeCorrection = GetNullableDouble(readingColumn.MeasurementDetailsTapeCorrection);
+            var measurementDetailsWaterLevel = GetNullableDouble(readingColumn.MeasurementDetailsWaterLevel);
+
+            if (measurementDetailsCut.HasValue || measurementDetailsHold.HasValue || measurementDetailsTapeCorrection.HasValue ||
+                measurementDetailsWaterLevel.HasValue)
+            {
+                reading.GroundWaterMeasurementDetails = new GroundWaterMeasurementDetails
+                {
+                    Cut = measurementDetailsCut,
+                    Hold = measurementDetailsHold,
+                    TapeCorrection = measurementDetailsTapeCorrection,
+                    WaterLevel = measurementDetailsWaterLevel,
+                };
+            }
+
             return reading;
+        }
+
+        private bool? GetNullableBoolean(ColumnDefinition column)
+        {
+            var valueText = GetString(column);
+
+            if (string.IsNullOrWhiteSpace(valueText))
+                return null;
+
+            if (bool.TryParse(valueText, out var value))
+                return value;
+
+            throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{valueText}' is an invalid boolean");
+        }
+
+        private TimeSpan? GetNullableTimeSpan(ColumnDefinition column)
+        {
+            var valueText = GetString(column);
+
+            if (string.IsNullOrWhiteSpace(valueText))
+                return null;
+
+            if (TimeSpan.TryParse(valueText, CultureInfo.InvariantCulture, out var value))
+                return value;
+
+            throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{valueText}' is an invalid TimeSpan.");
+        }
+
+        private Guid? GetNullableGuid(ColumnDefinition column)
+        {
+            var valueText = GetString(column);
+
+            if (string.IsNullOrWhiteSpace(valueText))
+                return null;
+
+            if (Guid.TryParse(valueText, out var value))
+                return value;
+
+            throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{valueText}' is an invalid Guid.");
+        }
+
+        private int? GetNullableInteger(ColumnDefinition column)
+        {
+            var valueText = GetString(column);
+
+            if (string.IsNullOrWhiteSpace(valueText))
+                return null;
+
+            if (int.TryParse(valueText, out var value))
+                return value;
+
+            throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{valueText}' is an invalid integer.");
+        }
+
+        private double? GetNullableDouble(ColumnDefinition column)
+        {
+            var valueText = GetString(column);
+
+            if (string.IsNullOrWhiteSpace(valueText))
+                return null;
+
+            if (double.TryParse(valueText, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+                return value;
+
+            throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{valueText}' is an invalid number.");
+        }
+
+        private TEnum? GetNullableEnum<TEnum>(ColumnDefinition column) where TEnum : struct
+        {
+            var text = GetString(column);
+
+            if (string.IsNullOrWhiteSpace(text))
+                return null;
+
+            if (Enum.TryParse<TEnum>(text, true, out var enumValue))
+                return enumValue;
+
+            throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{text}' is not a valid {typeof(TEnum).Name} value. Supported values are: {string.Join(", ", Enum.GetNames(typeof(TEnum)))}");
+        }
+
+        private string GetString(ColumnDefinition column)
+        {
+            if (column == null)
+                return null;
+
+            return GetColumnValue(column);
         }
 
         private string GetColumnValue(ColumnDefinition column)
         {
+            if (!string.IsNullOrEmpty(column.FixedValue))
+                return column.FixedValue;
+
             var fieldIndex = column.RequiresHeader()
                 ? HeaderMap[column.ColumnHeader]
                 : column.ColumnIndex ?? 0;
 
             if (fieldIndex <= 0 || fieldIndex > Fields.Length)
-                throw new ArgumentOutOfRangeException($"Line {LineNumber}: '{column.Name()}' has an invalid index={fieldIndex}.");
+                throw new ArgumentException($"Line {LineNumber} '{column.Name()}' has an invalid index={fieldIndex}.");
 
             return Fields[fieldIndex - 1];
         }

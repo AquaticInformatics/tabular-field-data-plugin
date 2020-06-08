@@ -22,7 +22,7 @@ namespace TabularCsv
             if (!Survey.ReadingColumns?.Any() ?? true)
                 ThrowConfigurationException($"No {nameof(Survey.ReadingColumns)} definitions were found.");
 
-            var columnDefinitions = GetColumnDefinitions();
+            var columnDefinitions = Survey.GetColumnDefinitions();
             var headerColumns = columnDefinitions
                 .Where(column => column.RequiresHeader())
                 .ToList();
@@ -45,23 +45,9 @@ namespace TabularCsv
             throw new Exception($"{Survey.Name} survey configuration is invalid: {message}");
         }
 
-        private List<ColumnDefinition> GetColumnDefinitions()
-        {
-            return new[]
-                {
-                    (ColumnDefinition)Survey.LocationColumn
-                }
-                .Concat(Survey.TimestampColumns ?? new List<TimestampColumnDefinition>())
-                .Concat(Survey.CommentColumns ?? new List<MergingTextColumnDefinition>())
-                .Concat(Survey.PartyColumns ?? new List<MergingTextColumnDefinition>())
-                .Concat(Survey.ReadingColumns ?? new List<ReadingColumnDefinition>())
-                .Where(columnDefinition => columnDefinition != null)
-                .ToList();
-        }
-
         public Dictionary<string,int> BuildHeaderMap(string[] headerFields)
         {
-            var columnDefinitions = GetColumnDefinitions();
+            var columnDefinitions = Survey.GetColumnDefinitions();
 
             var headerColumns = columnDefinitions
                 .Where(column => column.RequiresHeader())
