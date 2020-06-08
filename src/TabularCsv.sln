@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.136
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Survey123", "Survey123\Survey123.csproj", "{519AF63B-97A0-456A-A793-34418BD52892}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabularCsv", "TabularCsv\TabularCsv.csproj", "{519AF63B-97A0-456A-A793-34418BD52892}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RepoRoot", "RepoRoot", "{0F6C334C-A230-4E2B-B4AD-45CE725D6B16}"
 	ProjectSection(SolutionItems) = preProject

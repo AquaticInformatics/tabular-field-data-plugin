@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using FieldDataPluginFramework.DataModel.Readings;
 
-namespace Survey123
+namespace TabularCsv
 {
     public class Survey
     {

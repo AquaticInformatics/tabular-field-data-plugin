@@ -4,7 +4,7 @@ using System.Linq;
 using FieldDataPluginFramework.Context;
 using Humanizer;
 
-namespace Survey123
+namespace TabularCsv
 {
     public class SurveyValidator
     {

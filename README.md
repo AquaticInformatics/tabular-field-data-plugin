@@ -1,17 +1,17 @@
-# Survey123 Field Data Plugin
+# Tabular CSV Field Data Plugin
 
 [![Build status](https://ci.appveyor.com/api/projects/status/p7dj87vw06sv8lq3/branch/master?svg=true)](https://ci.appveyor.com/project/SystemsAdministrator/survey123-field-data-plugin/branch/master)
 
-An AQTS field data plugin for AQTS 2018.4-or-newer systems, which can read [Survey123](https://survey123.arcgis.com/) survey results exported to CSV.
+An AQTS field data plugin for AQTS 2019.4-or-newer systems, which can read many CSV files of different shapes.
 
 ## Want to install this plugin?
 
 - Download the latest release of the plugin [here](../../releases/latest)
-- Install it using the [FieldVisitPluginTool](https://github.com/AquaticInformatics/aquarius-field-data-framework/tree/master/src/FieldDataPluginTool)
+- Install it using the System Config page on your AQTS app server.
 
 ## CSV file format
 
-See the [plugin documentation](./src/Survey123/Readme.md) for CSV format and configuration information.
+See the [plugin documentation](../../wiki) for CSV format and configuration information.
 
 ## Requirements for building the plugin from source
 
@@ -29,11 +29,11 @@ Use the included `PluginTester.exe` tool from the `Aquarius.FieldDataFramework` 
 
 1. Open the HydstraGauging project's **Properties** page
 2. Select the **Debug** tab
-3. Select **Start external program:** as the start action and browse to `"src\packages\Aquarius.FieldDataFramework.18.4.2\tools\PluginTester.exe`
+3. Select **Start external program:** as the start action and browse to `"src\packages\Aquarius.FieldDataFramework.19.4.5\tools\PluginTester.exe`
 4. Enter the **Command line arguments:** to launch your plugin
 
 ```
-/Plugin=Survey123.dll /Json=AppendedResults.json /Data=..\..\..\..\data\survey_123_sample.csv
+/Plugin=TabularCsv.dll /Json=AppendedResults.json /Data=..\..\..\..\data\survey_123_sample.csv
 ```
 
 The `/Plugin=` argument can be the filename of your plugin assembly, without any folder. The default working directory for a start action is the bin folder containing your plugin.
@@ -43,7 +43,3 @@ The `/Plugin=` argument can be the filename of your plugin assembly, without any
 7. Now you're debugging your plugin!
 
 See the [PluginTester](https://github.com/AquaticInformatics/aquarius-field-data-framework/tree/master/src/PluginTester) documentation for more details.
-
-## Installation of the plugin
-
-Use the [FieldDataPluginTool](https://github.com/AquaticInformatics/aquarius-field-data-framework/tree/master/src/FieldDataPluginTool) to install the plugin on your AQTS app server.

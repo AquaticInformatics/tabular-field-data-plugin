@@ -1,4 +1,4 @@
-﻿# Survey123
+﻿# TabularCsv
 
 This plugin will parse survey results exported from [Survey123](https://survey123.arcgis.com/) in CSV format.
 

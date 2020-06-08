@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Survey123
+namespace TabularCsv
 {
     public class AllHeadersMissingException : Exception
     {

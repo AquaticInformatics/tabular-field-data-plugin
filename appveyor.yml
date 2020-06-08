@@ -1,4 +1,4 @@
-image: Visual Studio 2017
+image: Visual Studio 2019
 
 platform: Any CPU
 configuration: Release
@@ -24,20 +24,20 @@ init:
       }
 
 before_build:
-  - nuget restore src\Survey123.sln
+  - nuget restore src\TabularCsv.sln
 
 build:
-  project: src\Survey123.sln
+  project: src\TabularCsv.sln
 
 artifacts:
-  - path: src\Survey123\deploy\Release\Survey123.plugin
+  - path: src\TabularCsv\deploy\Release\TabularCsv.plugin
     name: ThePlugin
     type: file
 
 deploy:
   - provider: GitHub
     tag: v$(APPVEYOR_BUILD_VERSION)
-    release: Survey123 field data plugin $(APPVEYOR_BUILD_VERSION)
+    release: TabularCsv field data plugin $(APPVEYOR_BUILD_VERSION)
     description: ''
     artifact: ThePlugin
     auth_token: $(GITHUB_AUTH_TOKEN)

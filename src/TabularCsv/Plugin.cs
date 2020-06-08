@@ -3,7 +3,7 @@ using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.Results;
 
-namespace Survey123
+namespace TabularCsv
 {
     public class Plugin : IFieldDataPlugin
     {

@@ -7,7 +7,7 @@ using System.Text;
 using Nett;
 using ServiceStack;
 
-namespace Survey123
+namespace TabularCsv
 {
     public class SurveyLoader
     {

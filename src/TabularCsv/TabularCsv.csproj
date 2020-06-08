@@ -7,8 +7,8 @@
     <ProjectGuid>{519AF63B-97A0-456A-A793-34418BD52892}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Survey123</RootNamespace>
-    <AssemblyName>Survey123</AssemblyName>
+    <RootNamespace>TabularCsv</RootNamespace>
+    <AssemblyName>TabularCsv</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>

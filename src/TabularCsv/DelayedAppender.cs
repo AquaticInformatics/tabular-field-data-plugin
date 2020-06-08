@@ -11,7 +11,7 @@ using FieldDataPluginFramework.DataModel.LevelSurveys;
 using FieldDataPluginFramework.DataModel.Readings;
 using FieldDataPluginFramework.Results;
 
-namespace Survey123
+namespace TabularCsv
 {
     // The delayed appender class exists to solely to delay the creation of visits until merges have been resolved.
     // This will allow a visit to be created, then expanded (a widened Start or End timestamp) to include more activities.

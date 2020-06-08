@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using Microsoft.VisualBasic.FileIO;
 using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
 using FieldDataPluginFramework.DataModel.Readings;
 using FieldDataPluginFramework.Results;
+using Microsoft.VisualBasic.FileIO;
 
-namespace Survey123
+namespace TabularCsv
 {
     public class Parser
     {
