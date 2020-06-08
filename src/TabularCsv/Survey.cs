@@ -107,37 +107,39 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDetailsHold { get; set; }
         public PropertyDefinition MeasurementDetailsTapeCorrection { get; set; }
         public PropertyDefinition MeasurementDetailsWaterLevel { get; set; }
-
-        // GroundWaterMeasurementDetails
+        public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
 
         public IEnumerable<ColumnDefinition> GetColumnDefinitions()
         {
+            var timestampColumns = TimestampColumns ?? new List<TimestampColumnDefinition>();
+
             return new ColumnDefinition[]
-            {
-                this,
-                ParameterId,
-                UnitId,
-                ReadingType,
-                Comments,
-                GradeCode,
-                GradeName,
-                MeasurementDetailsCut,
-                MeasurementDetailsHold,
-                MeasurementDetailsTapeCorrection,
-                MeasurementDetailsWaterLevel,
-                MeasurementDeviceManufacturer,
-                MeasurementDeviceModel,
-                MeasurementDeviceSerialNumber,
-                Method,
-                Publish,
-                ReadingQualifiers,
-                ReadingQualifierSeparators,
-                ReferencePointName,
-                SubLocation,
-                SensorUniqueId,
-                Uncertainty,
-                UseLocationDatumAsReference,
-            };
+                {
+                    this,
+                    ParameterId,
+                    UnitId,
+                    ReadingType,
+                    Comments,
+                    GradeCode,
+                    GradeName,
+                    MeasurementDetailsCut,
+                    MeasurementDetailsHold,
+                    MeasurementDetailsTapeCorrection,
+                    MeasurementDetailsWaterLevel,
+                    MeasurementDeviceManufacturer,
+                    MeasurementDeviceModel,
+                    MeasurementDeviceSerialNumber,
+                    Method,
+                    Publish,
+                    ReadingQualifiers,
+                    ReadingQualifierSeparators,
+                    ReferencePointName,
+                    SubLocation,
+                    SensorUniqueId,
+                    Uncertainty,
+                    UseLocationDatumAsReference,
+                }
+                .Concat(timestampColumns);
         }
     }
 

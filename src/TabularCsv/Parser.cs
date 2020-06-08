@@ -219,15 +219,15 @@ namespace TabularCsv
             var locationInfo = LocationInfo ?? ResultsAppender.GetLocationByIdentifier(locationIdentifier);
             var comments = MergeTextColumns(Survey.CommentColumns);
             var party = MergeTextColumns(Survey.PartyColumns);
-            var timestamp = ParseTimestamp(locationInfo);
+            var timestamp = ParseTimestamp(locationInfo, Survey.TimestampColumns);
 
             var readings = Survey
                 .ReadingColumns
-                .Select(ParseReading)
+                .Select(r => ParseReading(locationInfo, r))
                 .Where(r => r != null)
                 .Select(r =>
                 {
-                    r.DateTimeOffset = timestamp;
+                    r.DateTimeOffset = r.DateTimeOffset ?? timestamp;
                     return r;
                 })
                 .ToList();
@@ -263,11 +263,11 @@ namespace TabularCsv
             return string.Join("\n", lines);
         }
 
-        private DateTimeOffset ParseTimestamp(LocationInfo locationInfo)
+        private DateTimeOffset ParseTimestamp(LocationInfo locationInfo, List<TimestampColumnDefinition> timestampColumns)
         {
             var timestamp = new DateTimeOffset(new DateTime(1900,1,1), LocationInfo?.UtcOffset ?? locationInfo.UtcOffset);
 
-            foreach (var timestampColumn in Survey.TimestampColumns)
+            foreach (var timestampColumn in timestampColumns)
             {
                 var timeText = GetString(timestampColumn);
 
@@ -331,12 +331,19 @@ namespace TabularCsv
                 .Add(existing.TimeOfDay);
         }
 
-        private Reading ParseReading(ReadingColumnDefinition readingColumn)
+        private Reading ParseReading(LocationInfo locationInfo, ReadingColumnDefinition readingColumn)
         {
             var valueText = GetString(readingColumn);
 
             if (string.IsNullOrWhiteSpace(valueText))
                 return null;
+
+            DateTimeOffset? readingTime = null;
+
+            if (readingColumn.TimestampColumns?.Any() ?? false)
+            {
+                readingTime = ParseTimestamp(locationInfo, readingColumn.TimestampColumns);
+            }
 
             var readingValue = GetNullableDouble(readingColumn);
 
@@ -347,6 +354,7 @@ namespace TabularCsv
                 GetString(readingColumn.ParameterId),
                 new Measurement(readingValue.Value, GetString(readingColumn.UnitId)));
 
+            reading.DateTimeOffset = readingTime;
             reading.Comments = GetString(readingColumn.Comments);
             reading.ReferencePointName = GetString(readingColumn.ReferencePointName);
             reading.SubLocation = GetString(readingColumn.SubLocation);
