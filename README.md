@@ -11,7 +11,7 @@ An AQTS field data plugin for AQTS 2019.4-or-newer systems, which can read many 
 
 ## CSV file format
 
-See the [plugin documentation](../../wiki) for CSV format and configuration information.
+See the [plugin wiki](../../wiki) for CSV format and configuration information.
 
 ## Requirements for building the plugin from source
 
