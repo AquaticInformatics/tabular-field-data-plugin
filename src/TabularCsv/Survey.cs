@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace TabularCsv
 {
@@ -7,7 +8,11 @@ namespace TabularCsv
     {
         public string Name { get; set; }
         public int Priority { get; set; }
-        public bool FirstLineIsHeader { get; set; }
+        public int HeaderRowCount { get; set; }
+        public string HeadersEndWith { get; set; }
+        public string HeadersEndBefore { get; set; }
+        public bool FirstDataRowIsColumnHeader { get; set; }
+
         public PropertyDefinition Location { get; set; }
         public PropertyDefinition Weather { get; set; }
         public PropertyDefinition CollectionAgency { get; set; }
@@ -21,15 +26,23 @@ namespace TabularCsv
         public PropertyDefinition CompletedWaterQualitySample { get; set; }
         public List<MergingTextColumnDefinition> Comments { get; set; } = new List<MergingTextColumnDefinition>();
         public List<MergingTextColumnDefinition> Party { get; set; } = new List<MergingTextColumnDefinition>();
-        public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
+        public List<TimestampColumnDefinition> Timestamps { get; set; } = new List<TimestampColumnDefinition>();
+
         public List<ReadingColumnDefinition> Readings { get; set; } = new List<ReadingColumnDefinition>();
         public List<InspectionColumnDefinition> Inspections { get; set; } = new List<InspectionColumnDefinition>();
         public List<CalibrationColumnDefinition> Calibrations { get; set; } = new List<CalibrationColumnDefinition>();
         public ControlConditionColumnDefinition ControlCondition { get; set; }
 
+        public bool IsHeaderSectionExpected => HeaderRowCount > 0
+                                               || !string.IsNullOrEmpty(HeadersEndWith)
+                                               || !string.IsNullOrEmpty(HeadersEndBefore);
+
+        public bool IsHeaderRowRequired => FirstDataRowIsColumnHeader
+                                           || GetColumnDefinitions().Any(c => c.RequiresColumnHeader());
+
         public List<ColumnDefinition> GetColumnDefinitions()
         {
-            var timestampColumns = TimestampColumns ?? new List<TimestampColumnDefinition>();
+            var timestampColumns = Timestamps ?? new List<TimestampColumnDefinition>();
             var commentColumns = Comments ?? new List<MergingTextColumnDefinition>();
             var partyColumns = Party ?? new List<MergingTextColumnDefinition>();
             var readingColumns = Readings ?? new List<ReadingColumnDefinition>();
@@ -72,23 +85,52 @@ namespace TabularCsv
 
     public abstract class ColumnDefinition
     {
+        public const string RegexCaptureGroupName = "value";
+
         public int? ColumnIndex { get; set; }
         public string ColumnHeader { get; set; }
         public string FixedValue { get; set; }
+        public string HeaderRegex { get; set; }
 
-        public bool RequiresHeader()
+        public bool RequiresColumnHeader()
         {
-            return string.IsNullOrEmpty(FixedValue)
-                && !string.IsNullOrEmpty(ColumnHeader);
+            return !HasFixedValue
+                   && !HasHeaderRegex
+                   && HasNamedColumn;
+        }
+
+        public bool HasFixedValue => !string.IsNullOrEmpty(FixedValue);
+        public bool HasNamedColumn => !string.IsNullOrWhiteSpace(ColumnHeader);
+        public bool HasIndexedColumn => ColumnIndex.HasValue;
+        public bool HasHeaderRegex => !string.IsNullOrEmpty(HeaderRegex);
+
+        public bool IsInvalid()
+        {
+            if (HasHeaderRegex)
+            {
+                var regex = new Regex(HeaderRegex);
+
+                if (!regex.GetGroupNames().Contains(RegexCaptureGroupName))
+                    return false;
+            }
+
+            var count = HasFixedValue ? 1 : 0;
+            count += HasNamedColumn ? 1 : 0;
+            count += HasIndexedColumn ? 1 : 0;
+            count += HasHeaderRegex ? 1 : 0;
+
+            return count != 1;
         }
 
         public string Name()
         {
-            return RequiresHeader()
+            return RequiresColumnHeader()
                 ? ColumnHeader
-                : string.IsNullOrEmpty(FixedValue)
-                    ? $"ColumnIndex[{ColumnIndex}]"
-                    : $"FixedValue='{FixedValue}'";
+                : HasFixedValue
+                    ? $"FixedValue='{FixedValue}'"
+                    : HasHeaderRegex
+                        ? $"HeaderRegex='{HeaderRegex}'"
+                        : $"ColumnIndex[{ColumnIndex}]";
         }
     }
 
@@ -115,11 +157,11 @@ namespace TabularCsv
 
     public abstract class ActivityColumnDefinition : ColumnDefinition
     {
-        public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
+        public List<TimestampColumnDefinition> Timestamps { get; set; } = new List<TimestampColumnDefinition>();
 
         public virtual IEnumerable<ColumnDefinition> GetColumnDefinitions()
         {
-            var timestampColumns = TimestampColumns ?? new List<TimestampColumnDefinition>();
+            var timestampColumns = Timestamps ?? new List<TimestampColumnDefinition>();
 
             return new ColumnDefinition[]
                 {

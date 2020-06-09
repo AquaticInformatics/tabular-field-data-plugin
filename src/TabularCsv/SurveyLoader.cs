@@ -64,7 +64,7 @@ namespace TabularCsv
                    && !survey.Comments.Any()
                    && !survey.Party.Any()
                    && !survey.Readings.Any()
-                   && !survey.TimestampColumns.Any();
+                   && !survey.Timestamps.Any();
         }
 
         /*
