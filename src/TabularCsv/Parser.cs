@@ -267,6 +267,7 @@ namespace TabularCsv
                     Party = party,
                     CollectionAgency = GetString(Survey.CollectionAgency),
                     Weather = GetString(Survey.Weather),
+                    CompletedVisitActivities = ParseCompletedVisitActivities()
                 });
 
             foreach (var reading in readings)
@@ -288,6 +289,21 @@ namespace TabularCsv
             {
                 ResultsAppender.AddControlCondition(fieldVisitInfo, controlCondition);
             }
+        }
+
+        private CompletedVisitActivities ParseCompletedVisitActivities()
+        {
+            return new CompletedVisitActivities
+            {
+                GroundWaterLevels = GetNullableBoolean(Survey.CompletedGroundWaterLevels) ?? false,
+                ConductedLevelSurvey = GetNullableBoolean(Survey.CompletedLevelSurvey) ?? false,
+                RecorderDataCollected = GetNullableBoolean(Survey.CompletedRecorderData) ?? false,
+                SafetyInspectionPerformed = GetNullableBoolean(Survey.CompletedSafetyInspection) ?? false,
+                OtherSample = GetNullableBoolean(Survey.CompletedOtherSample) ?? false,
+                BiologicalSample = GetNullableBoolean(Survey.CompletedBiologicalSample) ?? false,
+                SedimentSample = GetNullableBoolean(Survey.CompletedSedimentSample) ?? false,
+                WaterQualitySample = GetNullableBoolean(Survey.CompletedWaterQualitySample) ?? false,
+            };
         }
 
         private string MergeTextColumns(List<MergingTextColumnDefinition> columns)

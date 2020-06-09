@@ -11,6 +11,14 @@ namespace TabularCsv
         public PropertyDefinition Location { get; set; }
         public PropertyDefinition Weather { get; set; }
         public PropertyDefinition CollectionAgency { get; set; }
+        public PropertyDefinition CompletedGroundWaterLevels { get; set; }
+        public PropertyDefinition CompletedLevelSurvey { get; set; }
+        public PropertyDefinition CompletedRecorderData { get; set; }
+        public PropertyDefinition CompletedSafetyInspection { get; set; }
+        public PropertyDefinition CompletedOtherSample { get; set; }
+        public PropertyDefinition CompletedBiologicalSample { get; set; }
+        public PropertyDefinition CompletedSedimentSample { get; set; }
+        public PropertyDefinition CompletedWaterQualitySample { get; set; }
         public List<MergingTextColumnDefinition> Comments { get; set; } = new List<MergingTextColumnDefinition>();
         public List<MergingTextColumnDefinition> Party { get; set; } = new List<MergingTextColumnDefinition>();
         public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
@@ -33,6 +41,14 @@ namespace TabularCsv
                     Location,
                     Weather,
                     CollectionAgency,
+                    CompletedGroundWaterLevels,
+                    CompletedLevelSurvey,
+                    CompletedRecorderData,
+                    CompletedSafetyInspection,
+                    CompletedOtherSample,
+                    CompletedBiologicalSample,
+                    CompletedSedimentSample,
+                    CompletedWaterQualitySample,
                 }
                 .Concat(timestampColumns)
                 .Concat(timestampColumns.SelectMany(tc => tc.GetColumnDefinitions()))
