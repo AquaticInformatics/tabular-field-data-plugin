@@ -26,7 +26,7 @@ namespace TabularCsv
         public PropertyDefinition CompletedWaterQualitySample { get; set; }
         public List<MergingTextColumnDefinition> Comments { get; set; } = new List<MergingTextColumnDefinition>();
         public List<MergingTextColumnDefinition> Party { get; set; } = new List<MergingTextColumnDefinition>();
-        public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
+        public List<TimestampColumnDefinition> Timestamps { get; set; } = new List<TimestampColumnDefinition>();
 
         public List<ReadingColumnDefinition> Readings { get; set; } = new List<ReadingColumnDefinition>();
         public List<InspectionColumnDefinition> Inspections { get; set; } = new List<InspectionColumnDefinition>();
@@ -42,7 +42,7 @@ namespace TabularCsv
 
         public List<ColumnDefinition> GetColumnDefinitions()
         {
-            var timestampColumns = TimestampColumns ?? new List<TimestampColumnDefinition>();
+            var timestampColumns = Timestamps ?? new List<TimestampColumnDefinition>();
             var commentColumns = Comments ?? new List<MergingTextColumnDefinition>();
             var partyColumns = Party ?? new List<MergingTextColumnDefinition>();
             var readingColumns = Readings ?? new List<ReadingColumnDefinition>();
@@ -157,11 +157,11 @@ namespace TabularCsv
 
     public abstract class ActivityColumnDefinition : ColumnDefinition
     {
-        public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
+        public List<TimestampColumnDefinition> Timestamps { get; set; } = new List<TimestampColumnDefinition>();
 
         public virtual IEnumerable<ColumnDefinition> GetColumnDefinitions()
         {
-            var timestampColumns = TimestampColumns ?? new List<TimestampColumnDefinition>();
+            var timestampColumns = Timestamps ?? new List<TimestampColumnDefinition>();
 
             return new ColumnDefinition[]
                 {

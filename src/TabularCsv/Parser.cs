@@ -115,6 +115,7 @@ namespace TabularCsv
                         try
                         {
                             ColumnHeaderMap = validator.BuildColumnHeaderHeaderMap(Fields);
+                            ++dataRowCount;
                             continue;
                         }
                         catch (Exception exception)
@@ -294,7 +295,7 @@ namespace TabularCsv
             var locationInfo = LocationInfo ?? ResultsAppender.GetLocationByIdentifier(locationIdentifier);
             var comments = MergeTextColumns(Survey.Comments);
             var party = MergeTextColumns(Survey.Party);
-            var timestamp = ParseTimestamp(locationInfo, Survey.TimestampColumns);
+            var timestamp = ParseTimestamp(locationInfo, Survey.Timestamps);
 
             var readings = Survey
                 .Readings
@@ -472,9 +473,9 @@ namespace TabularCsv
 
             DateTimeOffset? readingTime = null;
 
-            if (readingColumn.TimestampColumns?.Any() ?? false)
+            if (readingColumn.Timestamps?.Any() ?? false)
             {
-                readingTime = ParseTimestamp(locationInfo, readingColumn.TimestampColumns);
+                readingTime = ParseTimestamp(locationInfo, readingColumn.Timestamps);
             }
 
             var readingValue = GetNullableDouble(readingColumn);
@@ -589,9 +590,9 @@ namespace TabularCsv
 
             DateTimeOffset? inspectionTime = null;
 
-            if (inspectionColumn.TimestampColumns?.Any() ?? false)
+            if (inspectionColumn.Timestamps?.Any() ?? false)
             {
-                inspectionTime = ParseTimestamp(locationInfo, inspectionColumn.TimestampColumns);
+                inspectionTime = ParseTimestamp(locationInfo, inspectionColumn.Timestamps);
             }
 
             var inspection = new Inspection(inspectionType.Value)
@@ -627,9 +628,9 @@ namespace TabularCsv
 
             DateTimeOffset? calibrationTime = null;
 
-            if (calibrationColumn.TimestampColumns?.Any() ?? false)
+            if (calibrationColumn.Timestamps?.Any() ?? false)
             {
-                calibrationTime = ParseTimestamp(locationInfo, calibrationColumn.TimestampColumns);
+                calibrationTime = ParseTimestamp(locationInfo, calibrationColumn.Timestamps);
             }
 
             var calibrationValue = GetNullableDouble(calibrationColumn);
@@ -702,11 +703,14 @@ namespace TabularCsv
 
         private ControlCondition ParseControlCondition(LocationInfo locationInfo, ControlConditionColumnDefinition controlConditionColumn)
         {
+            if (controlConditionColumn == null)
+                return null;
+
             DateTimeOffset? dateCleaned = null;
 
-            if (controlConditionColumn.TimestampColumns?.Any() ?? false)
+            if (controlConditionColumn.Timestamps?.Any() ?? false)
             {
-                dateCleaned = ParseTimestamp(locationInfo, controlConditionColumn.TimestampColumns);
+                dateCleaned = ParseTimestamp(locationInfo, controlConditionColumn.Timestamps);
             }
 
             var controlCode = GetString(controlConditionColumn.ControlCode);
