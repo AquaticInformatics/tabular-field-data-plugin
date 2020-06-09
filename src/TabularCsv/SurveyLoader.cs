@@ -60,10 +60,10 @@ namespace TabularCsv
         private static bool IsEmpty(Survey survey)
         {
             return survey.Name == null
-                   && survey.LocationColumn == null
-                   && !survey.CommentColumns.Any()
-                   && !survey.PartyColumns.Any()
-                   && !survey.ReadingColumns.Any()
+                   && survey.Location == null
+                   && !survey.Comments.Any()
+                   && !survey.Party.Any()
+                   && !survey.Readings.Any()
                    && !survey.TimestampColumns.Any();
         }
 

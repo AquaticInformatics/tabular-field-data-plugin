@@ -7,6 +7,7 @@ using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
 using FieldDataPluginFramework.DataModel.Calibrations;
+using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
 using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.PickLists;
@@ -192,7 +193,7 @@ namespace TabularCsv
             }
 
             surveys = surveys
-                .Where(s => LocationInfo != null || s.LocationColumn != null)
+                .Where(s => LocationInfo != null || s.Location != null)
                 .ToList();
 
             foreach (var survey in surveys)
@@ -217,15 +218,15 @@ namespace TabularCsv
 
         private void ParseRow()
         {
-            var locationIdentifier = GetString(Survey.LocationColumn);
+            var locationIdentifier = GetString(Survey.Location);
 
             var locationInfo = LocationInfo ?? ResultsAppender.GetLocationByIdentifier(locationIdentifier);
-            var comments = MergeTextColumns(Survey.CommentColumns);
-            var party = MergeTextColumns(Survey.PartyColumns);
+            var comments = MergeTextColumns(Survey.Comments);
+            var party = MergeTextColumns(Survey.Party);
             var timestamp = ParseTimestamp(locationInfo, Survey.TimestampColumns);
 
             var readings = Survey
-                .ReadingColumns
+                .Readings
                 .Select(r => ParseReading(locationInfo, r))
                 .Where(reading => reading != null)
                 .Select(reading =>
@@ -236,7 +237,7 @@ namespace TabularCsv
                 .ToList();
 
             var inspections = Survey
-                .InspectionColumns
+                .Inspections
                 .Select(i => ParseInspection(locationInfo, i))
                 .Where(inspection => inspection != null)
                 .Select(inspection =>
@@ -247,7 +248,7 @@ namespace TabularCsv
                 .ToList();
 
             var calibrations = Survey
-                .CalibrationColumns
+                .Calibrations
                 .Select(c => ParseCalibration(locationInfo, c))
                 .Where(calibration => calibration != null)
                 .Select(calibration =>
@@ -257,11 +258,16 @@ namespace TabularCsv
                 })
                 .ToList();
 
+            var controlCondition = ParseControlCondition(locationInfo, Survey.ControlCondition);
+
             var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
                 new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
                 {
                     Comments = comments,
-                    Party = party
+                    Party = party,
+                    CollectionAgency = GetString(Survey.CollectionAgency),
+                    Weather = GetString(Survey.Weather),
+                    CompletedVisitActivities = ParseCompletedVisitActivities()
                 });
 
             foreach (var reading in readings)
@@ -278,6 +284,26 @@ namespace TabularCsv
             {
                 ResultsAppender.AddCalibration(fieldVisitInfo, calibration);
             }
+
+            if (controlCondition != null)
+            {
+                ResultsAppender.AddControlCondition(fieldVisitInfo, controlCondition);
+            }
+        }
+
+        private CompletedVisitActivities ParseCompletedVisitActivities()
+        {
+            return new CompletedVisitActivities
+            {
+                GroundWaterLevels = GetNullableBoolean(Survey.CompletedGroundWaterLevels) ?? false,
+                ConductedLevelSurvey = GetNullableBoolean(Survey.CompletedLevelSurvey) ?? false,
+                RecorderDataCollected = GetNullableBoolean(Survey.CompletedRecorderData) ?? false,
+                SafetyInspectionPerformed = GetNullableBoolean(Survey.CompletedSafetyInspection) ?? false,
+                OtherSample = GetNullableBoolean(Survey.CompletedOtherSample) ?? false,
+                BiologicalSample = GetNullableBoolean(Survey.CompletedBiologicalSample) ?? false,
+                SedimentSample = GetNullableBoolean(Survey.CompletedSedimentSample) ?? false,
+                WaterQualitySample = GetNullableBoolean(Survey.CompletedWaterQualitySample) ?? false,
+            };
         }
 
         private string MergeTextColumns(List<MergingTextColumnDefinition> columns)
@@ -528,11 +554,11 @@ namespace TabularCsv
             if (string.IsNullOrWhiteSpace(valueText))
                 return null;
 
-            DateTimeOffset? readingTime = null;
+            DateTimeOffset? calibrationTime = null;
 
             if (calibrationColumn.TimestampColumns?.Any() ?? false)
             {
-                readingTime = ParseTimestamp(locationInfo, calibrationColumn.TimestampColumns);
+                calibrationTime = ParseTimestamp(locationInfo, calibrationColumn.TimestampColumns);
             }
 
             var calibrationValue = GetNullableDouble(calibrationColumn);
@@ -545,7 +571,7 @@ namespace TabularCsv
                 GetString(calibrationColumn.UnitId),
                 calibrationValue.Value);
 
-            calibration.DateTimeOffset = readingTime;
+            calibration.DateTimeOffset = calibrationTime;
             calibration.Comments = GetString(calibrationColumn.Comments);
             calibration.Party = GetString(calibrationColumn.Party);
             calibration.SubLocation = GetString(calibrationColumn.SubLocation);
@@ -601,6 +627,53 @@ namespace TabularCsv
             };
 
             return calibration;
+        }
+
+        private ControlCondition ParseControlCondition(LocationInfo locationInfo, ControlConditionColumnDefinition controlConditionColumn)
+        {
+            DateTimeOffset? dateCleaned = null;
+
+            if (controlConditionColumn.TimestampColumns?.Any() ?? false)
+            {
+                dateCleaned = ParseTimestamp(locationInfo, controlConditionColumn.TimestampColumns);
+            }
+
+            var controlCode = GetString(controlConditionColumn.ControlCode);
+            var conditionType = GetString(controlConditionColumn.ConditionType);
+            var controlCleanedType = GetNullableEnum<ControlCleanedType>(controlConditionColumn.ControlCleanedType);
+
+            var controlCondition = new ControlCondition
+            {
+                Party = GetString(controlConditionColumn.Party),
+                Comments = GetString(controlConditionColumn.Comments),
+                DateCleaned = dateCleaned,
+            };
+
+            if (controlCleanedType.HasValue)
+            {
+                controlCondition.ControlCleaned = controlCleanedType.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(controlCode))
+            {
+                controlCondition.ControlCode = new ControlCodePickList(controlCode);
+            }
+
+            if (!string.IsNullOrWhiteSpace(conditionType))
+            {
+                controlCondition.ConditionType = new ControlConditionPickList(conditionType);
+            }
+
+            var distanceToGage = GetNullableDouble(controlConditionColumn);
+
+            var unitId = GetString(controlConditionColumn.UnitId);
+
+            if (distanceToGage.HasValue)
+            {
+                controlCondition.DistanceToGage = new Measurement(distanceToGage.Value, unitId);
+            }
+
+            return controlCondition;
         }
 
         private bool? GetNullableBoolean(ColumnDefinition column)

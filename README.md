@@ -42,15 +42,15 @@ Then this configuration description would parse those rows into air temperation 
 Name = 'Air temp data file'
 FirstLineIsHeader = true
 
-[LocationColumn]
+[Location]
 ColumnHeader = 'The Location'
 
-[[TimestampColumns]]
+[[Timestamps]]
 Format = 'yyyy-MMM-d h:m'
 Type = 'DateTimeOnly'
 ColumnHeader = 'The Time'
 
-[[ReadingColumns]]
+[[Readings]]
 ParameterId = 'TA'
 UnitId = 'degC'
 ColumnHeader = 'The Temperature'

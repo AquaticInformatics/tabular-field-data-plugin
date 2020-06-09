@@ -8,26 +8,47 @@ namespace TabularCsv
         public string Name { get; set; }
         public int Priority { get; set; }
         public bool FirstLineIsHeader { get; set; }
-        public PropertyDefinition LocationColumn { get; set; }
-        public List<MergingTextColumnDefinition> CommentColumns { get; set; } = new List<MergingTextColumnDefinition>();
-        public List<MergingTextColumnDefinition> PartyColumns { get; set; } = new List<MergingTextColumnDefinition>();
+        public PropertyDefinition Location { get; set; }
+        public PropertyDefinition Weather { get; set; }
+        public PropertyDefinition CollectionAgency { get; set; }
+        public PropertyDefinition CompletedGroundWaterLevels { get; set; }
+        public PropertyDefinition CompletedLevelSurvey { get; set; }
+        public PropertyDefinition CompletedRecorderData { get; set; }
+        public PropertyDefinition CompletedSafetyInspection { get; set; }
+        public PropertyDefinition CompletedOtherSample { get; set; }
+        public PropertyDefinition CompletedBiologicalSample { get; set; }
+        public PropertyDefinition CompletedSedimentSample { get; set; }
+        public PropertyDefinition CompletedWaterQualitySample { get; set; }
+        public List<MergingTextColumnDefinition> Comments { get; set; } = new List<MergingTextColumnDefinition>();
+        public List<MergingTextColumnDefinition> Party { get; set; } = new List<MergingTextColumnDefinition>();
         public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
-        public List<ReadingColumnDefinition> ReadingColumns { get; set; } = new List<ReadingColumnDefinition>();
-        public List<InspectionColumnDefinition> InspectionColumns { get; set; } = new List<InspectionColumnDefinition>();
-        public List<CalibrationColumnDefinition> CalibrationColumns { get; set; } = new List<CalibrationColumnDefinition>();
+        public List<ReadingColumnDefinition> Readings { get; set; } = new List<ReadingColumnDefinition>();
+        public List<InspectionColumnDefinition> Inspections { get; set; } = new List<InspectionColumnDefinition>();
+        public List<CalibrationColumnDefinition> Calibrations { get; set; } = new List<CalibrationColumnDefinition>();
+        public ControlConditionColumnDefinition ControlCondition { get; set; }
 
         public List<ColumnDefinition> GetColumnDefinitions()
         {
             var timestampColumns = TimestampColumns ?? new List<TimestampColumnDefinition>();
-            var commentColumns = CommentColumns ?? new List<MergingTextColumnDefinition>();
-            var partyColumns = PartyColumns ?? new List<MergingTextColumnDefinition>();
-            var readingColumns = ReadingColumns ?? new List<ReadingColumnDefinition>();
-            var inspectionColumns = InspectionColumns ?? new List<InspectionColumnDefinition>();
-            var calibrationColumns = CalibrationColumns ?? new List<CalibrationColumnDefinition>();
+            var commentColumns = Comments ?? new List<MergingTextColumnDefinition>();
+            var partyColumns = Party ?? new List<MergingTextColumnDefinition>();
+            var readingColumns = Readings ?? new List<ReadingColumnDefinition>();
+            var inspectionColumns = Inspections ?? new List<InspectionColumnDefinition>();
+            var calibrationColumns = Calibrations ?? new List<CalibrationColumnDefinition>();
 
-            return new[]
+            return new ColumnDefinition[]
                 {
-                    (ColumnDefinition)LocationColumn
+                    Location,
+                    Weather,
+                    CollectionAgency,
+                    CompletedGroundWaterLevels,
+                    CompletedLevelSurvey,
+                    CompletedRecorderData,
+                    CompletedSafetyInspection,
+                    CompletedOtherSample,
+                    CompletedBiologicalSample,
+                    CompletedSedimentSample,
+                    CompletedWaterQualitySample,
                 }
                 .Concat(timestampColumns)
                 .Concat(timestampColumns.SelectMany(tc => tc.GetColumnDefinitions()))
@@ -39,6 +60,7 @@ namespace TabularCsv
                 .Concat(inspectionColumns.SelectMany(rc => rc.GetColumnDefinitions()))
                 .Concat(calibrationColumns)
                 .Concat(calibrationColumns.SelectMany(rc => rc.GetColumnDefinitions()))
+                .Concat(new []{ControlCondition})
                 .Where(columnDefinition => columnDefinition != null)
                 .ToList();
         }
@@ -229,6 +251,30 @@ namespace TabularCsv
                     SubLocation,
                     SensorUniqueId,
                     Standard,
+                });
+        }
+    }
+
+    public class ControlConditionColumnDefinition : ActivityColumnDefinition
+    {
+        public PropertyDefinition UnitId { get; set; }
+        public PropertyDefinition Comments { get; set; }
+        public PropertyDefinition Party { get; set; }
+        public PropertyDefinition ControlCleanedType { get; set; }
+        public PropertyDefinition ControlCode { get; set; }
+        public PropertyDefinition ConditionType { get; set; }
+
+        public override IEnumerable<ColumnDefinition> GetColumnDefinitions()
+        {
+            return base.GetColumnDefinitions()
+                .Concat(new ColumnDefinition[]
+                {
+                    UnitId,
+                    Comments,
+                    Party,
+                    ControlCleanedType,
+                    ControlCode,
+                    ConditionType,
                 });
         }
     }

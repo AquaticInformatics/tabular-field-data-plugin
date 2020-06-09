@@ -13,14 +13,14 @@ namespace TabularCsv
 
         public void Validate()
         {
-            if (LocationInfo == null && Survey.LocationColumn == null)
-                ThrowConfigurationException($"A {nameof(Survey.LocationColumn)} definition is required.");
+            if (LocationInfo == null && Survey.Location == null)
+                ThrowConfigurationException($"A {nameof(Survey.Location)} definition is required.");
 
             if (!Survey.TimestampColumns?.Any() ?? true)
                 ThrowConfigurationException($"No {nameof(Survey.TimestampColumns)} definitions were found.");
 
-            if (!Survey.ReadingColumns?.Any() ?? true)
-                ThrowConfigurationException($"No {nameof(Survey.ReadingColumns)} definitions were found.");
+            if (!Survey.Readings?.Any() ?? true)
+                ThrowConfigurationException($"No {nameof(Survey.Readings)} definitions were found.");
 
             var columnDefinitions = Survey.GetColumnDefinitions();
             var headerColumns = columnDefinitions
