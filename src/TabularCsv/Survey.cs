@@ -15,6 +15,7 @@ namespace TabularCsv
         public List<ReadingColumnDefinition> ReadingColumns { get; set; } = new List<ReadingColumnDefinition>();
         public List<InspectionColumnDefinition> InspectionColumns { get; set; } = new List<InspectionColumnDefinition>();
         public List<CalibrationColumnDefinition> CalibrationColumns { get; set; } = new List<CalibrationColumnDefinition>();
+        public ControlConditionColumnDefinition ControlCondition { get; set; }
 
         public List<ColumnDefinition> GetColumnDefinitions()
         {
@@ -39,6 +40,7 @@ namespace TabularCsv
                 .Concat(inspectionColumns.SelectMany(rc => rc.GetColumnDefinitions()))
                 .Concat(calibrationColumns)
                 .Concat(calibrationColumns.SelectMany(rc => rc.GetColumnDefinitions()))
+                .Concat(new []{ControlCondition})
                 .Where(columnDefinition => columnDefinition != null)
                 .ToList();
         }
@@ -229,6 +231,30 @@ namespace TabularCsv
                     SubLocation,
                     SensorUniqueId,
                     Standard,
+                });
+        }
+    }
+
+    public class ControlConditionColumnDefinition : ActivityColumnDefinition
+    {
+        public PropertyDefinition UnitId { get; set; }
+        public PropertyDefinition Comments { get; set; }
+        public PropertyDefinition Party { get; set; }
+        public PropertyDefinition ControlCleanedType { get; set; }
+        public PropertyDefinition ControlCode { get; set; }
+        public PropertyDefinition ConditionType { get; set; }
+
+        public override IEnumerable<ColumnDefinition> GetColumnDefinitions()
+        {
+            return base.GetColumnDefinitions()
+                .Concat(new ColumnDefinition[]
+                {
+                    UnitId,
+                    Comments,
+                    Party,
+                    ControlCleanedType,
+                    ControlCode,
+                    ConditionType,
                 });
         }
     }

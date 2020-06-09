@@ -7,6 +7,7 @@ using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
 using FieldDataPluginFramework.DataModel.Calibrations;
+using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
 using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.PickLists;
@@ -257,6 +258,8 @@ namespace TabularCsv
                 })
                 .ToList();
 
+            var controlCondition = ParseControlCondition(locationInfo, Survey.ControlCondition);
+
             var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
                 new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
                 {
@@ -277,6 +280,11 @@ namespace TabularCsv
             foreach (var calibration in calibrations)
             {
                 ResultsAppender.AddCalibration(fieldVisitInfo, calibration);
+            }
+
+            if (controlCondition != null)
+            {
+                ResultsAppender.AddControlCondition(fieldVisitInfo, controlCondition);
             }
         }
 
@@ -528,11 +536,11 @@ namespace TabularCsv
             if (string.IsNullOrWhiteSpace(valueText))
                 return null;
 
-            DateTimeOffset? readingTime = null;
+            DateTimeOffset? calibrationTime = null;
 
             if (calibrationColumn.TimestampColumns?.Any() ?? false)
             {
-                readingTime = ParseTimestamp(locationInfo, calibrationColumn.TimestampColumns);
+                calibrationTime = ParseTimestamp(locationInfo, calibrationColumn.TimestampColumns);
             }
 
             var calibrationValue = GetNullableDouble(calibrationColumn);
@@ -545,7 +553,7 @@ namespace TabularCsv
                 GetString(calibrationColumn.UnitId),
                 calibrationValue.Value);
 
-            calibration.DateTimeOffset = readingTime;
+            calibration.DateTimeOffset = calibrationTime;
             calibration.Comments = GetString(calibrationColumn.Comments);
             calibration.Party = GetString(calibrationColumn.Party);
             calibration.SubLocation = GetString(calibrationColumn.SubLocation);
@@ -601,6 +609,53 @@ namespace TabularCsv
             };
 
             return calibration;
+        }
+
+        private ControlCondition ParseControlCondition(LocationInfo locationInfo, ControlConditionColumnDefinition controlConditionColumn)
+        {
+            DateTimeOffset? dateCleaned = null;
+
+            if (controlConditionColumn.TimestampColumns?.Any() ?? false)
+            {
+                dateCleaned = ParseTimestamp(locationInfo, controlConditionColumn.TimestampColumns);
+            }
+
+            var controlCode = GetString(controlConditionColumn.ControlCode);
+            var conditionType = GetString(controlConditionColumn.ConditionType);
+            var controlCleanedType = GetNullableEnum<ControlCleanedType>(controlConditionColumn.ControlCleanedType);
+
+            var controlCondition = new ControlCondition
+            {
+                Party = GetString(controlConditionColumn.Party),
+                Comments = GetString(controlConditionColumn.Comments),
+                DateCleaned = dateCleaned,
+            };
+
+            if (controlCleanedType.HasValue)
+            {
+                controlCondition.ControlCleaned = controlCleanedType.Value;
+            }
+
+            if (!string.IsNullOrWhiteSpace(controlCode))
+            {
+                controlCondition.ControlCode = new ControlCodePickList(controlCode);
+            }
+
+            if (!string.IsNullOrWhiteSpace(conditionType))
+            {
+                controlCondition.ConditionType = new ControlConditionPickList(conditionType);
+            }
+
+            var distanceToGage = GetNullableDouble(controlConditionColumn);
+
+            var unitId = GetString(controlConditionColumn.UnitId);
+
+            if (distanceToGage.HasValue)
+            {
+                controlCondition.DistanceToGage = new Measurement(distanceToGage.Value, unitId);
+            }
+
+            return controlCondition;
         }
 
         private bool? GetNullableBoolean(ColumnDefinition column)
