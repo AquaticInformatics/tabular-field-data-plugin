@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
 using Nett;
-using ServiceStack;
 
 namespace TabularCsv
 {
@@ -18,29 +14,12 @@ namespace TabularCsv
 
             var text = File.ReadAllText(path);
 
-            var survey = path.EndsWith(".toml", StringComparison.InvariantCultureIgnoreCase)
-                ? LoadFromToml(text)
-                : LoadFromJson(text);
+            var survey = LoadFromToml(text);
 
             if (survey == null || IsEmpty(survey))
                 return null;
 
-            // Ensure that the alias dictionary is case insensitive
-            survey.LocationAliases = new Dictionary<string, string>(survey.LocationAliases, StringComparer.InvariantCultureIgnoreCase);
-
             return survey;
-        }
-
-        private Survey LoadFromJson(string jsonText)
-        {
-            try
-            {
-                return jsonText.FromJson<Survey>();
-            }
-            catch (SerializationException)
-            {
-                return null;
-            }
         }
 
         private Survey LoadFromToml(string tomlText)
@@ -49,10 +28,6 @@ namespace TabularCsv
 
             try
             {
-                var x1 = Toml.ReadString<Survey>(@"[LocationColumn]
-ColumnHeader = 'fred'", settings);
-                var x2 = Toml.ReadString<Survey>("LocationColumn = 'fred'", settings);
-                var x3 = Toml.ReadString<Survey>("LocationColumn = { ColumnHeader = 'Thinger'}", settings);
                 return Toml.ReadString<Survey>(tomlText, settings);
             }
             catch (Exception)
@@ -68,49 +43,24 @@ ColumnHeader = 'fred'", settings);
                     .UseTargetPropertySelector(standardSelectors => standardSelectors.IgnoreCase))
                 .ConfigureType<PropertyDefinition>(type => type
                     .WithConversionFor<TomlString>(convert => convert
-                        .ToToml(ToToml)
-                        .FromToml(FromToml)))
+                        .FromToml(ConvertFixedValueShorthandSyntax)))
             );
 
             return settings;
         }
 
-        private string ToToml(PropertyDefinition propertyDefinition)
+        private PropertyDefinition ConvertFixedValueShorthandSyntax(ITomlRoot root, TomlString tomlString)
         {
-            if (!string.IsNullOrEmpty(propertyDefinition.FixedValue))
-                return $"\"{propertyDefinition.FixedValue}\"";
-
-            var builder = new StringBuilder("{");
-
-            if (propertyDefinition.ColumnIndex.HasValue)
-                builder.Append($" {nameof(propertyDefinition.ColumnIndex)} = {propertyDefinition.ColumnIndex}");
-
-            if (!string.IsNullOrEmpty(propertyDefinition.ColumnHeader))
-                builder.Append($" {nameof(propertyDefinition.ColumnHeader)} = \"{propertyDefinition.ColumnHeader}\"");
-
-            builder.Append(" }");
-
-            return builder.ToString();
-        }
-
-        private PropertyDefinition FromToml(ITomlRoot root, TomlString tomlString)
-        {
-            return tomlString.TomlType == TomlObjectType.String
-                ? new PropertyDefinition
-                {
-                    FixedValue = tomlString.Value
-                }
-                : new PropertyDefinition
-                {
-
-                };
+            return new PropertyDefinition
+            {
+                FixedValue = tomlString.Value
+            };
         }
 
         private static bool IsEmpty(Survey survey)
         {
             return survey.Name == null
                    && survey.LocationColumn == null
-                   && !survey.LocationAliases.Any()
                    && !survey.CommentColumns.Any()
                    && !survey.PartyColumns.Any()
                    && !survey.ReadingColumns.Any()
