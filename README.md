@@ -40,7 +40,6 @@ LOC2, 1988-Feb-8 15:10, -3.5
 Then this configuration description would parse those rows into air temperation field visit readings:
 ```toml
 Name = 'Air temp data file'
-FirstLineIsHeader = true
 
 [Location]
 ColumnHeader = 'The Location'
@@ -84,10 +83,16 @@ For AQTS 2020.2-and-newer, the configuration files can be stored as global setti
 
 This will be much more convienient for quick changes, since you will not require direct access to the app server's file system.
 
+### FieldVisitHotFolderService
+
+The Tabular plugin can be consumed by the [Field Visit Hot Folder Service](https://github.com/AquaticInformatics/aquarius-field-data-framework/tree/master/src/FieldVisitHotFolderService#field-visit-hot-folder-service), which executes plugins outside of AQTS, and only uploads new visit data parsed from the files.
+
+When executed from the FieldVisitHotFolderService, the Tabular plugin will look for configuration files in the `%ProgramData%\Aquatic Informatics\AQUARIUS Server\Configuration\TabularCSV` folder of the computer running the the FieldVisitHotFolderService.
+
 ## Do I need to restart the AQTS server when I make a configuration change?
 
 Nope!
 
-The parser configurations are reloaded, either from disk (in 2020.1-or-older) or from global settings (in 2020.2-or-newer), each time a CSV file is uploaded to Springboard for field visit parsing.
+Each time a new CSV file is parsed (because it was uploaded to Springboard or it was detected by the FieldVisitHotFolderService), all the configuration files will be reloaded.
 
-This design choice will aloow you to quickly make changes and try again, without disrupting your entire organization's workflow.
+This design choice will allow you to quickly make changes, save the updated configuration, and try again, without disrupting your entire organization's workflow.

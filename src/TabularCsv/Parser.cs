@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
+using System.Text.RegularExpressions;
 using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
@@ -32,7 +34,9 @@ namespace TabularCsv
         private Survey Survey { get; set; }
         private long LineNumber { get; set; }
         private string[] Fields { get; set; }
-        private Dictionary<string,int> HeaderMap { get; set; } = new Dictionary<string, int>();
+        private List<string> HeaderLines { get; } = new List<string>();
+        private Dictionary<string,string> HeaderRegexMatches { get; } = new Dictionary<string, string>();
+        private Dictionary<string,int> ColumnHeaderMap { get; set; } = new Dictionary<string, int>();
 
         public ParseFileResult Parse(Stream stream, LocationInfo locationInfo = null)
         {
@@ -70,17 +74,26 @@ namespace TabularCsv
 
         private ParseFileResult ParseSurvey(string csvText)
         {
-            var validator = new SurveyValidator {Survey = Survey};
+            var validator = new SurveyValidator
+            {
+                Survey = Survey
+            };
 
-            var lineCount = 0;
+            var (headerLines, dataRowReader) = ExtractHeaderLines(csvText);
 
-            using (var reader = new StringReader(csvText))
+            HeaderLines.AddRange(headerLines);
+
+            BuildHeaderRegex();
+
+            var dataRowCount = 0;
+
+            using (var reader = dataRowReader)
             {
                 var rowParser = GetCsvParser(reader);
 
-                for (; !rowParser.EndOfData; ++lineCount)
+                while(!rowParser.EndOfData)
                 {
-                    LineNumber = rowParser.LineNumber;
+                    LineNumber = HeaderLines.Count + rowParser.LineNumber;
 
                     try
                     {
@@ -88,7 +101,7 @@ namespace TabularCsv
                     }
                     catch (Exception)
                     {
-                        if (lineCount == 0)
+                        if (dataRowCount == 0)
                         {
                             // We'll hit this when the plugin tries to parse a text file that is not CSV, like a JSON document.
                             return ParseFileResult.CannotParse();
@@ -97,11 +110,11 @@ namespace TabularCsv
 
                     if (Fields == null) continue;
 
-                    if (lineCount == 0 && Survey.FirstLineIsHeader)
+                    if (dataRowCount == 0 && Survey.IsHeaderRowRequired)
                     {
                         try
                         {
-                            HeaderMap = validator.BuildHeaderMap(Fields);
+                            ColumnHeaderMap = validator.BuildColumnHeaderHeaderMap(Fields);
                             continue;
                         }
                         catch (Exception exception)
@@ -116,7 +129,7 @@ namespace TabularCsv
                             else
                             {
                                 // Some of the headers matched, so log a warning before returning CannotParse.
-                                // This might be the only hint in the log that the survey configuration JSON is incorrect.
+                                // This might be the only hint in the log that the survey configuration is incorrect.
                                 Log.Info($"Partial headers detected: {exception.Message}");
                             }
 
@@ -134,6 +147,8 @@ namespace TabularCsv
 
                         Log.Error($"Ignoring invalid CSV row: {exception.Message}");
                     }
+
+                    ++dataRowCount;
                 }
 
                 return ParseFileResult.SuccessfullyParsedAndDataValid();
@@ -152,6 +167,44 @@ namespace TabularCsv
             return rowParser;
         }
 
+        private (IEnumerable<string> HeaderLines, StringReader RowReader) ExtractHeaderLines(string csvText)
+        {
+            var headerLines = new List<string>();
+
+            if (!Survey.IsHeaderSectionExpected)
+                return (headerLines, new StringReader(csvText));
+
+            using (var reader = new StringReader(csvText))
+            {
+                var rowParser = GetCsvParser(reader);
+
+                while (!rowParser.EndOfData)
+                {
+                    var line = rowParser.ReadLine() ?? string.Empty;
+
+                    if (!string.IsNullOrEmpty(Survey.HeadersEndBefore) && line.StartsWith(Survey.HeadersEndBefore))
+                    {
+                        // This line needs to be included in the start of the data section
+                        var builder = new StringBuilder(line);
+                        builder.AppendLine();
+                        builder.Append(reader.ReadToEnd());
+
+                        return (headerLines, new StringReader(builder.ToString()));
+                    }
+
+                    headerLines.Add(line);
+
+                    if (Survey.HeaderRowCount > 0 && headerLines.Count >= Survey.HeaderRowCount)
+                        break;
+
+                    if (string.IsNullOrEmpty(Survey.HeadersEndWith) && line.StartsWith(Survey.HeadersEndWith))
+                        break;
+                }
+
+                return (headerLines, new StringReader(reader.ReadToEnd()));
+            }
+        }
+
         private string ReadTextFromStream(Stream stream)
         {
             try
@@ -164,6 +217,24 @@ namespace TabularCsv
             catch (Exception)
             {
                 return null;
+            }
+        }
+
+        private void BuildHeaderRegex()
+        {
+            var regexColumns = Survey
+                .GetColumnDefinitions()
+                .Where(column => column.HasHeaderRegex)
+                .ToList();
+
+            foreach (var regexColumn in regexColumns)
+            {
+                var regex = new Regex(regexColumn.HeaderRegex);
+
+                foreach (var match in HeaderLines.Select(headerLine => regex.Match(headerLine)).Where(match => match.Success))
+                {
+                    HeaderRegexMatches[regexColumn.HeaderRegex] = match.Groups[ColumnDefinition.RegexCaptureGroupName].Value;
+                }
             }
         }
 
@@ -764,11 +835,16 @@ namespace TabularCsv
 
         private string GetColumnValue(ColumnDefinition column)
         {
-            if (!string.IsNullOrEmpty(column.FixedValue))
+            if (column.HasHeaderRegex)
+                return HeaderRegexMatches.TryGetValue(column.HeaderRegex, out var value)
+                    ? value
+                    : null;
+
+            if (column.HasFixedValue)
                 return column.FixedValue;
 
-            var fieldIndex = column.RequiresHeader()
-                ? HeaderMap[column.ColumnHeader]
+            var fieldIndex = column.RequiresColumnHeader()
+                ? ColumnHeaderMap[column.ColumnHeader]
                 : column.ColumnIndex ?? 0;
 
             if (fieldIndex <= 0 || fieldIndex > Fields.Length)
