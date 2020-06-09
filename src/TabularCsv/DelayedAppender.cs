@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
+using FieldDataPluginFramework.DataModel.Calibrations;
 using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.CrossSection;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
@@ -130,20 +131,7 @@ namespace TabularCsv
 
         public void AddReading(FieldVisitInfo fieldVisit, Reading reading)
         {
-            if (fieldVisit.Readings.Any(r => AreEquivalent(r, reading)))
-                return;
-
             fieldVisit.Readings.Add(reading);
-        }
-
-        private static bool AreEquivalent(Reading r1, Reading r2)
-        {
-            return r1.DateTimeOffset == r2.DateTimeOffset
-                   && r1.ParameterId == r2.ParameterId
-                   && r1.Measurement.UnitId == r2.Measurement.UnitId
-                   // ReSharper disable once CompareOfFloatsByEqualityOperator
-                   && r1.Measurement.Value == r2.Measurement.Value
-                   && r1.ReadingType == r2.ReadingType;
         }
 
         public void AddCrossSectionSurvey(FieldVisitInfo fieldVisit, CrossSectionSurvey crossSectionSurvey)
@@ -164,6 +152,11 @@ namespace TabularCsv
         public void AddInspection(FieldVisitInfo fieldVisit, Inspection inspection)
         {
             fieldVisit.Inspections.Add(inspection);
+        }
+
+        public void AddCalibration(FieldVisitInfo fieldVisit, Calibration calibration)
+        {
+            fieldVisit.Calibrations.Add(calibration);
         }
     }
 }

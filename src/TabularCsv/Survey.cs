@@ -13,6 +13,7 @@ namespace TabularCsv
         public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
         public List<ReadingColumnDefinition> ReadingColumns { get; set; } = new List<ReadingColumnDefinition>();
         public List<InspectionColumnDefinition> InspectionColumns { get; set; } = new List<InspectionColumnDefinition>();
+        public List<CalibrationColumnDefinition> CalibrationColumns { get; set; } = new List<CalibrationColumnDefinition>();
 
         public List<ColumnDefinition> GetColumnDefinitions()
         {
@@ -21,6 +22,7 @@ namespace TabularCsv
             var partyColumns = PartyColumns ?? new List<MergingTextColumnDefinition>();
             var readingColumns = ReadingColumns ?? new List<ReadingColumnDefinition>();
             var inspectionColumns = InspectionColumns ?? new List<InspectionColumnDefinition>();
+            var calibrationColumns = CalibrationColumns ?? new List<CalibrationColumnDefinition>();
 
             return new[]
                 {
@@ -34,6 +36,8 @@ namespace TabularCsv
                 .Concat(readingColumns.SelectMany(rc => rc.GetColumnDefinitions()))
                 .Concat(inspectionColumns)
                 .Concat(inspectionColumns.SelectMany(rc => rc.GetColumnDefinitions()))
+                .Concat(calibrationColumns)
+                .Concat(calibrationColumns.SelectMany(rc => rc.GetColumnDefinitions()))
                 .Where(columnDefinition => columnDefinition != null)
                 .ToList();
         }
@@ -178,6 +182,50 @@ namespace TabularCsv
                     MeasurementDeviceModel,
                     MeasurementDeviceSerialNumber,
                     SubLocation,
+                });
+        }
+    }
+
+    public class CalibrationColumnDefinition : ActivityColumnDefinition
+    {
+        public PropertyDefinition ParameterId { get; set; }
+        public PropertyDefinition UnitId { get; set; }
+        public PropertyDefinition Comments { get; set; }
+        public PropertyDefinition CalibrationType { get; set; }
+        public PropertyDefinition Method { get; set; }
+        public PropertyDefinition Publish { get; set; }
+        public PropertyDefinition SensorUniqueId { get; set; }
+        public PropertyDefinition SubLocation { get; set; }
+        public PropertyDefinition Standard { get; set; }
+        public PropertyDefinition MeasurementDeviceManufacturer { get; set; }
+        public PropertyDefinition MeasurementDeviceModel { get; set; }
+        public PropertyDefinition MeasurementDeviceSerialNumber { get; set; }
+        public PropertyDefinition StandardDetailsLotNumber { get; set; }
+        public PropertyDefinition StandardDetailsStandardCode { get; set; }
+        public TimestampColumnDefinition StandardDetailsExpirationDate { get; set; }
+        public PropertyDefinition StandardDetailsTemperature { get; set; }
+
+        public override IEnumerable<ColumnDefinition> GetColumnDefinitions()
+        {
+            return base.GetColumnDefinitions()
+                .Concat(new ColumnDefinition[]
+                {
+                    ParameterId,
+                    UnitId,
+                    Comments,
+                    CalibrationType,
+                    StandardDetailsLotNumber,
+                    StandardDetailsStandardCode,
+                    StandardDetailsExpirationDate,
+                    StandardDetailsTemperature,
+                    MeasurementDeviceManufacturer,
+                    MeasurementDeviceModel,
+                    MeasurementDeviceSerialNumber,
+                    Method,
+                    Publish,
+                    SubLocation,
+                    SensorUniqueId,
+                    Standard,
                 });
         }
     }

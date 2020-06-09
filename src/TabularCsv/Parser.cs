@@ -6,6 +6,7 @@ using System.Linq;
 using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
+using FieldDataPluginFramework.DataModel.Calibrations;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
 using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.PickLists;
@@ -225,22 +226,33 @@ namespace TabularCsv
             var readings = Survey
                 .ReadingColumns
                 .Select(r => ParseReading(locationInfo, r))
-                .Where(r => r != null)
-                .Select(r =>
+                .Where(reading => reading != null)
+                .Select(reading =>
                 {
-                    r.DateTimeOffset = r.DateTimeOffset ?? timestamp;
-                    return r;
+                    reading.DateTimeOffset = reading.DateTimeOffset ?? timestamp;
+                    return reading;
                 })
                 .ToList();
 
             var inspections = Survey
                 .InspectionColumns
                 .Select(i => ParseInspection(locationInfo, i))
-                .Where(i => i != null)
-                .Select(i =>
+                .Where(inspection => inspection != null)
+                .Select(inspection =>
                 {
-                    i.DateTimeOffset = i.DateTimeOffset ?? timestamp;
-                    return i;
+                    inspection.DateTimeOffset = inspection.DateTimeOffset ?? timestamp;
+                    return inspection;
+                })
+                .ToList();
+
+            var calibrations = Survey
+                .CalibrationColumns
+                .Select(c => ParseCalibration(locationInfo, c))
+                .Where(calibration => calibration != null)
+                .Select(calibration =>
+                {
+                    calibration.DateTimeOffset = calibration.DateTimeOffset ?? timestamp;
+                    return calibration;
                 })
                 .ToList();
 
@@ -259,6 +271,11 @@ namespace TabularCsv
             foreach (var inspection in inspections)
             {
                 ResultsAppender.AddInspection(fieldVisitInfo, inspection);
+            }
+
+            foreach (var calibration in calibrations)
+            {
+                ResultsAppender.AddCalibration(fieldVisitInfo, calibration);
             }
         }
 
@@ -465,7 +482,6 @@ namespace TabularCsv
             return reading;
         }
 
-
         private Inspection ParseInspection(LocationInfo locationInfo, InspectionColumnDefinition inspectionColumn)
         {
             var inspectionType = GetNullableEnum<InspectionType>(inspectionColumn);
@@ -502,6 +518,87 @@ namespace TabularCsv
             }
 
             return inspection;
+        }
+
+        private Calibration ParseCalibration(LocationInfo locationInfo, CalibrationColumnDefinition calibrationColumn)
+        {
+            var valueText = GetString(calibrationColumn);
+
+            if (string.IsNullOrWhiteSpace(valueText))
+                return null;
+
+            DateTimeOffset? readingTime = null;
+
+            if (calibrationColumn.TimestampColumns?.Any() ?? false)
+            {
+                readingTime = ParseTimestamp(locationInfo, calibrationColumn.TimestampColumns);
+            }
+
+            var calibrationValue = GetNullableDouble(calibrationColumn);
+
+            if (!calibrationValue.HasValue)
+                throw new InvalidOperationException("Should never happen");
+
+            var calibration = new Calibration(
+                GetString(calibrationColumn.ParameterId),
+                GetString(calibrationColumn.UnitId),
+                calibrationValue.Value);
+
+            calibration.DateTimeOffset = readingTime;
+            calibration.Comments = GetString(calibrationColumn.Comments);
+            calibration.SubLocation = GetString(calibrationColumn.SubLocation);
+            calibration.SensorUniqueId = GetNullableGuid(calibrationColumn.SensorUniqueId);
+            calibration.Standard = GetNullableDouble(calibrationColumn.Standard);
+
+            var calibrationType = GetNullableEnum<CalibrationType>(calibrationColumn.CalibrationType);
+
+            if (calibrationType.HasValue)
+                calibration.CalibrationType = calibrationType.Value;
+
+            var publish = GetNullableBoolean(calibrationColumn.Publish);
+
+            var method = GetString(calibrationColumn.Method);
+
+            if (!string.IsNullOrWhiteSpace(method))
+                calibration.Method = method;
+
+            if (publish.HasValue)
+                calibration.Publish = publish.Value;
+
+            var measurementDeviceManufacturer = GetString(calibrationColumn.MeasurementDeviceManufacturer);
+            var measurementDeviceModel = GetString(calibrationColumn.MeasurementDeviceModel);
+            var measurementDeviceSerialNumber = GetString(calibrationColumn.MeasurementDeviceSerialNumber);
+
+            if (!string.IsNullOrEmpty(measurementDeviceManufacturer)
+                || !string.IsNullOrEmpty(measurementDeviceModel)
+                || !string.IsNullOrEmpty(measurementDeviceSerialNumber))
+            {
+                calibration.MeasurementDevice = new MeasurementDevice(
+                    measurementDeviceManufacturer,
+                    measurementDeviceModel,
+                    measurementDeviceSerialNumber);
+            }
+
+            DateTimeOffset? expirationDate = null;
+
+            if (calibrationColumn.StandardDetailsExpirationDate != null)
+            {
+                expirationDate = ParseTimestamp(locationInfo,
+                    new List<TimestampColumnDefinition>
+                    {
+                        calibrationColumn.StandardDetailsExpirationDate
+                    });
+            }
+
+            calibration.StandardDetails = new StandardDetails
+            {
+                LotNumber = GetString(calibrationColumn.StandardDetailsLotNumber),
+                StandardCode = GetString(calibrationColumn.StandardDetailsStandardCode),
+                ExpirationDate = expirationDate,
+                Temperature = GetNullableDouble(calibrationColumn.StandardDetailsTemperature),
+            };
+
+            return calibration;
         }
 
         private bool? GetNullableBoolean(ColumnDefinition column)
