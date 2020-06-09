@@ -192,6 +192,7 @@ namespace TabularCsv
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
         public PropertyDefinition Comments { get; set; }
+        public PropertyDefinition Party { get; set; }
         public PropertyDefinition CalibrationType { get; set; }
         public PropertyDefinition Method { get; set; }
         public PropertyDefinition Publish { get; set; }
@@ -214,6 +215,7 @@ namespace TabularCsv
                     ParameterId,
                     UnitId,
                     Comments,
+                    Party,
                     CalibrationType,
                     StandardDetailsLotNumber,
                     StandardDetailsStandardCode,

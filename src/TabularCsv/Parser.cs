@@ -547,6 +547,7 @@ namespace TabularCsv
 
             calibration.DateTimeOffset = readingTime;
             calibration.Comments = GetString(calibrationColumn.Comments);
+            calibration.Party = GetString(calibrationColumn.Party);
             calibration.SubLocation = GetString(calibrationColumn.SubLocation);
             calibration.SensorUniqueId = GetNullableGuid(calibrationColumn.SensorUniqueId);
             calibration.Standard = GetNullableDouble(calibrationColumn.Standard);
