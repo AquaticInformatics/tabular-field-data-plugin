@@ -182,6 +182,7 @@ namespace TabularCsv
                 .GetFiles("*.toml")
                 .Select(fi => surveyLoader.Load(fi.FullName))
                 .Where(s => s != null)
+                .OrderBy(s => s.Priority)
                 .ToList();
 
             if (!surveys.Any())

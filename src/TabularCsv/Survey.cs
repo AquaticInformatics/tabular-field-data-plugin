@@ -6,6 +6,7 @@ namespace TabularCsv
     public class Survey
     {
         public string Name { get; set; }
+        public int Priority { get; set; }
         public bool FirstLineIsHeader { get; set; }
         public PropertyDefinition LocationColumn { get; set; }
         public List<MergingTextColumnDefinition> CommentColumns { get; set; } = new List<MergingTextColumnDefinition>();
