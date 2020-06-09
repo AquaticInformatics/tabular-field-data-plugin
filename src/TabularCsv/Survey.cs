@@ -8,27 +8,31 @@ namespace TabularCsv
         public string Name { get; set; }
         public int Priority { get; set; }
         public bool FirstLineIsHeader { get; set; }
-        public PropertyDefinition LocationColumn { get; set; }
-        public List<MergingTextColumnDefinition> CommentColumns { get; set; } = new List<MergingTextColumnDefinition>();
-        public List<MergingTextColumnDefinition> PartyColumns { get; set; } = new List<MergingTextColumnDefinition>();
+        public PropertyDefinition Location { get; set; }
+        public PropertyDefinition Weather { get; set; }
+        public PropertyDefinition CollectionAgency { get; set; }
+        public List<MergingTextColumnDefinition> Comments { get; set; } = new List<MergingTextColumnDefinition>();
+        public List<MergingTextColumnDefinition> Party { get; set; } = new List<MergingTextColumnDefinition>();
         public List<TimestampColumnDefinition> TimestampColumns { get; set; } = new List<TimestampColumnDefinition>();
-        public List<ReadingColumnDefinition> ReadingColumns { get; set; } = new List<ReadingColumnDefinition>();
-        public List<InspectionColumnDefinition> InspectionColumns { get; set; } = new List<InspectionColumnDefinition>();
-        public List<CalibrationColumnDefinition> CalibrationColumns { get; set; } = new List<CalibrationColumnDefinition>();
+        public List<ReadingColumnDefinition> Readings { get; set; } = new List<ReadingColumnDefinition>();
+        public List<InspectionColumnDefinition> Inspections { get; set; } = new List<InspectionColumnDefinition>();
+        public List<CalibrationColumnDefinition> Calibrations { get; set; } = new List<CalibrationColumnDefinition>();
         public ControlConditionColumnDefinition ControlCondition { get; set; }
 
         public List<ColumnDefinition> GetColumnDefinitions()
         {
             var timestampColumns = TimestampColumns ?? new List<TimestampColumnDefinition>();
-            var commentColumns = CommentColumns ?? new List<MergingTextColumnDefinition>();
-            var partyColumns = PartyColumns ?? new List<MergingTextColumnDefinition>();
-            var readingColumns = ReadingColumns ?? new List<ReadingColumnDefinition>();
-            var inspectionColumns = InspectionColumns ?? new List<InspectionColumnDefinition>();
-            var calibrationColumns = CalibrationColumns ?? new List<CalibrationColumnDefinition>();
+            var commentColumns = Comments ?? new List<MergingTextColumnDefinition>();
+            var partyColumns = Party ?? new List<MergingTextColumnDefinition>();
+            var readingColumns = Readings ?? new List<ReadingColumnDefinition>();
+            var inspectionColumns = Inspections ?? new List<InspectionColumnDefinition>();
+            var calibrationColumns = Calibrations ?? new List<CalibrationColumnDefinition>();
 
-            return new[]
+            return new ColumnDefinition[]
                 {
-                    (ColumnDefinition)LocationColumn
+                    Location,
+                    Weather,
+                    CollectionAgency,
                 }
                 .Concat(timestampColumns)
                 .Concat(timestampColumns.SelectMany(tc => tc.GetColumnDefinitions()))

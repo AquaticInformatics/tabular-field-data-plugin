@@ -193,7 +193,7 @@ namespace TabularCsv
             }
 
             surveys = surveys
-                .Where(s => LocationInfo != null || s.LocationColumn != null)
+                .Where(s => LocationInfo != null || s.Location != null)
                 .ToList();
 
             foreach (var survey in surveys)
@@ -218,15 +218,15 @@ namespace TabularCsv
 
         private void ParseRow()
         {
-            var locationIdentifier = GetString(Survey.LocationColumn);
+            var locationIdentifier = GetString(Survey.Location);
 
             var locationInfo = LocationInfo ?? ResultsAppender.GetLocationByIdentifier(locationIdentifier);
-            var comments = MergeTextColumns(Survey.CommentColumns);
-            var party = MergeTextColumns(Survey.PartyColumns);
+            var comments = MergeTextColumns(Survey.Comments);
+            var party = MergeTextColumns(Survey.Party);
             var timestamp = ParseTimestamp(locationInfo, Survey.TimestampColumns);
 
             var readings = Survey
-                .ReadingColumns
+                .Readings
                 .Select(r => ParseReading(locationInfo, r))
                 .Where(reading => reading != null)
                 .Select(reading =>
@@ -237,7 +237,7 @@ namespace TabularCsv
                 .ToList();
 
             var inspections = Survey
-                .InspectionColumns
+                .Inspections
                 .Select(i => ParseInspection(locationInfo, i))
                 .Where(inspection => inspection != null)
                 .Select(inspection =>
@@ -248,7 +248,7 @@ namespace TabularCsv
                 .ToList();
 
             var calibrations = Survey
-                .CalibrationColumns
+                .Calibrations
                 .Select(c => ParseCalibration(locationInfo, c))
                 .Where(calibration => calibration != null)
                 .Select(calibration =>
@@ -264,7 +264,9 @@ namespace TabularCsv
                 new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
                 {
                     Comments = comments,
-                    Party = party
+                    Party = party,
+                    CollectionAgency = GetString(Survey.CollectionAgency),
+                    Weather = GetString(Survey.Weather),
                 });
 
             foreach (var reading in readings)
