@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using FieldDataPluginFramework.Context;
 using Humanizer;
 
@@ -20,11 +19,17 @@ namespace TabularCsv
             var columnDefinitions = Survey.GetColumnDefinitions();
 
             var invalidColumns = columnDefinitions
-                .Where(column => column.IsInvalid())
+                .Where(column => column.IsInvalid(out _))
                 .ToList();
 
+            string ShowInvalidColumn(ColumnDefinition column)
+            {
+                column.IsInvalid(out var validationMessage);
+                return $"{column.Name()}: {validationMessage}";
+            }
+
             if (invalidColumns.Any())
-                ThrowConfigurationException($"{"invalid column definitions".ToQuantity(invalidColumns.Count)}:\n{string.Join("\n", invalidColumns.Select(c => c.Name()))}");
+                ThrowConfigurationException($"{"invalid column definitions".ToQuantity(invalidColumns.Count)}:\n{string.Join("\n", invalidColumns.Select(ShowInvalidColumn))}");
 
             var headerColumns = columnDefinitions
                 .Where(column => column.RequiresColumnHeader())

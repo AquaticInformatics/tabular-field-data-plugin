@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 
 namespace TabularCsv
@@ -40,38 +42,107 @@ namespace TabularCsv
         public bool IsHeaderRowRequired => FirstDataRowIsColumnHeader
                                            || GetColumnDefinitions().Any(c => c.RequiresColumnHeader());
 
+        private List<ColumnDefinition> ColumnDefinitions { get; set; }
+
         public List<ColumnDefinition> GetColumnDefinitions()
         {
-            var timestampColumns = Timestamps ?? new List<TimestampColumnDefinition>();
-            var commentColumns = Comments ?? new List<MergingTextColumnDefinition>();
-            var partyColumns = Party ?? new List<MergingTextColumnDefinition>();
-            var readingColumns = Readings ?? new List<ReadingColumnDefinition>();
-            var inspectionColumns = Inspections ?? new List<InspectionColumnDefinition>();
-            var calibrationColumns = Calibrations ?? new List<CalibrationColumnDefinition>();
+            if (ColumnDefinitions == null)
+            {
+                ColumnDefinitions = ColumnDecorator.GetNamedColumns(this);
+            }
 
-            return new ColumnDefinition[]
+            return ColumnDefinitions;
+        }
+    }
+
+    public static class ColumnDecorator
+    {
+        public static List<ColumnDefinition> GetNamedColumns(object item, string baseName = "")
+        {
+            var columnDefinitions = new List<ColumnDefinition>();
+
+            if (item == null)
+                return columnDefinitions;
+
+            if (item is ColumnDefinition itemDefinition)
+            {
+                columnDefinitions.Add(itemDefinition);
+                itemDefinition.SetNamePrefix(baseName);
+            }
+
+            var type = item.GetType();
+            var baseColumnType = typeof(ColumnDefinition);
+            var baseListType = typeof(List<>);
+            var propertyDefinitionType = typeof(PropertyDefinition);
+
+            void AddNamedColumn(ColumnDefinition column, string propertyName)
+            {
+                var columnPropertyType = column.GetType();
+
+                if (propertyDefinitionType.IsAssignableFrom(columnPropertyType))
                 {
-                    Location,
-                    Weather,
-                    CollectionAgency,
-                    CompletedGroundWaterLevels,
-                    CompletedLevelSurvey,
-                    CompletedRecorderData,
-                    CompletedSafetyInspection,
-                    CompletedOtherSample,
-                    CompletedBiologicalSample,
-                    CompletedSedimentSample,
-                    CompletedWaterQualitySample,
-                    ControlCondition,
+                    columnDefinitions.Add(column);
+                    column.SetNamePrefix($"{baseName}.{propertyName}");
                 }
-                .Concat(commentColumns)
-                .Concat(partyColumns)
-                .Concat(timestampColumns.SelectMany(tc => tc.GetColumnDefinitions()))
-                .Concat(readingColumns.SelectMany(rc => rc.GetColumnDefinitions()))
-                .Concat(inspectionColumns.SelectMany(rc => rc.GetColumnDefinitions()))
-                .Concat(calibrationColumns.SelectMany(rc => rc.GetColumnDefinitions()))
-                .Where(columnDefinition => columnDefinition != null)
+                else
+                {
+                    columnDefinitions.AddRange(GetNamedColumns(column, $"{baseName}.{propertyName}"));
+                }
+            }
+
+            var candidateProperties = type
+                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+                .Where(p => p.CanRead && p.CanWrite)
                 .ToList();
+
+            var columnProperties = candidateProperties
+                .Where(p => baseColumnType.IsAssignableFrom(p.PropertyType))
+                .ToList();
+
+            foreach (var columnProperty in columnProperties)
+            {
+                var getMethod = columnProperty.GetGetMethod(false);
+
+                if (getMethod == null)
+                    continue;
+
+                var column = getMethod.Invoke(item, null) as ColumnDefinition;
+
+                if (column == null)
+                    continue;
+
+                AddNamedColumn(column, columnProperty.Name);
+            }
+
+            var columnCollectionProperties = candidateProperties
+                .Where(p => p.PropertyType.IsGenericType && baseListType == p.PropertyType.GetGenericTypeDefinition())
+                .ToList();
+
+            foreach (var columnCollectionProperty in columnCollectionProperties)
+            {
+                var getMethod = columnCollectionProperty.GetGetMethod(false);
+
+                if (getMethod == null)
+                    continue;
+
+                var list = getMethod.Invoke(item, null) as IEnumerable;
+
+                if (list == null)
+                    continue;
+
+                var index = 1;
+                foreach (var listItem in list)
+                {
+                    if (listItem is ColumnDefinition column)
+                    {
+                        AddNamedColumn(column, $"{columnCollectionProperty.Name}[{index}]");
+                    }
+
+                    ++index;
+                }
+            }
+
+            return columnDefinitions;
         }
     }
 
@@ -87,6 +158,17 @@ namespace TabularCsv
         public string ColumnHeader { get; set; }
         public string FixedValue { get; set; }
         public string HeaderRegex { get; set; }
+        private string NamePrefix { get; set; }
+
+        public void SetNamePrefix(string namePrefix)
+        {
+            if (namePrefix?.StartsWith(".") ?? false)
+            {
+                namePrefix = namePrefix.Substring(1);
+            }
+
+            NamePrefix = namePrefix;
+        }
 
         public bool RequiresColumnHeader()
         {
@@ -100,34 +182,50 @@ namespace TabularCsv
         public bool HasIndexedColumn => ColumnIndex.HasValue;
         public bool HasHeaderRegex => !string.IsNullOrEmpty(HeaderRegex);
 
-        public bool IsInvalid()
+        public bool IsInvalid(out string validationMessage)
         {
+            validationMessage = null;
+
             if (HasHeaderRegex)
             {
                 var regex = new Regex(HeaderRegex);
 
                 if (!regex.GetGroupNames().Contains(RegexCaptureGroupName))
+                {
+                    validationMessage = $"A named capture group is missing. Use something like: (?<{RegexCaptureGroupName}>PATTERN)";
                     return true;
+                }
             }
 
-            var count = HasFixedValue ? 1 : 0;
-            count += HasNamedColumn ? 1 : 0;
-            count += HasIndexedColumn ? 1 : 0;
-            count += HasHeaderRegex ? 1 : 0;
+            var setProperties = new[]
+                {
+                    HasFixedValue ? nameof(FixedValue) : null,
+                    HasHeaderRegex ? nameof(HeaderRegex) : null,
+                    HasNamedColumn ? nameof(ColumnHeader) : null,
+                    HasIndexedColumn ? nameof(ColumnIndex) : null,
+                }
+                .Where(s => !string.IsNullOrEmpty(s))
+                .ToList();
 
-            return count != 1;
+            if (setProperties.Count != 1)
+            {
+                var allProperties = new[]
+                {
+                    nameof(ColumnHeader),
+                    nameof(ColumnIndex),
+                    nameof(FixedValue),
+                    nameof(HeaderRegex),
+                };
+
+                validationMessage = $"Only one of {string.Join(", ", allProperties)} can be set. You have set {setProperties.Count} properties: {string.Join(", ", setProperties)}";
+                return true;
+            }
+
+            return false;
         }
 
         public string Name()
         {
-            // ReSharper disable once PossibleNullReferenceException
-            var prefix = GetType()
-                .FullName
-                .Replace($"{nameof(TabularCsv)}.", string.Empty)
-                // ReSharper disable once AssignNullToNotNullAttribute
-                .Replace(typeof(Survey).FullName, string.Empty)
-                .Replace(nameof(ColumnDefinition), string.Empty);
-
             var suffix = RequiresColumnHeader()
                 ? $"ColumnHeader='{ColumnHeader}'"
                 : HasFixedValue
@@ -138,7 +236,7 @@ namespace TabularCsv
                             ? $"ColumnIndex[{ColumnIndex}]"
                             : "NoContextSpecified";
 
-            return $"{prefix}.{suffix}";
+            return $"{NamePrefix}.{suffix}";
         }
     }
 
@@ -166,18 +264,6 @@ namespace TabularCsv
     public abstract class ActivityColumnDefinition : ColumnDefinition
     {
         public List<TimestampColumnDefinition> Timestamps { get; set; } = new List<TimestampColumnDefinition>();
-
-        public virtual IEnumerable<ColumnDefinition> GetColumnDefinitions()
-        {
-            var timestampColumns = Timestamps ?? new List<TimestampColumnDefinition>();
-
-            return new ColumnDefinition[]
-                {
-                    this,
-                }
-                .Concat(timestampColumns)
-                .Concat(timestampColumns.SelectMany(tc => tc.GetColumnDefinitions()));
-        }
     }
 
     public class ReadingColumnDefinition : ActivityColumnDefinition
@@ -205,36 +291,6 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDetailsHold { get; set; }
         public PropertyDefinition MeasurementDetailsTapeCorrection { get; set; }
         public PropertyDefinition MeasurementDetailsWaterLevel { get; set; }
-
-        public override IEnumerable<ColumnDefinition> GetColumnDefinitions()
-        {
-            return base.GetColumnDefinitions()
-                .Concat(new ColumnDefinition[]
-                {
-                    ParameterId,
-                    UnitId,
-                    ReadingType,
-                    Comments,
-                    GradeCode,
-                    GradeName,
-                    MeasurementDetailsCut,
-                    MeasurementDetailsHold,
-                    MeasurementDetailsTapeCorrection,
-                    MeasurementDetailsWaterLevel,
-                    MeasurementDeviceManufacturer,
-                    MeasurementDeviceModel,
-                    MeasurementDeviceSerialNumber,
-                    Method,
-                    Publish,
-                    ReadingQualifiers,
-                    ReadingQualifierSeparators,
-                    ReferencePointName,
-                    SubLocation,
-                    SensorUniqueId,
-                    Uncertainty,
-                    UseLocationDatumAsReference,
-                });
-        }
     }
 
     public class InspectionColumnDefinition : ActivityColumnDefinition
@@ -244,19 +300,6 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDeviceManufacturer { get; set; }
         public PropertyDefinition MeasurementDeviceModel { get; set; }
         public PropertyDefinition MeasurementDeviceSerialNumber { get; set; }
-
-        public override IEnumerable<ColumnDefinition> GetColumnDefinitions()
-        {
-            return base.GetColumnDefinitions()
-                .Concat(new ColumnDefinition[]
-                {
-                    Comments,
-                    MeasurementDeviceManufacturer,
-                    MeasurementDeviceModel,
-                    MeasurementDeviceSerialNumber,
-                    SubLocation,
-                });
-        }
     }
 
     public class CalibrationColumnDefinition : ActivityColumnDefinition
@@ -278,31 +321,6 @@ namespace TabularCsv
         public PropertyDefinition StandardDetailsStandardCode { get; set; }
         public TimestampColumnDefinition StandardDetailsExpirationDate { get; set; }
         public PropertyDefinition StandardDetailsTemperature { get; set; }
-
-        public override IEnumerable<ColumnDefinition> GetColumnDefinitions()
-        {
-            return base.GetColumnDefinitions()
-                .Concat(new ColumnDefinition[]
-                {
-                    ParameterId,
-                    UnitId,
-                    Comments,
-                    Party,
-                    CalibrationType,
-                    StandardDetailsLotNumber,
-                    StandardDetailsStandardCode,
-                    StandardDetailsExpirationDate,
-                    StandardDetailsTemperature,
-                    MeasurementDeviceManufacturer,
-                    MeasurementDeviceModel,
-                    MeasurementDeviceSerialNumber,
-                    Method,
-                    Publish,
-                    SubLocation,
-                    SensorUniqueId,
-                    Standard,
-                });
-        }
     }
 
     public class ControlConditionColumnDefinition : ActivityColumnDefinition
@@ -313,20 +331,6 @@ namespace TabularCsv
         public PropertyDefinition ControlCleanedType { get; set; }
         public PropertyDefinition ControlCode { get; set; }
         public PropertyDefinition ConditionType { get; set; }
-
-        public override IEnumerable<ColumnDefinition> GetColumnDefinitions()
-        {
-            return base.GetColumnDefinitions()
-                .Concat(new ColumnDefinition[]
-                {
-                    UnitId,
-                    Comments,
-                    Party,
-                    ControlCleanedType,
-                    ControlCode,
-                    ConditionType,
-                });
-        }
     }
 
     public enum TimestampType
