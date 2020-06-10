@@ -28,13 +28,15 @@ namespace TabularCsv
         public PropertyDefinition CompletedBiologicalSample { get; set; }
         public PropertyDefinition CompletedSedimentSample { get; set; }
         public PropertyDefinition CompletedWaterQualitySample { get; set; }
-        public List<MergingTextColumnDefinition> Comments { get; set; } = new List<MergingTextColumnDefinition>();
-        public List<MergingTextColumnDefinition> Party { get; set; } = new List<MergingTextColumnDefinition>();
-        public List<TimestampColumnDefinition> Timestamps { get; set; } = new List<TimestampColumnDefinition>();
+        public List<MergingTextDefinition> Comments { get; set; } = new List<MergingTextDefinition>();
+        public List<MergingTextDefinition> Party { get; set; } = new List<MergingTextDefinition>();
+        public List<TimestampDefinition> Timestamps { get; set; } = new List<TimestampDefinition>();
 
-        public List<ReadingColumnDefinition> Readings { get; set; } = new List<ReadingColumnDefinition>();
-        public List<InspectionColumnDefinition> Inspections { get; set; } = new List<InspectionColumnDefinition>();
-        public List<CalibrationColumnDefinition> Calibrations { get; set; } = new List<CalibrationColumnDefinition>();
+        public List<ReadingDefinition> Readings { get; set; } = new List<ReadingDefinition>();
+        public List<InspectionDefinition> Inspections { get; set; } = new List<InspectionDefinition>();
+        public List<CalibrationDefinition> Calibrations { get; set; } = new List<CalibrationDefinition>();
+        public List<AdcpDischargeDefinition> AdcpDischarges { get; set; } = new List<AdcpDischargeDefinition>();
+        public List<ManualGaugingDischargeDefinition> PanelSectionDischarges { get; set; } = new List<ManualGaugingDischargeDefinition>();
         public ControlConditionColumnDefinition ControlCondition { get; set; }
 
         public bool IsHeaderSectionExpected => HeaderRowCount > 0
@@ -248,12 +250,12 @@ namespace TabularCsv
         }
     }
 
-    public class MergingTextColumnDefinition : ColumnDefinition
+    public class MergingTextDefinition : ColumnDefinition
     {
         public string Prefix { get; set; }
     }
 
-    public class TimestampColumnDefinition : ColumnDefinition
+    public class TimestampDefinition : ColumnDefinition
     {
         public string Format { get; set; }
         public TimestampType Type { get; set; }
@@ -262,11 +264,12 @@ namespace TabularCsv
 
     public abstract class ActivityColumnDefinition : ColumnDefinition
     {
-        public List<TimestampColumnDefinition> Timestamps { get; set; } = new List<TimestampColumnDefinition>();
+        public List<TimestampDefinition> Timestamps { get; set; } = new List<TimestampDefinition>();
     }
 
-    public class ReadingColumnDefinition : ActivityColumnDefinition
+    public class ReadingDefinition : ActivityColumnDefinition
     {
+        // Default property is Reading.Value
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
         public string CommentPrefix { get; set; }
@@ -292,8 +295,9 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDetailsWaterLevel { get; set; }
     }
 
-    public class InspectionColumnDefinition : ActivityColumnDefinition
+    public class InspectionDefinition : ActivityColumnDefinition
     {
+        // Default property is Inspection.InspectionType (enum)
         public PropertyDefinition Comments { get; set; }
         public PropertyDefinition SubLocation { get; set; }
         public PropertyDefinition MeasurementDeviceManufacturer { get; set; }
@@ -301,8 +305,9 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDeviceSerialNumber { get; set; }
     }
 
-    public class CalibrationColumnDefinition : ActivityColumnDefinition
+    public class CalibrationDefinition : ActivityColumnDefinition
     {
+        // Default property is Calibration.Value
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
         public PropertyDefinition Comments { get; set; }
@@ -318,18 +323,110 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDeviceSerialNumber { get; set; }
         public PropertyDefinition StandardDetailsLotNumber { get; set; }
         public PropertyDefinition StandardDetailsStandardCode { get; set; }
-        public TimestampColumnDefinition StandardDetailsExpirationDate { get; set; }
+        public TimestampDefinition StandardDetailsExpirationDate { get; set; }
         public PropertyDefinition StandardDetailsTemperature { get; set; }
     }
 
     public class ControlConditionColumnDefinition : ActivityColumnDefinition
     {
+        // Default property is ControlCondition.ConditionType (picklist)
         public PropertyDefinition UnitId { get; set; }
         public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition ControlCleanedType { get; set; }
         public PropertyDefinition ControlCode { get; set; }
         public PropertyDefinition DistanceToGage { get; set; }
+    }
+
+    public abstract class TimeRangeActivityColumnDefinition : ActivityColumnDefinition
+    {
+        public List<TimestampDefinition> StartTimestamps { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> EndTimestamps { get; set; } = new List<TimestampDefinition>();
+    }
+
+    public abstract class DischargeActivityColumnDefinition : TimeRangeActivityColumnDefinition
+    {
+        // Default property is DischargeActivity.TotalDischarge.Value
+        public PropertyDefinition ChannelName { get; set; }
+        public PropertyDefinition Comments { get; set; }
+        public PropertyDefinition Party { get; set; }
+        public PropertyDefinition MeasurementId { get; set; }
+        public PropertyDefinition DischargeUnitId { get; set; }
+        public PropertyDefinition AreaUnitId { get; set; }
+        public PropertyDefinition AreaValue { get; set; }
+        public PropertyDefinition DistanceUnitId { get; set; }
+        public PropertyDefinition WidthValue { get; set; }
+        public PropertyDefinition VelocityUnitId { get; set; }
+        public PropertyDefinition VelocityValue { get; set; }
+        public PropertyDefinition MeanIndexVelocity { get; set; }
+        public PropertyDefinition ShowInDataCorrection { get; set; }
+        public PropertyDefinition ShowInRatingDevelopment { get; set; }
+        public PropertyDefinition PreventAutomaticPublishing { get; set; }
+        public PropertyDefinition AdjustmentType { get; set; }
+        public PropertyDefinition AdjustmentAmount { get; set; }
+        public PropertyDefinition ReasonForAdjustment { get; set; }
+        public PropertyDefinition GradeCode { get; set; }
+        public PropertyDefinition GradeName { get; set; }
+        public PropertyDefinition UncertaintyType { get; set; }
+        public PropertyDefinition QualityAssuranceComments { get; set; }
+        public PropertyDefinition QuantitativeUncertainty { get; set; }
+        public PropertyDefinition QualitativeUncertainty { get; set; }
+        public List<GageHeightMeasurement> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurement>();
+    }
+
+    public class GageHeightMeasurement : ActivityColumnDefinition
+    {
+        // Default property is GageHeight.Value
+        public PropertyDefinition Include { get; set; }
+    }
+
+    public class AdcpDischargeDefinition : DischargeActivityColumnDefinition
+    {
+        // Default property is AdcpDischargeSection.TotalDischarge.Value
+        public PropertyDefinition SectionDischarge { get; set; }
+        public PropertyDefinition DeviceType { get; set; }
+        public PropertyDefinition DeploymentMethod { get; set; }
+        public PropertyDefinition MeterSuspension { get; set; }
+        public PropertyDefinition NumberOfTransects { get; set; }
+        public PropertyDefinition PercentageOfDischargeMeasured { get; set; }
+        public PropertyDefinition TransducerDepth { get; set; }
+        public PropertyDefinition TopEstimateExponent { get; set; }
+        public PropertyDefinition TopEstimateMethod { get; set; }
+        public PropertyDefinition BottomEstimateExponent { get; set; }
+        public PropertyDefinition BottomEstimateMethod { get; set; }
+        public PropertyDefinition NavigationMethod { get; set; }
+        public PropertyDefinition FirmwareVersion { get; set; }
+        public PropertyDefinition SoftwareVersion { get; set; }
+        public PropertyDefinition DepthReference { get; set; }
+        public PropertyDefinition MeasurementDeviceManufacturer { get; set; }
+        public PropertyDefinition MeasurementDeviceModel { get; set; }
+        public PropertyDefinition MeasurementDeviceSerialNumber { get; set; }
+    }
+
+    public class ManualGaugingDischargeDefinition : DischargeActivityColumnDefinition
+    {
+        // Default property is ManualGaugingDischargeSection.TotalDischarge.Value
+        public PropertyDefinition SectionDischarge { get; set; }
+        public PropertyDefinition DischargeMethod { get; set; }
+        public PropertyDefinition PointVelocityObservationType { get; set; }
+        public PropertyDefinition DeploymentMethod { get; set; }
+        public PropertyDefinition MeterSuspension { get; set; }
+        public PropertyDefinition MeterCalibrationManufacturer { get; set; }
+        public PropertyDefinition MeterCalibrationModel { get; set; }
+        public PropertyDefinition MeterCalibrationSerialNumber { get; set; }
+        public PropertyDefinition MeterCalibrationFirmwareVersion { get; set; }
+        public PropertyDefinition MeterCalibrationSoftwareVersion { get; set; }
+        public PropertyDefinition MeterType { get; set; }
+        public List<MeterCalibrationEquationColumnDefinition> MeterCalibrationEquations { get; set; } = new List<MeterCalibrationEquationColumnDefinition>();
+    }
+
+    public class MeterCalibrationEquationColumnDefinition : ColumnDefinition
+    {
+        // Default property is MeterCalibrationEquation.Slope
+        public PropertyDefinition RangeStart { get; set; }
+        public PropertyDefinition RangeEnd { get; set; }
+        public PropertyDefinition Intercept { get; set; }
+        public PropertyDefinition InterceptUnitId { get; set; }
     }
 
     public enum TimestampType

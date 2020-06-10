@@ -307,6 +307,16 @@ namespace TabularCsv
             var party = MergeTextColumns(Configuration.Party);
             var timestamp = ParseTimestamp(locationInfo, Configuration.Timestamps);
 
+            var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
+                new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
+                {
+                    Comments = comments,
+                    Party = party,
+                    CollectionAgency = GetString(Configuration.CollectionAgency),
+                    Weather = GetString(Configuration.Weather),
+                    CompletedVisitActivities = ParseCompletedVisitActivities()
+                });
+
             var readings = Configuration
                 .Readings
                 .Select(r => ParseReading(locationInfo, r))
@@ -341,16 +351,6 @@ namespace TabularCsv
                 .ToList();
 
             var controlCondition = ParseControlCondition(locationInfo, Configuration.ControlCondition);
-
-            var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
-                new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
-                {
-                    Comments = comments,
-                    Party = party,
-                    CollectionAgency = GetString(Configuration.CollectionAgency),
-                    Weather = GetString(Configuration.Weather),
-                    CompletedVisitActivities = ParseCompletedVisitActivities()
-                });
 
             foreach (var reading in readings)
             {
@@ -388,7 +388,7 @@ namespace TabularCsv
             };
         }
 
-        private string MergeTextColumns(List<MergingTextColumnDefinition> columns)
+        private string MergeTextColumns(List<MergingTextDefinition> columns)
         {
             var lines = new List<string>();
 
@@ -406,7 +406,7 @@ namespace TabularCsv
             return string.Join("\n", lines);
         }
 
-        private DateTimeOffset ParseTimestamp(LocationInfo locationInfo, List<TimestampColumnDefinition> timestampColumns)
+        private DateTimeOffset ParseTimestamp(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns)
         {
             var timestamp = new DateTimeOffset(new DateTime(1900,1,1), LocationInfo?.UtcOffset ?? locationInfo.UtcOffset);
 
@@ -474,7 +474,7 @@ namespace TabularCsv
                 .Add(existing.TimeOfDay);
         }
 
-        private Reading ParseReading(LocationInfo locationInfo, ReadingColumnDefinition readingColumn)
+        private Reading ParseReading(LocationInfo locationInfo, ReadingDefinition readingColumn)
         {
             var valueText = GetString(readingColumn);
 
@@ -591,7 +591,7 @@ namespace TabularCsv
             return reading;
         }
 
-        private Inspection ParseInspection(LocationInfo locationInfo, InspectionColumnDefinition inspectionColumn)
+        private Inspection ParseInspection(LocationInfo locationInfo, InspectionDefinition inspectionColumn)
         {
             var inspectionType = GetNullableEnum<InspectionType>(inspectionColumn);
 
@@ -629,7 +629,7 @@ namespace TabularCsv
             return inspection;
         }
 
-        private Calibration ParseCalibration(LocationInfo locationInfo, CalibrationColumnDefinition calibrationColumn)
+        private Calibration ParseCalibration(LocationInfo locationInfo, CalibrationDefinition calibrationColumn)
         {
             var valueText = GetString(calibrationColumn);
 
@@ -694,7 +694,7 @@ namespace TabularCsv
             if (calibrationColumn.StandardDetailsExpirationDate != null)
             {
                 expirationDate = ParseTimestamp(locationInfo,
-                    new List<TimestampColumnDefinition>
+                    new List<TimestampDefinition>
                     {
                         calibrationColumn.StandardDetailsExpirationDate
                     });
