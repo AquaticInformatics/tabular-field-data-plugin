@@ -1,38 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using FieldDataPluginFramework.Context;
 using Humanizer;
 
 namespace TabularCsv
 {
-    public class SurveyValidator
+    public class ConfigurationValidator
     {
         public LocationInfo LocationInfo { get; set; }
-        public Survey Survey { get; set; }
+        public Configuration Configuration { get; set; }
 
         public void Validate()
         {
-            if (LocationInfo == null && Survey.Location == null)
-                ThrowConfigurationException($"A {nameof(Survey.Location)} definition is required.");
+            if (LocationInfo == null && Configuration.Location == null)
+                ThrowConfigurationException($"A {nameof(Configuration.Location)} definition is required.");
 
-            var columnDefinitions = Survey.GetColumnDefinitions();
+            var columnDefinitions = Configuration.GetColumnDefinitions();
 
             var invalidColumns = columnDefinitions
-                .Where(column => column.IsInvalid())
+                .Where(column => column.IsInvalid(out _))
                 .ToList();
 
+            string ShowInvalidColumn(ColumnDefinition column)
+            {
+                column.IsInvalid(out var validationMessage);
+                return $"{column.Name()}: {validationMessage}";
+            }
+
             if (invalidColumns.Any())
-                ThrowConfigurationException($"{"invalid column definitions".ToQuantity(invalidColumns.Count)}:\n{string.Join("\n", invalidColumns.Select(c => c.Name()))}");
+                ThrowConfigurationException($"{"invalid column definitions".ToQuantity(invalidColumns.Count)}:\n{string.Join("\n", invalidColumns.Select(ShowInvalidColumn))}");
 
             var headerColumns = columnDefinitions
                 .Where(column => column.RequiresColumnHeader())
                 .ToList();
 
-            if (!Survey.IsHeaderRowRequired && headerColumns.Any())
+            if (!Configuration.IsHeaderRowRequired && headerColumns.Any())
                 ThrowConfigurationException(
-                    $"{"column".ToQuantity(headerColumns.Count)} require a header line, but {nameof(Survey.IsHeaderRowRequired)} is false: {string.Join(",", headerColumns.Select(column => $"'{column.ColumnHeader}'"))}");
+                    $"{"column".ToQuantity(headerColumns.Count)} require a header line, but {nameof(Configuration.IsHeaderRowRequired)} is false: {string.Join(",", headerColumns.Select(column => $"'{column.ColumnHeader}'"))}");
 
             var invalidIndexedColumns = columnDefinitions
                 .Where(column => column.ColumnIndex.HasValue && column.ColumnIndex <= 0)
@@ -45,12 +50,12 @@ namespace TabularCsv
 
         private void ThrowConfigurationException(string message)
         {
-            throw new Exception($"Configuration '{Survey.Name}' is invalid: {message}");
+            throw new Exception($"Configuration '{Configuration.Name}' is invalid: {message}");
         }
 
         public Dictionary<string,int> BuildColumnHeaderHeaderMap(string[] headerFields)
         {
-            var columnDefinitions = Survey.GetColumnDefinitions();
+            var columnDefinitions = Configuration.GetColumnDefinitions();
 
             var headerColumns = columnDefinitions
                 .Where(column => column.RequiresColumnHeader())
