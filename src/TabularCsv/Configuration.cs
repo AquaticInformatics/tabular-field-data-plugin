@@ -328,7 +328,7 @@ namespace TabularCsv
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition ControlCleanedType { get; set; }
         public PropertyDefinition ControlCode { get; set; }
-        public PropertyDefinition ConditionType { get; set; }
+        public PropertyDefinition DistanceToGage { get; set; }
     }
 
     public enum TimestampType

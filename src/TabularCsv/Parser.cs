@@ -719,8 +719,8 @@ namespace TabularCsv
                 dateCleaned = ParseTimestamp(locationInfo, controlConditionColumn.Timestamps);
             }
 
+            var conditionType = GetString(controlConditionColumn);
             var controlCode = GetString(controlConditionColumn.ControlCode);
-            var conditionType = GetString(controlConditionColumn.ConditionType);
             var controlCleanedType = GetNullableEnum<ControlCleanedType>(controlConditionColumn.ControlCleanedType);
 
             var controlCondition = new ControlCondition
@@ -745,7 +745,7 @@ namespace TabularCsv
                 controlCondition.ConditionType = new ControlConditionPickList(conditionType);
             }
 
-            var distanceToGage = GetNullableDouble(controlConditionColumn);
+            var distanceToGage = GetNullableDouble(controlConditionColumn.DistanceToGage);
 
             var unitId = GetString(controlConditionColumn.UnitId);
 
