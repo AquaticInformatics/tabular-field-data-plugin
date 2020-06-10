@@ -62,18 +62,14 @@ namespace TabularCsv
                     CompletedBiologicalSample,
                     CompletedSedimentSample,
                     CompletedWaterQualitySample,
+                    ControlCondition,
                 }
-                .Concat(timestampColumns)
-                .Concat(timestampColumns.SelectMany(tc => tc.GetColumnDefinitions()))
                 .Concat(commentColumns)
                 .Concat(partyColumns)
-                .Concat(readingColumns)
+                .Concat(timestampColumns.SelectMany(tc => tc.GetColumnDefinitions()))
                 .Concat(readingColumns.SelectMany(rc => rc.GetColumnDefinitions()))
-                .Concat(inspectionColumns)
                 .Concat(inspectionColumns.SelectMany(rc => rc.GetColumnDefinitions()))
-                .Concat(calibrationColumns)
                 .Concat(calibrationColumns.SelectMany(rc => rc.GetColumnDefinitions()))
-                .Concat(new []{ControlCondition})
                 .Where(columnDefinition => columnDefinition != null)
                 .ToList();
         }
@@ -111,7 +107,7 @@ namespace TabularCsv
                 var regex = new Regex(HeaderRegex);
 
                 if (!regex.GetGroupNames().Contains(RegexCaptureGroupName))
-                    return false;
+                    return true;
             }
 
             var count = HasFixedValue ? 1 : 0;
@@ -124,13 +120,25 @@ namespace TabularCsv
 
         public string Name()
         {
-            return RequiresColumnHeader()
-                ? ColumnHeader
+            // ReSharper disable once PossibleNullReferenceException
+            var prefix = GetType()
+                .FullName
+                .Replace($"{nameof(TabularCsv)}.", string.Empty)
+                // ReSharper disable once AssignNullToNotNullAttribute
+                .Replace(typeof(Survey).FullName, string.Empty)
+                .Replace(nameof(ColumnDefinition), string.Empty);
+
+            var suffix = RequiresColumnHeader()
+                ? $"ColumnHeader='{ColumnHeader}'"
                 : HasFixedValue
                     ? $"FixedValue='{FixedValue}'"
                     : HasHeaderRegex
                         ? $"HeaderRegex='{HeaderRegex}'"
-                        : $"ColumnIndex[{ColumnIndex}]";
+                        : HasIndexedColumn
+                            ? $"ColumnIndex[{ColumnIndex}]"
+                            : "NoContextSpecified";
+
+            return $"{prefix}.{suffix}";
         }
     }
 
