@@ -15,6 +15,7 @@ namespace TabularCsv
         public string HeadersEndWith { get; set; }
         public string HeadersEndBefore { get; set; }
         public bool FirstDataRowIsColumnHeader { get; set; }
+        public string CommentLinePrefix { get; set; }
 
         public PropertyDefinition Location { get; set; }
         public PropertyDefinition Weather { get; set; }

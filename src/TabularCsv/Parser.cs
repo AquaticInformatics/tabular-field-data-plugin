@@ -108,7 +108,11 @@ namespace TabularCsv
                         }
                     }
 
-                    if (Fields == null) continue;
+                    if (Fields == null)
+                        continue;
+
+                    if (Fields.Length > 0 && !string.IsNullOrEmpty(Configuration.CommentLinePrefix) && Fields[0].StartsWith(Configuration.CommentLinePrefix))
+                        continue;
 
                     if (dataRowCount == 0 && Configuration.IsHeaderRowRequired)
                     {
