@@ -30,8 +30,8 @@ namespace TabularCsv
         private ILog Log { get; }
         private DelayedAppender ResultsAppender { get; }
         private LocationInfo LocationInfo { get; set; }
-        private List<Survey> Surveys { get; set; }
-        private Survey Survey { get; set; }
+        private List<Configuration> Configurations { get; set; }
+        private Configuration Configuration { get; set; }
         private long LineNumber { get; set; }
         private string[] Fields { get; set; }
         private List<string> HeaderLines { get; } = new List<string>();
@@ -49,14 +49,14 @@ namespace TabularCsv
             {
                 LocationInfo = locationInfo;
 
-                Surveys = LoadSurveys();
+                Configurations = LoadConfigurations();
 
                 using (ResultsAppender)
                 {
-                    foreach (var survey in Surveys)
+                    foreach (var configuration in Configurations)
                     {
-                        Survey = survey;
-                        var result = ParseSurvey(csvText);
+                        Configuration = configuration;
+                        var result = ParseDataFile(csvText);
 
                         if (result.Status == ParseFileStatus.CannotParse) continue;
 
@@ -72,11 +72,11 @@ namespace TabularCsv
             }
         }
 
-        private ParseFileResult ParseSurvey(string csvText)
+        private ParseFileResult ParseDataFile(string csvText)
         {
-            var validator = new SurveyValidator
+            var validator = new ConfigurationValidator
             {
-                Survey = Survey
+                Configuration = Configuration
             };
 
             var (headerLines, dataRowReader) = ExtractHeaderLines(csvText);
@@ -110,7 +110,7 @@ namespace TabularCsv
 
                     if (Fields == null) continue;
 
-                    if (dataRowCount == 0 && Survey.IsHeaderRowRequired)
+                    if (dataRowCount == 0 && Configuration.IsHeaderRowRequired)
                     {
                         try
                         {
@@ -120,7 +120,7 @@ namespace TabularCsv
                         }
                         catch (Exception exception)
                         {
-                            // Most Survey123 files have a header.
+                            // Most CSV files have a header.
                             // So a problem mapping the header is a strong indicator that this CSV file is not intended for us.
                             if (exception is AllHeadersMissingException)
                             {
@@ -130,7 +130,7 @@ namespace TabularCsv
                             else
                             {
                                 // Some of the headers matched, so log a warning before returning CannotParse.
-                                // This might be the only hint in the log that the survey configuration is incorrect.
+                                // This might be the only hint in the log that the configuration is incorrect.
                                 Log.Info($"Partial headers detected: {exception.Message}");
                             }
 
@@ -158,7 +158,7 @@ namespace TabularCsv
 
         private CsvTextFieldParser GetCsvParser(StringReader reader)
         {
-            var delimiter = Survey.Separator ?? ",";
+            var delimiter = Configuration.Separator ?? ",";
 
             var rowParser = new CsvTextFieldParser(reader)
             {
@@ -174,7 +174,7 @@ namespace TabularCsv
         {
             var headerLines = new List<string>();
 
-            if (!Survey.IsHeaderSectionExpected)
+            if (!Configuration.IsHeaderSectionExpected)
                 return (headerLines, new StringReader(csvText));
 
             using (var reader = new StringReader(csvText))
@@ -186,7 +186,7 @@ namespace TabularCsv
                     if (line == null)
                         break;
 
-                    if (!string.IsNullOrEmpty(Survey.HeadersEndBefore) && line.StartsWith(Survey.HeadersEndBefore))
+                    if (!string.IsNullOrEmpty(Configuration.HeadersEndBefore) && line.StartsWith(Configuration.HeadersEndBefore))
                     {
                         // This line needs to be included in the start of the data section
                         var builder = new StringBuilder(line);
@@ -198,10 +198,10 @@ namespace TabularCsv
 
                     headerLines.Add(line);
 
-                    if (Survey.HeaderRowCount > 0 && headerLines.Count >= Survey.HeaderRowCount)
+                    if (Configuration.HeaderRowCount > 0 && headerLines.Count >= Configuration.HeaderRowCount)
                         break;
 
-                    if (string.IsNullOrEmpty(Survey.HeadersEndWith) && line.StartsWith(Survey.HeadersEndWith))
+                    if (string.IsNullOrEmpty(Configuration.HeadersEndWith) && line.StartsWith(Configuration.HeadersEndWith))
                         break;
                 }
 
@@ -226,7 +226,7 @@ namespace TabularCsv
 
         private void BuildHeaderRegex()
         {
-            var regexColumns = Survey
+            var regexColumns = Configuration
                 .GetColumnDefinitions()
                 .Where(column => column.HasHeaderRegex)
                 .ToList();
@@ -242,49 +242,49 @@ namespace TabularCsv
             }
         }
 
-        private List<Survey> LoadSurveys()
+        private List<Configuration> LoadConfigurations()
         {
-            var surveyDirectory = GetConfigurationDirectory();
+            var configurationDirectory = GetConfigurationDirectory();
 
-            if (!surveyDirectory.Exists)
+            if (!configurationDirectory.Exists)
             {
-                Log.Error($"'{surveyDirectory.FullName}' does not exist. No configurations loaded.");
-                return new List<Survey>();
+                Log.Error($"'{configurationDirectory.FullName}' does not exist. No configurations loaded.");
+                return new List<Configuration>();
             }
 
-            var surveyLoader = new SurveyLoader
+            var configurationLoader = new ConfigurationLoader
             {
                 Log = Log
             };
 
-            var surveys = surveyDirectory
+            var configurations = configurationDirectory
                 .GetFiles("*.toml")
-                .Select(fi => surveyLoader.Load(fi.FullName))
+                .Select(fi => configurationLoader.Load(fi.FullName))
                 .Where(s => s != null)
                 .OrderBy(s => s.Priority)
                 .ToList();
 
-            if (!surveys.Any())
+            if (!configurations.Any())
             {
-                Log.Error($"No configurations found at '{surveyDirectory.FullName}\\*.toml'");
-                return new List<Survey>();
+                Log.Error($"No configurations found at '{configurationDirectory.FullName}\\*.toml'");
+                return new List<Configuration>();
             }
 
-            surveys = surveys
+            configurations = configurations
                 .Where(s => LocationInfo != null || s.Location != null)
                 .ToList();
 
-            foreach (var survey in surveys)
+            foreach (var configuration in configurations)
             {
-                new SurveyValidator
+                new ConfigurationValidator
                     {
                         LocationInfo = LocationInfo,
-                        Survey = survey
+                        Configuration = configuration
                     }
                     .Validate();
             }
 
-            return surveys;
+            return configurations;
         }
 
         private DirectoryInfo GetConfigurationDirectory()
@@ -296,14 +296,14 @@ namespace TabularCsv
 
         private void ParseRow()
         {
-            var locationIdentifier = GetString(Survey.Location);
+            var locationIdentifier = GetString(Configuration.Location);
 
             var locationInfo = LocationInfo ?? ResultsAppender.GetLocationByIdentifier(locationIdentifier);
-            var comments = MergeTextColumns(Survey.Comments);
-            var party = MergeTextColumns(Survey.Party);
-            var timestamp = ParseTimestamp(locationInfo, Survey.Timestamps);
+            var comments = MergeTextColumns(Configuration.Comments);
+            var party = MergeTextColumns(Configuration.Party);
+            var timestamp = ParseTimestamp(locationInfo, Configuration.Timestamps);
 
-            var readings = Survey
+            var readings = Configuration
                 .Readings
                 .Select(r => ParseReading(locationInfo, r))
                 .Where(reading => reading != null)
@@ -314,7 +314,7 @@ namespace TabularCsv
                 })
                 .ToList();
 
-            var inspections = Survey
+            var inspections = Configuration
                 .Inspections
                 .Select(i => ParseInspection(locationInfo, i))
                 .Where(inspection => inspection != null)
@@ -325,7 +325,7 @@ namespace TabularCsv
                 })
                 .ToList();
 
-            var calibrations = Survey
+            var calibrations = Configuration
                 .Calibrations
                 .Select(c => ParseCalibration(locationInfo, c))
                 .Where(calibration => calibration != null)
@@ -336,15 +336,15 @@ namespace TabularCsv
                 })
                 .ToList();
 
-            var controlCondition = ParseControlCondition(locationInfo, Survey.ControlCondition);
+            var controlCondition = ParseControlCondition(locationInfo, Configuration.ControlCondition);
 
             var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
                 new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
                 {
                     Comments = comments,
                     Party = party,
-                    CollectionAgency = GetString(Survey.CollectionAgency),
-                    Weather = GetString(Survey.Weather),
+                    CollectionAgency = GetString(Configuration.CollectionAgency),
+                    Weather = GetString(Configuration.Weather),
                     CompletedVisitActivities = ParseCompletedVisitActivities()
                 });
 
@@ -373,14 +373,14 @@ namespace TabularCsv
         {
             return new CompletedVisitActivities
             {
-                GroundWaterLevels = GetNullableBoolean(Survey.CompletedGroundWaterLevels) ?? false,
-                ConductedLevelSurvey = GetNullableBoolean(Survey.CompletedLevelSurvey) ?? false,
-                RecorderDataCollected = GetNullableBoolean(Survey.CompletedRecorderData) ?? false,
-                SafetyInspectionPerformed = GetNullableBoolean(Survey.CompletedSafetyInspection) ?? false,
-                OtherSample = GetNullableBoolean(Survey.CompletedOtherSample) ?? false,
-                BiologicalSample = GetNullableBoolean(Survey.CompletedBiologicalSample) ?? false,
-                SedimentSample = GetNullableBoolean(Survey.CompletedSedimentSample) ?? false,
-                WaterQualitySample = GetNullableBoolean(Survey.CompletedWaterQualitySample) ?? false,
+                GroundWaterLevels = GetNullableBoolean(Configuration.CompletedGroundWaterLevels) ?? false,
+                ConductedLevelSurvey = GetNullableBoolean(Configuration.CompletedLevelSurvey) ?? false,
+                RecorderDataCollected = GetNullableBoolean(Configuration.CompletedRecorderData) ?? false,
+                SafetyInspectionPerformed = GetNullableBoolean(Configuration.CompletedSafetyInspection) ?? false,
+                OtherSample = GetNullableBoolean(Configuration.CompletedOtherSample) ?? false,
+                BiologicalSample = GetNullableBoolean(Configuration.CompletedBiologicalSample) ?? false,
+                SedimentSample = GetNullableBoolean(Configuration.CompletedSedimentSample) ?? false,
+                WaterQualitySample = GetNullableBoolean(Configuration.CompletedWaterQualitySample) ?? false,
             };
         }
 

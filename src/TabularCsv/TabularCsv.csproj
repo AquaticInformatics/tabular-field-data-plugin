@@ -51,12 +51,12 @@
     <Compile Include="AllHeadersMissingException.cs" />
     <Compile Include="ConfigurationException.cs" />
     <Compile Include="DelayedAppender.cs" />
-    <Compile Include="Survey.cs" />
+    <Compile Include="Configuration.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SurveyLoader.cs" />
-    <Compile Include="SurveyValidator.cs" />
+    <Compile Include="ConfigurationLoader.cs" />
+    <Compile Include="ConfigurationValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

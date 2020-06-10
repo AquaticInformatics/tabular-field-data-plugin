@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 
 namespace TabularCsv
 {
-    public class Survey
+    public class Configuration
     {
         public string Name { get; set; }
         public int Priority { get; set; }
@@ -194,6 +194,7 @@ namespace TabularCsv
                 if (!regex.GetGroupNames().Contains(RegexCaptureGroupName))
                 {
                     validationMessage = $"A named capture group is missing. Use something like: (?<{RegexCaptureGroupName}>PATTERN)";
+
                     return true;
                 }
             }
@@ -218,7 +219,12 @@ namespace TabularCsv
                     nameof(HeaderRegex),
                 };
 
-                validationMessage = $"Only one of {string.Join(", ", allProperties)} can be set. You have set {setProperties.Count} properties: {string.Join(", ", setProperties)}";
+                var setPropertyContext = setProperties.Any()
+                    ? $": {string.Join(", ", setProperties)}"
+                    : string.Empty;
+
+                validationMessage = $"Only one of the {string.Join(", ", allProperties)} properties can be set. You have set {setProperties.Count} properties{setPropertyContext}.";
+
                 return true;
             }
 
@@ -251,15 +257,6 @@ namespace TabularCsv
         public string Format { get; set; }
         public TimestampType Type { get; set; }
         public PropertyDefinition UtcOffset { get; set; }
-
-        public IEnumerable<ColumnDefinition> GetColumnDefinitions()
-        {
-            return new ColumnDefinition[]
-            {
-                this,
-                UtcOffset
-            };
-        }
     }
 
     public abstract class ActivityColumnDefinition : ColumnDefinition
