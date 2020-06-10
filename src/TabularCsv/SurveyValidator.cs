@@ -61,7 +61,7 @@ namespace TabularCsv
                 .ToList();
 
             var unknownHeadersMessage =
-                $"{"missing column".ToQuantity(unknownHeaderColumns.Count)}: {string.Join(", ", unknownHeaderColumns.Select(column => $"'{column.ColumnHeader}'"))}";
+                $"{"missing column".ToQuantity(unknownHeaderColumns.Count)}: {string.Join(", ", unknownHeaderColumns.Select(column => column.Name()))}";
 
             if (unknownHeaderColumns.Count == headerColumns.Count)
                 throw new AllHeadersMissingException(unknownHeadersMessage);

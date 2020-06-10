@@ -1,12 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using FieldDataPluginFramework;
 using Nett;
 
 namespace TabularCsv
 {
     public class SurveyLoader
     {
+        public ILog Log { get; set; }
+
         public Survey Load(string path)
         {
             if (!File.Exists(path))
@@ -30,8 +33,21 @@ namespace TabularCsv
             {
                 return Toml.ReadString<Survey>(tomlText, settings);
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                var context = "";
+                var stackTrace = exception.StackTrace;
+
+                while (exception != null)
+                {
+                    Log.Error($"{context}{exception.Message}");
+
+                    context = "(Inner): ";
+                    exception = exception.InnerException;
+                }
+
+                Log.Error(stackTrace);
+
                 return null;
             }
         }

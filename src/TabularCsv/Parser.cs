@@ -15,7 +15,7 @@ using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.PickLists;
 using FieldDataPluginFramework.DataModel.Readings;
 using FieldDataPluginFramework.Results;
-using Microsoft.VisualBasic.FileIO;
+using NotVisualBasic.FileIO;
 
 namespace TabularCsv
 {
@@ -68,7 +68,21 @@ namespace TabularCsv
             }
             catch (Exception exception)
             {
-                return ParseFileResult.SuccessfullyParsedButDataInvalid(exception);
+                var originalException = exception;
+                var context = "";
+                var stackTrace = exception.StackTrace;
+
+                while (exception != null)
+                {
+                    Log.Error($"{context}{exception.Message}");
+
+                    context = "(Inner): ";
+                    exception = exception.InnerException;
+                }
+
+                Log.Error(stackTrace);
+
+                return ParseFileResult.SuccessfullyParsedButDataInvalid(originalException);
             }
         }
 
@@ -156,11 +170,11 @@ namespace TabularCsv
             }
         }
 
-        private static TextFieldParser GetCsvParser(StringReader reader)
+        private static CsvTextFieldParser GetCsvParser(StringReader reader)
         {
-            var rowParser = new TextFieldParser(reader)
+            var rowParser = new CsvTextFieldParser(reader)
             {
-                TextFieldType = FieldType.Delimited,
+             //   TextFieldType = FieldType.Delimited,
                 Delimiters = new[] {","},
                 TrimWhiteSpace = true,
                 HasFieldsEnclosedInQuotes = true,
@@ -177,11 +191,12 @@ namespace TabularCsv
 
             using (var reader = new StringReader(csvText))
             {
-                var rowParser = GetCsvParser(reader);
-
-                while (!rowParser.EndOfData)
+                while (true)
                 {
-                    var line = rowParser.ReadLine() ?? string.Empty;
+                    var line = reader.ReadLine();
+
+                    if (line == null)
+                        break;
 
                     if (!string.IsNullOrEmpty(Survey.HeadersEndBefore) && line.StartsWith(Survey.HeadersEndBefore))
                     {
@@ -215,8 +230,21 @@ namespace TabularCsv
                     return reader.ReadToEnd();
                 }
             }
-            catch (Exception)
+            catch (Exception exception)
             {
+                var context = "";
+                var stackTrace = exception.StackTrace;
+
+                while (exception != null)
+                {
+                    Log.Error($"{context}{exception.Message}");
+
+                    context = "(Inner): ";
+                    exception = exception.InnerException;
+                }
+
+                Log.Error(stackTrace);
+
                 return null;
             }
         }
@@ -249,7 +277,10 @@ namespace TabularCsv
                 return new List<Survey>();
             }
 
-            var surveyLoader = new SurveyLoader();
+            var surveyLoader = new SurveyLoader
+            {
+                Log = Log
+            };
 
             var surveys = surveyDirectory
                 .GetFiles("*.toml")
