@@ -68,21 +68,7 @@ namespace TabularCsv
             }
             catch (Exception exception)
             {
-                var originalException = exception;
-                var context = "";
-                var stackTrace = exception.StackTrace;
-
-                while (exception != null)
-                {
-                    Log.Error($"{context}{exception.Message}");
-
-                    context = "(Inner): ";
-                    exception = exception.InnerException;
-                }
-
-                Log.Error(stackTrace);
-
-                return ParseFileResult.SuccessfullyParsedButDataInvalid(originalException);
+                return ParseFileResult.SuccessfullyParsedButDataInvalid(exception);
             }
         }
 
@@ -170,15 +156,17 @@ namespace TabularCsv
             }
         }
 
-        private static CsvTextFieldParser GetCsvParser(StringReader reader)
+        private CsvTextFieldParser GetCsvParser(StringReader reader)
         {
+            var delimiter = Survey.Separator ?? ",";
+
             var rowParser = new CsvTextFieldParser(reader)
             {
-             //   TextFieldType = FieldType.Delimited,
-                Delimiters = new[] {","},
+                Delimiters = new[] {delimiter},
                 TrimWhiteSpace = true,
                 HasFieldsEnclosedInQuotes = true,
             };
+
             return rowParser;
         }
 
@@ -230,21 +218,8 @@ namespace TabularCsv
                     return reader.ReadToEnd();
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                var context = "";
-                var stackTrace = exception.StackTrace;
-
-                while (exception != null)
-                {
-                    Log.Error($"{context}{exception.Message}");
-
-                    context = "(Inner): ";
-                    exception = exception.InnerException;
-                }
-
-                Log.Error(stackTrace);
-
                 return null;
             }
         }

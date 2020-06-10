@@ -10,6 +10,7 @@ namespace TabularCsv
     {
         public string Name { get; set; }
         public int Priority { get; set; }
+        public string Separator { get; set; }
         public int HeaderRowCount { get; set; }
         public string HeadersEndWith { get; set; }
         public string HeadersEndBefore { get; set; }

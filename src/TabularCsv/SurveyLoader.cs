@@ -3,6 +3,7 @@ using System.IO;
 using System.Linq;
 using FieldDataPluginFramework;
 using Nett;
+using Nett.Parser;
 
 namespace TabularCsv
 {
@@ -17,7 +18,7 @@ namespace TabularCsv
 
             var text = File.ReadAllText(path);
 
-            var survey = LoadFromToml(text);
+            var survey = LoadFromToml(path, text);
 
             if (survey == null || IsEmpty(survey))
                 return null;
@@ -25,7 +26,7 @@ namespace TabularCsv
             return survey;
         }
 
-        private Survey LoadFromToml(string tomlText)
+        private Survey LoadFromToml(string configurationName, string tomlText)
         {
             var settings = CreateTomlSettings();
 
@@ -33,22 +34,9 @@ namespace TabularCsv
             {
                 return Toml.ReadString<Survey>(tomlText, settings);
             }
-            catch (Exception exception)
+            catch (ParseException exception)
             {
-                var context = "";
-                var stackTrace = exception.StackTrace;
-
-                while (exception != null)
-                {
-                    Log.Error($"{context}{exception.Message}");
-
-                    context = "(Inner): ";
-                    exception = exception.InnerException;
-                }
-
-                Log.Error(stackTrace);
-
-                return null;
+                throw new ConfigurationException($"Invalid configuration: {configurationName}: {exception.Message}");
             }
         }
 

@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AllHeadersMissingException.cs" />
+    <Compile Include="ConfigurationException.cs" />
     <Compile Include="DelayedAppender.cs" />
     <Compile Include="Survey.cs" />
     <Compile Include="Parser.cs" />
