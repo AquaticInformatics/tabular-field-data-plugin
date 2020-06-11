@@ -576,16 +576,15 @@ namespace TabularCsv
 
         private Reading ParseReading(FieldVisitInfo visitInfo, ReadingDefinition definition)
         {
-            var valueText = GetString(definition);
+            var readingValue = GetNullableDouble(definition.Value)
+                               ?? GetNullableDouble(definition);
 
-            if (string.IsNullOrWhiteSpace(valueText))
+            if (!readingValue.HasValue)
                 return null;
-
-            var readingValue = GetDouble(definition);
 
             var reading = new Reading(
                 GetString(definition.ParameterId),
-                new Measurement(readingValue, GetString(definition.UnitId)))
+                new Measurement(readingValue.Value, GetString(definition.UnitId)))
             {
                 DateTimeOffset = ParseActivityTime(visitInfo, definition),
                 Comments = GetString(definition.Comments),
@@ -696,7 +695,8 @@ namespace TabularCsv
 
         private Inspection ParseInspection(FieldVisitInfo visitInfo, InspectionDefinition definition)
         {
-            var inspectionType = GetNullableEnum<InspectionType>(definition);
+            var inspectionType = GetNullableEnum<InspectionType>(definition.InspectionType)
+                                 ?? GetNullableEnum<InspectionType>(definition);
 
             if (!inspectionType.HasValue)
                 return null;
@@ -717,17 +717,16 @@ namespace TabularCsv
 
         private Calibration ParseCalibration(FieldVisitInfo visitInfo, CalibrationDefinition definition)
         {
-            var valueText = GetString(definition);
+            var calibrationValue = GetNullableDouble(definition.Value)
+                                   ?? GetNullableDouble(definition);
 
-            if (string.IsNullOrWhiteSpace(valueText))
+            if (!calibrationValue.HasValue)
                 return null;
-
-            var calibrationValue = GetDouble(definition);
 
             var calibration = new Calibration(
                 GetString(definition.ParameterId),
                 GetString(definition.UnitId),
-                calibrationValue)
+                calibrationValue.Value)
             {
                 DateTimeOffset = ParseActivityTime(visitInfo, definition),
                 Comments = GetString(definition.Comments),
@@ -790,7 +789,7 @@ namespace TabularCsv
                 dateCleaned = ParseDateTimeOffset(visitInfo.LocationInfo, definition.AllTimes);
             }
 
-            var conditionType = GetString(definition);
+            var conditionType = GetString(definition.ConditionType) ?? GetString(definition);
             var controlCode = GetString(definition.ControlCode);
             var controlCleanedType = GetNullableEnum<ControlCleanedType>(definition.ControlCleanedType);
 
@@ -830,10 +829,13 @@ namespace TabularCsv
 
         private DischargeActivity ParseAdcpDischarge(FieldVisitInfo visitInfo, AdcpDischargeDefinition definition)
         {
-            if (definition == null)
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge)
+                                 ?? GetNullableDouble(definition);
+
+            if (!totalDischarge.HasValue)
                 return null;
 
-            var dischargeActivity = ParseDischargeActivity(visitInfo, definition);
+            var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
 
             var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
             var distanceUnitId = GetString(definition.DistanceUnitId);
@@ -907,10 +909,13 @@ namespace TabularCsv
 
         private DischargeActivity ParsePanelSectionDischarge(FieldVisitInfo visitInfo, ManualGaugingDischargeDefinition definition)
         {
-            if (definition == null)
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge)
+                                 ?? GetNullableDouble(definition);
+
+            if (!totalDischarge.HasValue)
                 return null;
 
-            var dischargeActivity = ParseDischargeActivity(visitInfo, definition);
+            var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
 
             var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
             var distanceUnitId = GetString(definition.DistanceUnitId);
@@ -999,14 +1004,10 @@ namespace TabularCsv
 
             foreach (var equationDefinition in definition.AllMeterCalibrationEquations)
             {
-                var equation = new MeterCalibrationEquation
-                {
-                    Slope = GetDouble(equationDefinition),
-                    Intercept = GetDouble(equationDefinition.Intercept),
-                    InterceptUnitId = GetString(equationDefinition.InterceptUnitId),
-                    RangeStart = GetNullableDouble(equationDefinition.RangeStart),
-                    RangeEnd = GetNullableDouble(equationDefinition.RangeEnd),
-                };
+                var equation = ParseMeterCalibrationEquation(equationDefinition);
+
+                if (equation == null)
+                    continue;
 
                 meterCalibration.Equations.Add(equation);
             }
@@ -1014,10 +1015,26 @@ namespace TabularCsv
             return meterCalibration;
         }
 
-        private DischargeActivity ParseDischargeActivity(FieldVisitInfo visitInfo, DischargeActivityDefinition definition)
+        private MeterCalibrationEquation ParseMeterCalibrationEquation(MeterCalibrationEquationDefinition definition)
         {
-            var totalDischarge = GetDouble(definition);
+            var slope = GetNullableDouble(definition.Slope)
+                        ?? GetNullableDouble(definition);
 
+            if (!slope.HasValue)
+                return null;
+
+            return new MeterCalibrationEquation
+            {
+                Slope = slope.Value,
+                Intercept = GetDouble(definition.Intercept),
+                InterceptUnitId = GetString(definition.InterceptUnitId),
+                RangeStart = GetNullableDouble(definition.RangeStart),
+                RangeEnd = GetNullableDouble(definition.RangeEnd),
+            };
+        }
+
+        private DischargeActivity ParseDischargeActivity(FieldVisitInfo visitInfo, DischargeActivityDefinition definition, double totalDischarge)
+        {
             var dischargeUnitId = GetString(definition.DischargeUnitId);
             var dischargeInterval = ParseActivityTimeRange(visitInfo, definition);
             var discharge = new Measurement(totalDischarge, dischargeUnitId);
@@ -1081,24 +1098,47 @@ namespace TabularCsv
             if (meanGageHeightDifferenceDuringVisit.HasValue)
                 dischargeActivity.MeanGageHeightDifferenceDuringVisit = new Measurement(meanGageHeightDifferenceDuringVisit.Value, distanceUnitId);
 
-            foreach (var gageHeightMeasurement in definition.AllGageHeightMeasurements)
+            foreach (var gageHeightMeasurementDefinition in definition.AllGageHeightMeasurements)
             {
-                var gageHeightValue = GetDouble(gageHeightMeasurement);
-                var include = GetNullableBoolean(gageHeightMeasurement.Include);
-                var gageHeight = new GageHeightMeasurement(
-                    new Measurement(gageHeightValue, distanceUnitId),
-                    ParseActivityTime(visitInfo, gageHeightMeasurement, dischargeActivity.MeasurementStartTime),
-                    include ?? true);
+                var gageHeightMeasurement = ParseGageHeightMeasurement(
+                    visitInfo,
+                    gageHeightMeasurementDefinition,
+                    distanceUnitId,
+                    dischargeActivity.MeasurementStartTime);
 
-                dischargeActivity.GageHeightMeasurements.Add(gageHeight);
+                if (gageHeightMeasurement == null)
+                    continue;
+
+                dischargeActivity.GageHeightMeasurements.Add(gageHeightMeasurement);
             }
 
             return dischargeActivity;
         }
 
+        private GageHeightMeasurement ParseGageHeightMeasurement(
+            FieldVisitInfo visitInfo,
+            GageHeightMeasurementDefinition definition,
+            string distanceUnitId,
+            DateTimeOffset dischargeTime)
+        {
+            var gageHeightValue = GetNullableDouble(definition.Value)
+                                  ?? GetNullableDouble(definition);
+
+            if (!gageHeightValue.HasValue)
+                return null;
+
+            var include = GetNullableBoolean(definition.Include);
+
+            return new GageHeightMeasurement(
+                new Measurement(gageHeightValue.Value, distanceUnitId),
+                ParseActivityTime(visitInfo, definition, dischargeTime),
+                include ?? true);
+        }
+
         private LevelSurvey ParseLevelSurvey(FieldVisitInfo visitInfo, LevelSurveyDefinition definition)
         {
-            var originReferencePointName = GetString(definition);
+            var originReferencePointName = GetString(definition.OriginReferencePointName)
+                                           ?? GetString(definition);
 
             if (string.IsNullOrEmpty(originReferencePointName))
                 return null;
@@ -1125,7 +1165,8 @@ namespace TabularCsv
 
         private LevelSurveyMeasurement ParseLevelSurveyMeasurement(FieldVisitInfo visitInfo, LevelSurveyMeasurementDefinition definition)
         {
-            var measuredElevation = GetNullableDouble(definition);
+            var measuredElevation = GetNullableDouble(definition.MeasuredElevation)
+                                    ?? GetNullableDouble(definition);
 
             if (!measuredElevation.HasValue)
                 return null;
@@ -1133,7 +1174,10 @@ namespace TabularCsv
             return new LevelSurveyMeasurement(
                 GetString(definition.ReferencePointName),
                 ParseActivityTime(visitInfo, definition),
-                measuredElevation.Value);
+                measuredElevation.Value)
+            {
+                Comments = GetString(definition.Comments),
+            };
         }
 
         private bool? GetNullableBoolean(ColumnDefinition column)

@@ -132,6 +132,7 @@ namespace TabularCsv
     public class ReadingDefinition : ActivityDefinition
     {
         // Default property is Reading.Value
+        public PropertyDefinition Value { get; set; }
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
         public string CommentPrefix { get; set; }
@@ -160,6 +161,7 @@ namespace TabularCsv
     public class InspectionDefinition : ActivityDefinition
     {
         // Default property is Inspection.InspectionType (enum)
+        public PropertyDefinition InspectionType { get; set; }
         public PropertyDefinition Comments { get; set; }
         public PropertyDefinition SubLocation { get; set; }
         public PropertyDefinition MeasurementDeviceManufacturer { get; set; }
@@ -170,6 +172,7 @@ namespace TabularCsv
     public class CalibrationDefinition : ActivityDefinition
     {
         // Default property is Calibration.Value
+        public PropertyDefinition Value { get; set; }
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
         public PropertyDefinition Comments { get; set; }
@@ -192,6 +195,7 @@ namespace TabularCsv
     public class ControlConditionColumnDefinition : ActivityDefinition
     {
         // Default property is ControlCondition.ConditionType (picklist)
+        public PropertyDefinition ConditionType { get; set; }
         public PropertyDefinition UnitId { get; set; }
         public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
@@ -203,6 +207,7 @@ namespace TabularCsv
     public abstract class DischargeActivityDefinition : TimeRangeActivityDefinition
     {
         // Default property is DischargeActivity.TotalDischarge.Value
+        public PropertyDefinition TotalDischarge { get; set; }
         public PropertyDefinition ChannelName { get; set; }
         public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
@@ -238,6 +243,7 @@ namespace TabularCsv
     public class GageHeightMeasurementDefinition : ActivityDefinition
     {
         // Default property is GageHeight.Value
+        public PropertyDefinition Value { get; set; }
         public PropertyDefinition Include { get; set; }
     }
 
@@ -293,6 +299,7 @@ namespace TabularCsv
     public class MeterCalibrationEquationDefinition : ColumnDefinition
     {
         // Default property is MeterCalibrationEquation.Slope
+        public PropertyDefinition Slope { get; set; }
         public PropertyDefinition RangeStart { get; set; }
         public PropertyDefinition RangeEnd { get; set; }
         public PropertyDefinition Intercept { get; set; }
@@ -302,6 +309,7 @@ namespace TabularCsv
     public class LevelSurveyDefinition : CoreDefinition
     {
         // Default property is OriginReferencePointName
+        public PropertyDefinition OriginReferencePointName { get; set; }
         public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition Method { get; set; }
@@ -314,6 +322,7 @@ namespace TabularCsv
     public class LevelSurveyMeasurementDefinition : ActivityDefinition
     {
         // Default property is MeasuredElevation
+        public PropertyDefinition MeasuredElevation { get; set; }
         public PropertyDefinition ReferencePointName { get; set; }
         public PropertyDefinition Comments { get; set; }
     }
