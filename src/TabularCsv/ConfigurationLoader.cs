@@ -11,14 +11,16 @@ namespace TabularCsv
     {
         public ILog Log { get; set; }
 
+        private string TomlText { get; set; }
+
         public Configuration Load(string path)
         {
             if (!File.Exists(path))
                 throw new Exception($"'{path}' does not exist.");
 
-            var text = File.ReadAllText(path);
+            TomlText = File.ReadAllText(path);
 
-            var configuration = LoadFromToml(path, text);
+            var configuration = LoadFromToml(path);
 
             if (configuration == null || IsEmpty(configuration))
                 return null;
@@ -26,13 +28,13 @@ namespace TabularCsv
             return configuration;
         }
 
-        private Configuration LoadFromToml(string configurationName, string tomlText)
+        private Configuration LoadFromToml(string configurationName)
         {
             var settings = CreateTomlSettings();
 
             try
             {
-                var configuration = Toml.ReadString<Configuration>(tomlText, settings);
+                var configuration = Toml.ReadString<Configuration>(TomlText, settings);
 
                 // Set the name to the configuration if none is specified
                 configuration.Id = configuration.Id ?? configurationName;
@@ -61,9 +63,49 @@ namespace TabularCsv
                 .ConfigureType<PropertyDefinition>(type => type
                     .WithConversionFor<TomlString>(convert => convert
                         .FromToml(ConvertFixedValueShorthandSyntax)))
+                .ConfigurePropertyMapping(m => m
+                    .OnTargetPropertyNotFound(WhenTargetPropertyNotFound))
             );
 
             return settings;
+        }
+
+        private void WhenTargetPropertyNotFound(string[] tomlKeyChain, object targetObject, TomlObject targetValue)
+        {
+            var lineNumber = GuessSourceLine(tomlKeyChain, targetValue);
+
+            var propertyName = $"{targetObject.GetType().FullName?.Replace($"{nameof(TabularCsv)}.", string.Empty)}.{string.Join(".", tomlKeyChain)}";
+
+            var message = $"'{propertyName}' is not a valid key.";
+
+            if (lineNumber.HasValue)
+                throw new ParseException($"Line {lineNumber}: {message}");
+
+            throw new ParseException(message);
+        }
+
+        private int? GuessSourceLine(string[] tomlKeyChain, TomlObject targetValue)
+        {
+            if (tomlKeyChain.Length < 1)
+                return null;
+
+            var lines = TomlText.Split(
+                new[] { "\r\n", "\r", "\n" },
+                StringSplitOptions.None
+            );
+
+            var keyTarget = tomlKeyChain.Last();
+            var valueTarget = targetValue.ToString();
+
+            for (var i = 0; i < lines.Length; ++i)
+            {
+                var line = lines[i];
+
+                if (line.Contains(keyTarget) && line.Contains(valueTarget))
+                    return 1 + i;
+            }
+
+            return 0;
         }
 
         private PropertyDefinition ConvertFixedValueShorthandSyntax(ITomlRoot root, TomlString tomlString)
