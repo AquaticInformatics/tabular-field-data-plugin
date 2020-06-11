@@ -44,7 +44,7 @@ Name = 'Air temp data file'
 [Location]
 ColumnHeader = 'The Location'
 
-[[Timestamps]]
+[[Time]]
 Format = 'yyyy-MMM-d H:m'
 Type = 'DateTimeOnly'
 ColumnHeader = 'The Time'

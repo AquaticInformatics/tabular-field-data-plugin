@@ -37,6 +37,13 @@ namespace TabularCsv
                 // Set the name to the configuration if none is specified
                 configuration.Name = configuration.Name ?? configurationName;
 
+                if (configuration.Visit == null)
+                {
+                    configuration.Visit = new VisitDefinition();
+                }
+
+                configuration.Visit.AllowUnusedDefaultProperty();
+
                 return configuration;
             }
             catch (ParseException exception)
@@ -69,11 +76,13 @@ namespace TabularCsv
         private static bool IsEmpty(Configuration configuration)
         {
             return configuration.Name == null
-                   && configuration.Location == null
-                   && !configuration.Comments.Any()
-                   && !configuration.Party.Any()
+                   && configuration.Visit == null
+                   && configuration.ControlCondition == null
                    && !configuration.Readings.Any()
-                   && !configuration.Timestamps.Any();
+                   && !configuration.Inspections.Any()
+                   && !configuration.Calibrations.Any()
+                   && !configuration.AdcpDischarges.Any()
+                   && !configuration.PanelSectionDischarges.Any();
         }
     }
 }
