@@ -50,7 +50,7 @@ namespace TabularCsv
 
         private void ThrowConfigurationException(string message)
         {
-            throw new Exception($"Configuration '{Configuration.Name}' is invalid: {message}");
+            throw new Exception($"Configuration '{Configuration.Id}' is invalid: {message}");
         }
 
         public Dictionary<string,int> BuildColumnHeaderHeaderMap(string[] headerFields)

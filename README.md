@@ -39,17 +39,15 @@ LOC2, 1988-Feb-8 15:10, -3.5
 
 Then this configuration description would parse those rows into air temperation field visit readings:
 ```toml
-Name = 'Air temp data file'
-
 [Location]
 ColumnHeader = 'The Location'
 
-[[Time]]
+[Time]
 Format = 'yyyy-MMM-d H:m'
 Type = 'DateTimeOnly'
 ColumnHeader = 'The Time'
 
-[[Readings]]
+[Reading]
 ParameterId = 'TA'
 UnitId = 'degC'
 ColumnHeader = 'The Temperature'

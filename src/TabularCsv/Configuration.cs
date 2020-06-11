@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace TabularCsv
 {
-    public class Configuration
+    public class Configuration : TimeRangeActivityDefinition
     {
-        public string Name { get; set; }
+        public string Id { get; set; }
         public int Priority { get; set; }
         public string Separator { get; set; }
         public int HeaderRowCount { get; set; }
@@ -15,18 +15,33 @@ namespace TabularCsv
         public string CommentLinePrefix { get; set; }
 
         public PropertyDefinition Location { get; set; }
-        public List<TimestampDefinition> Time { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> StartTime { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> EndTime { get; set; } = new List<TimestampDefinition>();
 
         public VisitDefinition Visit { get; set; }
         public ControlConditionColumnDefinition ControlCondition { get; set; }
 
+        public ReadingDefinition Reading { get; set; }
         public List<ReadingDefinition> Readings { get; set; } = new List<ReadingDefinition>();
+        public List<ReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+
+        public InspectionDefinition Inspection { get; set; }
         public List<InspectionDefinition> Inspections { get; set; } = new List<InspectionDefinition>();
+        public List<InspectionDefinition> AllInspections => AllDefinitions(Inspection, Inspections);
+
+        public CalibrationDefinition Calibration { get; set; }
         public List<CalibrationDefinition> Calibrations { get; set; } = new List<CalibrationDefinition>();
+        public List<CalibrationDefinition> AllCalibrations => AllDefinitions(Calibration, Calibrations);
+
+        public AdcpDischargeDefinition AdcpDischarge { get; set; }
         public List<AdcpDischargeDefinition> AdcpDischarges { get; set; } = new List<AdcpDischargeDefinition>();
-        public List<ManualGaugingDischargeDefinition> PanelSectionDischarges { get; set; } = new List<ManualGaugingDischargeDefinition>();
+        public List<AdcpDischargeDefinition> AllAdcpDischarges => AllDefinitions(AdcpDischarge, AdcpDischarges);
+
+        public ManualGaugingDischargeDefinition PanelDischargeSummary { get; set; }
+        public List<ManualGaugingDischargeDefinition> PanelDischargeSummaries { get; set; } = new List<ManualGaugingDischargeDefinition>();
+        public List<ManualGaugingDischargeDefinition> AllPanelDischargeSummaries => AllDefinitions(PanelDischargeSummary, PanelDischargeSummaries);
+
+        public LevelSurveyDefinition LevelSurvey { get; set; }
+        public List<LevelSurveyDefinition> LevelSurveys { get; set; } = new List<LevelSurveyDefinition>();
+        public List<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(LevelSurvey, LevelSurveys);
 
         public bool IsHeaderSectionExpected => HeaderRowCount > 0
                                                || !string.IsNullOrEmpty(HeadersEndWith)
@@ -52,11 +67,6 @@ namespace TabularCsv
     {
     }
 
-    public class MergingTextDefinition : ColumnDefinition
-    {
-        public string Prefix { get; set; }
-    }
-
     public class TimestampDefinition : ColumnDefinition
     {
         public string Format { get; set; }
@@ -64,15 +74,55 @@ namespace TabularCsv
         public PropertyDefinition UtcOffset { get; set; }
     }
 
-    public abstract class ActivityDefinition : ColumnDefinition
+    public abstract class CoreDefinition : ColumnDefinition
     {
-        public List<TimestampDefinition> Time { get; set; } = new List<TimestampDefinition>();
+        public PropertyDefinition Comment { get; set; }
+        public PropertyDefinition MergeWithComment { get; set; }
+        public List<PropertyDefinition> MergeWithComments { get; set; } = new List<PropertyDefinition>();
+        public List<PropertyDefinition> AllComments => AllDefinitions(Comment, MergeWithComment, MergeWithComments);
+
+        protected List<TDefinition> AllDefinitions<TDefinition>(TDefinition item, IEnumerable<TDefinition> items)
+            where TDefinition : ColumnDefinition
+        {
+            return new List<TDefinition>
+                {
+                    item
+                }
+                .Concat(items)
+                .Where(i => i != null)
+                .ToList();
+        }
+
+        protected List<TDefinition> AllDefinitions<TDefinition>(TDefinition item1, TDefinition item2, IEnumerable<TDefinition> items)
+            where TDefinition : ColumnDefinition
+        {
+            return new List<TDefinition>
+                {
+                    item1,
+                    item2,
+                }
+                .Concat(items)
+                .Where(i => i != null)
+                .ToList();
+        }
+    }
+
+    public abstract class ActivityDefinition : CoreDefinition
+    {
+        public TimestampDefinition Time { get; set; }
+        public List<TimestampDefinition> Times { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> AllTimes => AllDefinitions(Time, Times);
     }
 
     public abstract class TimeRangeActivityDefinition : ActivityDefinition
     {
-        public List<TimestampDefinition> StartTime { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> EndTime { get; set; } = new List<TimestampDefinition>();
+        public TimestampDefinition StartTime { get; set; }
+        public List<TimestampDefinition> StartTimes { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> AllStartTimes => AllDefinitions(StartTime, StartTimes);
+
+        public TimestampDefinition EndTime { get; set; }
+        public List<TimestampDefinition> EndTimes { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> AllEndTimes => AllDefinitions(EndTime, EndTimes);
     }
 
     public class VisitDefinition : TimeRangeActivityDefinition
@@ -88,18 +138,16 @@ namespace TabularCsv
         public PropertyDefinition CompletedBiologicalSample { get; set; }
         public PropertyDefinition CompletedSedimentSample { get; set; }
         public PropertyDefinition CompletedWaterQualitySample { get; set; }
-        public List<MergingTextDefinition> Comments { get; set; } = new List<MergingTextDefinition>();
-        public List<MergingTextDefinition> Party { get; set; } = new List<MergingTextDefinition>();
+        public PropertyDefinition Party { get; set; }
     }
 
     public class ReadingDefinition : ActivityDefinition
     {
         // Default property is Reading.Value
+        public PropertyDefinition Value { get; set; }
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
-        public string CommentPrefix { get; set; }
         public PropertyDefinition ReadingType { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition GradeCode { get; set; }
         public PropertyDefinition GradeName { get; set; }
         public PropertyDefinition Method { get; set; }
@@ -123,7 +171,7 @@ namespace TabularCsv
     public class InspectionDefinition : ActivityDefinition
     {
         // Default property is Inspection.InspectionType (enum)
-        public PropertyDefinition Comments { get; set; }
+        public PropertyDefinition InspectionType { get; set; }
         public PropertyDefinition SubLocation { get; set; }
         public PropertyDefinition MeasurementDeviceManufacturer { get; set; }
         public PropertyDefinition MeasurementDeviceModel { get; set; }
@@ -133,9 +181,9 @@ namespace TabularCsv
     public class CalibrationDefinition : ActivityDefinition
     {
         // Default property is Calibration.Value
+        public PropertyDefinition Value { get; set; }
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition CalibrationType { get; set; }
         public PropertyDefinition Method { get; set; }
@@ -155,8 +203,8 @@ namespace TabularCsv
     public class ControlConditionColumnDefinition : ActivityDefinition
     {
         // Default property is ControlCondition.ConditionType (picklist)
+        public PropertyDefinition ConditionType { get; set; }
         public PropertyDefinition UnitId { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition ControlCleanedType { get; set; }
         public PropertyDefinition ControlCode { get; set; }
@@ -166,8 +214,8 @@ namespace TabularCsv
     public abstract class DischargeActivityDefinition : TimeRangeActivityDefinition
     {
         // Default property is DischargeActivity.TotalDischarge.Value
+        public PropertyDefinition TotalDischarge { get; set; }
         public PropertyDefinition ChannelName { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition MeasurementId { get; set; }
         public PropertyDefinition DischargeUnitId { get; set; }
@@ -192,12 +240,16 @@ namespace TabularCsv
         public PropertyDefinition MeanGageHeightDurationHours { get; set; }
         public PropertyDefinition ManuallyCalculatedMeanGageHeight { get; set; }
         public PropertyDefinition MeanGageHeightDifferenceDuringVisit { get; set; }
-        public List<GageHeightMeasurementActivity> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurementActivity>();
+
+        public GageHeightMeasurementDefinition GageHeightMeasurement { get; set; }
+        public List<GageHeightMeasurementDefinition> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurementDefinition>();
+        public List<GageHeightMeasurementDefinition> AllGageHeightMeasurements => AllDefinitions(GageHeightMeasurement, GageHeightMeasurements);
     }
 
-    public class GageHeightMeasurementActivity : ActivityDefinition
+    public class GageHeightMeasurementDefinition : ActivityDefinition
     {
         // Default property is GageHeight.Value
+        public PropertyDefinition Value { get; set; }
         public PropertyDefinition Include { get; set; }
     }
 
@@ -244,15 +296,38 @@ namespace TabularCsv
         public PropertyDefinition MeterCalibrationFirmwareVersion { get; set; }
         public PropertyDefinition MeterCalibrationSoftwareVersion { get; set; }
         public PropertyDefinition MeterType { get; set; }
-        public List<MeterCalibrationEquationColumnDefinition> MeterCalibrationEquations { get; set; } = new List<MeterCalibrationEquationColumnDefinition>();
+
+        public MeterCalibrationEquationDefinition MeterCalibrationEquation { get; set; }
+        public List<MeterCalibrationEquationDefinition> MeterCalibrationEquations { get; set; } = new List<MeterCalibrationEquationDefinition>();
+        public List<MeterCalibrationEquationDefinition> AllMeterCalibrationEquations => AllDefinitions(MeterCalibrationEquation, MeterCalibrationEquations);
     }
 
-    public class MeterCalibrationEquationColumnDefinition : ColumnDefinition
+    public class MeterCalibrationEquationDefinition : ColumnDefinition
     {
         // Default property is MeterCalibrationEquation.Slope
+        public PropertyDefinition Slope { get; set; }
         public PropertyDefinition RangeStart { get; set; }
         public PropertyDefinition RangeEnd { get; set; }
         public PropertyDefinition Intercept { get; set; }
         public PropertyDefinition InterceptUnitId { get; set; }
+    }
+
+    public class LevelSurveyDefinition : CoreDefinition
+    {
+        // Default property is OriginReferencePointName
+        public PropertyDefinition OriginReferencePointName { get; set; }
+        public PropertyDefinition Party { get; set; }
+        public PropertyDefinition Method { get; set; }
+
+        public LevelSurveyMeasurementDefinition LevelSurveyMeasurement { get; set; }
+        public List<LevelSurveyMeasurementDefinition> LevelSurveyMeasurements { get; set; } = new List<LevelSurveyMeasurementDefinition>();
+        public List<LevelSurveyMeasurementDefinition> AllLevelSurveyMeasurements => AllDefinitions(LevelSurveyMeasurement, LevelSurveyMeasurements);
+    }
+
+    public class LevelSurveyMeasurementDefinition : ActivityDefinition
+    {
+        // Default property is MeasuredElevation
+        public PropertyDefinition MeasuredElevation { get; set; }
+        public PropertyDefinition ReferencePointName { get; set; }
     }
 }
