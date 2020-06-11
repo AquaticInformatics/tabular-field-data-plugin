@@ -231,14 +231,16 @@ namespace TabularCsv
     {
         // Default property is ManualGaugingDischargeSection.TotalDischarge.Value
         public PropertyDefinition SectionDischarge { get; set; }
+        public PropertyDefinition StartPoint { get; set; }
         public PropertyDefinition DischargeMethod { get; set; }
-        public PropertyDefinition VelocityValue { get; set; }
-        public PropertyDefinition PointVelocityObservationType { get; set; }
+        public PropertyDefinition VelocityAverageValue { get; set; }
+        public PropertyDefinition VelocityObservationMethod { get; set; }
         public PropertyDefinition DeploymentMethod { get; set; }
         public PropertyDefinition MeterSuspension { get; set; }
         public PropertyDefinition MeterCalibrationManufacturer { get; set; }
         public PropertyDefinition MeterCalibrationModel { get; set; }
         public PropertyDefinition MeterCalibrationSerialNumber { get; set; }
+        public PropertyDefinition MeterCalibrationConfiguration { get; set; }
         public PropertyDefinition MeterCalibrationFirmwareVersion { get; set; }
         public PropertyDefinition MeterCalibrationSoftwareVersion { get; set; }
         public PropertyDefinition MeterType { get; set; }

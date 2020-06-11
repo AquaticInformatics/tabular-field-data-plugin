@@ -13,8 +13,10 @@ using FieldDataPluginFramework.DataModel.ChannelMeasurements;
 using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
 using FieldDataPluginFramework.DataModel.Inspections;
+using FieldDataPluginFramework.DataModel.Meters;
 using FieldDataPluginFramework.DataModel.PickLists;
 using FieldDataPluginFramework.DataModel.Readings;
+using FieldDataPluginFramework.DataModel.Verticals;
 using FieldDataPluginFramework.Results;
 using NotVisualBasic.FileIO;
 
@@ -818,7 +820,7 @@ namespace TabularCsv
 
             var dischargeActivity = ParseDischargeActivity(visitInfo, adcpDischargeDefinition);
 
-            var channelName = GetString(adcpDischargeDefinition.ChannelName) ?? "Main";
+            var channelName = GetString(adcpDischargeDefinition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
             var distanceUnitId = GetString(adcpDischargeDefinition.DistanceUnitId);
             var areaUnitId = GetString(adcpDischargeDefinition.AreaUnitId);
             var velocityUnitId = GetString(adcpDischargeDefinition.VelocityUnitId);
@@ -888,14 +890,113 @@ namespace TabularCsv
             return dischargeActivity;
         }
 
-        private DischargeActivity ParsePanelSectionDischarge(FieldVisitInfo visitInfo, ManualGaugingDischargeDefinition panelSectionDischargeDefinition)
+        private DischargeActivity ParsePanelSectionDischarge(FieldVisitInfo visitInfo, ManualGaugingDischargeDefinition panelDischargeDefinition)
         {
-            if (panelSectionDischargeDefinition == null)
+            if (panelDischargeDefinition == null)
                 return null;
 
-            var dischargeActivity = ParseDischargeActivity(visitInfo, panelSectionDischargeDefinition);
+            var dischargeActivity = ParseDischargeActivity(visitInfo, panelDischargeDefinition);
+
+            var channelName = GetString(panelDischargeDefinition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
+            var distanceUnitId = GetString(panelDischargeDefinition.DistanceUnitId);
+            var areaUnitId = GetString(panelDischargeDefinition.AreaUnitId);
+            var velocityUnitId = GetString(panelDischargeDefinition.VelocityUnitId);
+
+            var sectionDischarge = GetNullableDouble(panelDischargeDefinition.SectionDischarge)
+                                   ?? dischargeActivity.Discharge.Value;
+
+            var panel = new ManualGaugingDischargeSection(
+                dischargeActivity.MeasurementPeriod,
+                channelName,
+                new Measurement(sectionDischarge, dischargeActivity.Discharge.UnitId),
+                distanceUnitId,
+                areaUnitId,
+                velocityUnitId)
+            {
+                WidthValue = GetNullableDouble(panelDischargeDefinition.WidthValue),
+                AreaValue = GetNullableDouble(panelDischargeDefinition.AreaValue),
+                VelocityAverageValue = GetNullableDouble(panelDischargeDefinition.VelocityAverageValue),
+                MeterCalibration = ParseMeterCalibration(panelDischargeDefinition),
+            };
+
+            var dischargeMethod = GetNullableEnum<DischargeMethodType>(panelDischargeDefinition.DischargeMethod);
+
+            if (dischargeMethod.HasValue)
+                panel.DischargeMethod = dischargeMethod.Value;
+
+            var deploymentMethod = GetNullableEnum<DeploymentMethodType>(panelDischargeDefinition.DeploymentMethod);
+
+            if (deploymentMethod.HasValue)
+                panel.DeploymentMethod = deploymentMethod.Value;
+
+            var meterSuspension = GetNullableEnum<MeterSuspensionType>(panelDischargeDefinition.MeterSuspension);
+
+            if (meterSuspension.HasValue)
+                panel.MeterSuspension = meterSuspension.Value;
+
+            var startPoint = GetNullableEnum<StartPointType>(panelDischargeDefinition.StartPoint);
+
+            if (startPoint.HasValue)
+                panel.StartPoint = startPoint.Value;
+
+            var velocityObservationMethod = GetNullableEnum<PointVelocityObservationType>(panelDischargeDefinition.VelocityObservationMethod);
+
+            if (velocityObservationMethod.HasValue)
+                panel.VelocityObservationMethod = velocityObservationMethod.Value;
+
+            dischargeActivity.ChannelMeasurements.Add(panel);
 
             return dischargeActivity;
+        }
+
+        private MeterCalibration ParseMeterCalibration(ManualGaugingDischargeDefinition panelDischargeDefinition)
+        {
+            var meterProperties = new[]
+                {
+                    panelDischargeDefinition.MeterType,
+                    panelDischargeDefinition.MeterCalibrationManufacturer,
+                    panelDischargeDefinition.MeterCalibrationModel,
+                    panelDischargeDefinition.MeterCalibrationSerialNumber,
+                    panelDischargeDefinition.MeterCalibrationFirmwareVersion,
+                    panelDischargeDefinition.MeterCalibrationSoftwareVersion,
+                    panelDischargeDefinition.MeterCalibrationConfiguration,
+                }
+                .Where(p => p != null)
+                .ToList();
+
+            if (!panelDischargeDefinition.MeterCalibrationEquations.Any() && !meterProperties.Any())
+                return null;
+
+            var meterType = GetNullableEnum<MeterType>(panelDischargeDefinition.MeterType);
+
+            var meterCalibration = new MeterCalibration
+            {
+                Manufacturer = GetString(panelDischargeDefinition.MeterCalibrationManufacturer),
+                Model = GetString(panelDischargeDefinition.MeterCalibrationModel),
+                SerialNumber = GetString(panelDischargeDefinition.MeterCalibrationSerialNumber),
+                FirmwareVersion = GetString(panelDischargeDefinition.MeterCalibrationFirmwareVersion),
+                SoftwareVersion = GetString(panelDischargeDefinition.MeterCalibrationSoftwareVersion),
+                Configuration = GetString(panelDischargeDefinition.MeterCalibrationConfiguration),
+            };
+
+            if (meterType.HasValue)
+                meterCalibration.MeterType = meterType.Value;
+
+            foreach (var equationDefinition in panelDischargeDefinition.MeterCalibrationEquations)
+            {
+                var equation = new MeterCalibrationEquation
+                {
+                    Slope = GetDouble(equationDefinition),
+                    Intercept = GetDouble(equationDefinition.Intercept),
+                    InterceptUnitId = GetString(equationDefinition.InterceptUnitId),
+                    RangeStart = GetNullableDouble(equationDefinition.RangeStart),
+                    RangeEnd = GetNullableDouble(equationDefinition.RangeEnd),
+                };
+
+                meterCalibration.Equations.Add(equation);
+            }
+
+            return meterCalibration;
         }
 
         private DischargeActivity ParseDischargeActivity(FieldVisitInfo visitInfo, DischargeActivityDefinition dischargeDefinition)
