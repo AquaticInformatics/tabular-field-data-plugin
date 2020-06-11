@@ -64,6 +64,26 @@ namespace TabularCsv
                 ActualAppender.AddReading(visit, reading);
             }
 
+            foreach (var calibration in delayedVisit.Calibrations)
+            {
+                ActualAppender.AddCalibration(visit, calibration);
+            }
+
+            foreach (var inspection in delayedVisit.Inspections)
+            {
+                ActualAppender.AddInspection(visit, inspection);
+            }
+
+            foreach (var controlCondition in delayedVisit.ControlConditions)
+            {
+                ActualAppender.AddControlCondition(visit, controlCondition);
+            }
+
+            foreach (var levelSurvey in delayedVisit.LevelSurveys)
+            {
+                ActualAppender.AddLevelSurvey(visit, levelSurvey);
+            }
+
             foreach (var crossSectionSurvey in delayedVisit.CrossSectionSurveys)
             {
                 ActualAppender.AddCrossSectionSurvey(visit, crossSectionSurvey);
