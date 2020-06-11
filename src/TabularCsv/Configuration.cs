@@ -18,26 +18,14 @@ namespace TabularCsv
         public string CommentLinePrefix { get; set; }
 
         public PropertyDefinition Location { get; set; }
-        public PropertyDefinition Weather { get; set; }
-        public PropertyDefinition CollectionAgency { get; set; }
-        public PropertyDefinition CompletedGroundWaterLevels { get; set; }
-        public PropertyDefinition CompletedLevelSurvey { get; set; }
-        public PropertyDefinition CompletedRecorderData { get; set; }
-        public PropertyDefinition CompletedSafetyInspection { get; set; }
-        public PropertyDefinition CompletedOtherSample { get; set; }
-        public PropertyDefinition CompletedBiologicalSample { get; set; }
-        public PropertyDefinition CompletedSedimentSample { get; set; }
-        public PropertyDefinition CompletedWaterQualitySample { get; set; }
-        public List<MergingTextDefinition> Comments { get; set; } = new List<MergingTextDefinition>();
-        public List<MergingTextDefinition> Party { get; set; } = new List<MergingTextDefinition>();
-        public List<TimestampDefinition> Timestamps { get; set; } = new List<TimestampDefinition>();
+        public VisitDefinition Visit { get; set; }
+        public ControlConditionColumnDefinition ControlCondition { get; set; }
 
         public List<ReadingDefinition> Readings { get; set; } = new List<ReadingDefinition>();
         public List<InspectionDefinition> Inspections { get; set; } = new List<InspectionDefinition>();
         public List<CalibrationDefinition> Calibrations { get; set; } = new List<CalibrationDefinition>();
         public List<AdcpDischargeDefinition> AdcpDischarges { get; set; } = new List<AdcpDischargeDefinition>();
         public List<ManualGaugingDischargeDefinition> PanelSectionDischarges { get; set; } = new List<ManualGaugingDischargeDefinition>();
-        public ControlConditionColumnDefinition ControlCondition { get; set; }
 
         public bool IsHeaderSectionExpected => HeaderRowCount > 0
                                                || !string.IsNullOrEmpty(HeadersEndWith)
@@ -234,6 +222,17 @@ namespace TabularCsv
             return false;
         }
 
+        public void AllowUnusedDefaultProperty()
+        {
+            if (IsInvalid(out _))
+            {
+                FixedValue = "?Unused?";
+                ColumnHeader = null;
+                ColumnIndex = null;
+                HeaderRegex = null;
+            }
+        }
+
         public string Name()
         {
             var suffix = RequiresColumnHeader()
@@ -265,6 +264,29 @@ namespace TabularCsv
     public abstract class ActivityColumnDefinition : ColumnDefinition
     {
         public List<TimestampDefinition> Timestamps { get; set; } = new List<TimestampDefinition>();
+    }
+
+    public abstract class TimeRangeActivityColumnDefinition : ActivityColumnDefinition
+    {
+        public List<TimestampDefinition> StartTimestamps { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> EndTimestamps { get; set; } = new List<TimestampDefinition>();
+    }
+
+    public class VisitDefinition : TimeRangeActivityColumnDefinition
+    {
+        // No default property for the main visit
+        public PropertyDefinition Weather { get; set; }
+        public PropertyDefinition CollectionAgency { get; set; }
+        public PropertyDefinition CompletedGroundWaterLevels { get; set; }
+        public PropertyDefinition CompletedLevelSurvey { get; set; }
+        public PropertyDefinition CompletedRecorderData { get; set; }
+        public PropertyDefinition CompletedSafetyInspection { get; set; }
+        public PropertyDefinition CompletedOtherSample { get; set; }
+        public PropertyDefinition CompletedBiologicalSample { get; set; }
+        public PropertyDefinition CompletedSedimentSample { get; set; }
+        public PropertyDefinition CompletedWaterQualitySample { get; set; }
+        public List<MergingTextDefinition> Comments { get; set; } = new List<MergingTextDefinition>();
+        public List<MergingTextDefinition> Party { get; set; } = new List<MergingTextDefinition>();
     }
 
     public class ReadingDefinition : ActivityColumnDefinition
@@ -336,12 +358,6 @@ namespace TabularCsv
         public PropertyDefinition ControlCleanedType { get; set; }
         public PropertyDefinition ControlCode { get; set; }
         public PropertyDefinition DistanceToGage { get; set; }
-    }
-
-    public abstract class TimeRangeActivityColumnDefinition : ActivityColumnDefinition
-    {
-        public List<TimestampDefinition> StartTimestamps { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> EndTimestamps { get; set; } = new List<TimestampDefinition>();
     }
 
     public abstract class DischargeActivityColumnDefinition : TimeRangeActivityColumnDefinition

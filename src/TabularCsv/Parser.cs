@@ -303,54 +303,43 @@ namespace TabularCsv
             var locationIdentifier = GetString(Configuration.Location);
 
             var locationInfo = LocationInfo ?? ResultsAppender.GetLocationByIdentifier(locationIdentifier);
-            var comments = MergeTextColumns(Configuration.Comments);
-            var party = MergeTextColumns(Configuration.Party);
-            var timestamp = ParseTimestamp(locationInfo, Configuration.Timestamps);
 
-            var fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo,
-                new FieldVisitDetails(new DateTimeInterval(timestamp, TimeSpan.Zero))
-                {
-                    Comments = comments,
-                    Party = party,
-                    CollectionAgency = GetString(Configuration.CollectionAgency),
-                    Weather = GetString(Configuration.Weather),
-                    CompletedVisitActivities = ParseCompletedVisitActivities()
-                });
+            var fieldVisitInfo = DelayedAppender.InternalConstructor<FieldVisitInfo>.Invoke(
+                locationInfo,
+                ParseVisit(locationInfo, Configuration.Visit));
 
             var readings = Configuration
                 .Readings
-                .Select(r => ParseReading(locationInfo, r))
+                .Select(r => ParseReading(fieldVisitInfo, r))
                 .Where(reading => reading != null)
-                .Select(reading =>
-                {
-                    reading.DateTimeOffset = reading.DateTimeOffset ?? timestamp;
-                    return reading;
-                })
                 .ToList();
 
             var inspections = Configuration
                 .Inspections
-                .Select(i => ParseInspection(locationInfo, i))
+                .Select(i => ParseInspection(fieldVisitInfo, i))
                 .Where(inspection => inspection != null)
-                .Select(inspection =>
-                {
-                    inspection.DateTimeOffset = inspection.DateTimeOffset ?? timestamp;
-                    return inspection;
-                })
                 .ToList();
 
             var calibrations = Configuration
                 .Calibrations
-                .Select(c => ParseCalibration(locationInfo, c))
+                .Select(c => ParseCalibration(fieldVisitInfo, c))
                 .Where(calibration => calibration != null)
-                .Select(calibration =>
-                {
-                    calibration.DateTimeOffset = calibration.DateTimeOffset ?? timestamp;
-                    return calibration;
-                })
                 .ToList();
 
-            var controlCondition = ParseControlCondition(locationInfo, Configuration.ControlCondition);
+            var controlCondition = ParseControlCondition(fieldVisitInfo, Configuration.ControlCondition);
+
+            var discharges = Configuration
+                .AdcpDischarges
+                .Select(adcp => ParseAdcpDischarge(fieldVisitInfo, adcp))
+                .Concat(Configuration
+                    .PanelSectionDischarges
+                    .Select(panel => ParsePanelSectionDischarge(fieldVisitInfo, panel)))
+                .Where(discharge => discharge != null)
+                .ToList();
+
+            // TODO: Adjust timestamps to accomodate late-binding of the timestamps.
+
+            fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo, fieldVisitInfo.FieldVisitDetails);
 
             foreach (var reading in readings)
             {
@@ -371,20 +360,46 @@ namespace TabularCsv
             {
                 ResultsAppender.AddControlCondition(fieldVisitInfo, controlCondition);
             }
+
+            foreach (var discharge in discharges)
+            {
+                ResultsAppender.AddDischargeActivity(fieldVisitInfo, discharge);
+            }
         }
 
-        private CompletedVisitActivities ParseCompletedVisitActivities()
+        private FieldVisitDetails ParseVisit(LocationInfo locationInfo, VisitDefinition visit)
+        {
+            if (visit == null)
+                visit = new VisitDefinition();
+
+            var fieldVisitPeriod = ParseInterval(
+                locationInfo,
+                visit.Timestamps,
+                visit.StartTimestamps,
+                visit.EndTimestamps);
+
+            return new FieldVisitDetails(fieldVisitPeriod)
+            {
+                Comments = MergeTextColumns(visit.Comments),
+                Party = MergeTextColumns(visit.Party),
+                CollectionAgency = GetString(visit.CollectionAgency),
+                Weather = GetString(visit.Weather),
+                CompletedVisitActivities = ParseCompletedVisitActivities(visit)
+            };
+        }
+
+        private CompletedVisitActivities ParseCompletedVisitActivities(VisitDefinition visit)
         {
             return new CompletedVisitActivities
             {
-                GroundWaterLevels = GetNullableBoolean(Configuration.CompletedGroundWaterLevels) ?? false,
-                ConductedLevelSurvey = GetNullableBoolean(Configuration.CompletedLevelSurvey) ?? false,
-                RecorderDataCollected = GetNullableBoolean(Configuration.CompletedRecorderData) ?? false,
-                SafetyInspectionPerformed = GetNullableBoolean(Configuration.CompletedSafetyInspection) ?? false,
-                OtherSample = GetNullableBoolean(Configuration.CompletedOtherSample) ?? false,
-                BiologicalSample = GetNullableBoolean(Configuration.CompletedBiologicalSample) ?? false,
-                SedimentSample = GetNullableBoolean(Configuration.CompletedSedimentSample) ?? false,
-                WaterQualitySample = GetNullableBoolean(Configuration.CompletedWaterQualitySample) ?? false,
+                GroundWaterLevels = GetNullableBoolean(visit.CompletedGroundWaterLevels) ?? false,
+                ConductedLevelSurvey = GetNullableBoolean(visit.CompletedLevelSurvey) ?? false,
+                RecorderDataCollected = GetNullableBoolean(visit.CompletedRecorderData) ?? false,
+                SafetyInspectionPerformed = GetNullableBoolean(visit.CompletedSafetyInspection) ?? false,
+                OtherSample = GetNullableBoolean(visit.CompletedOtherSample) ?? false,
+                BiologicalSample = GetNullableBoolean(visit.CompletedBiologicalSample) ?? false,
+                SedimentSample = GetNullableBoolean(visit.CompletedSedimentSample) ?? false,
+                WaterQualitySample = GetNullableBoolean(visit.CompletedWaterQualitySample) ?? false,
             };
         }
 
@@ -406,9 +421,62 @@ namespace TabularCsv
             return string.Join("\n", lines);
         }
 
-        private DateTimeOffset ParseTimestamp(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns)
+        private DateTimeInterval ParseInterval(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns, List<TimestampDefinition> startColumns, List<TimestampDefinition> endColumns)
         {
-            var timestamp = new DateTimeOffset(new DateTime(1900,1,1), LocationInfo?.UtcOffset ?? locationInfo.UtcOffset);
+            var interval = ParseNullableInterval(locationInfo, timestampColumns, startColumns, endColumns);
+
+            if (interval != null)
+                return interval;
+
+            var allTimeColumns = timestampColumns
+                .Concat(startColumns)
+                .Concat(endColumns)
+                .ToList();
+
+            if (!allTimeColumns.Any())
+                throw new Exception($"Line {LineNumber}: No timestamp columns are configured.");
+
+            throw new Exception($"Line {LineNumber}: No timestamp could be calculated from these columns: {string.Join(", ", allTimeColumns.Select(c => c.Name()))}");
+        }
+
+        private DateTimeInterval ParseNullableInterval(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns, List<TimestampDefinition> startColumns, List<TimestampDefinition> endColumns)
+        {
+            var time = ParseNullableDateTimeOffset(locationInfo, timestampColumns);
+            var startTime = ParseNullableDateTimeOffset(locationInfo, startColumns);
+            var endTime = ParseNullableDateTimeOffset(locationInfo, endColumns);
+
+            if (!time.HasValue && !startTime.HasValue && !endTime.HasValue)
+                return null;
+
+            if (!startTime.HasValue && !endTime.HasValue)
+                return new DateTimeInterval(time.Value, TimeSpan.Zero);
+
+            // ReSharper disable once ConstantNullCoalescingCondition
+            var start = startTime ?? endTime ?? DateTimeOffset.MaxValue;
+            // ReSharper disable once ConstantNullCoalescingCondition
+            var end = endTime ?? startTime ?? DateTimeOffset.MinValue;
+
+            return new DateTimeInterval(start, end);
+        }
+
+        private DateTimeOffset ParseDateTimeOffset(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns)
+        {
+            var dateTimeOffset = ParseNullableDateTimeOffset(locationInfo, timestampColumns);
+
+            if (!dateTimeOffset.HasValue)
+            {
+                throw new Exception($"Line {LineNumber}: No timestamp columns are configured. Can't figure out when this activity exists.");
+            }
+
+            return dateTimeOffset.Value;
+        }
+
+        private DateTimeOffset? ParseNullableDateTimeOffset(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns)
+        {
+            if (!timestampColumns.Any())
+                return null;
+
+            var timestamp = new DateTimeOffset(new DateTime(1900, 1, 1), LocationInfo?.UtcOffset ?? locationInfo.UtcOffset);
 
             foreach (var timestampColumn in timestampColumns)
             {
@@ -474,56 +542,61 @@ namespace TabularCsv
                 .Add(existing.TimeOfDay);
         }
 
-        private Reading ParseReading(LocationInfo locationInfo, ReadingDefinition readingColumn)
+        private DateTimeOffset ParseActivityTime(FieldVisitInfo visitInfo, ActivityColumnDefinition activity, DateTimeOffset? fallbackTime = null)
         {
-            var valueText = GetString(readingColumn);
+            var time = ParseNullableDateTimeOffset(visitInfo.LocationInfo, activity.Timestamps);
+
+            return time ?? fallbackTime ?? visitInfo.StartDate;
+        }
+
+        private DateTimeInterval ParseActivityTimeRange(FieldVisitInfo visitInfo, TimeRangeActivityColumnDefinition timeRangeActivity)
+        {
+            return ParseNullableInterval(visitInfo.LocationInfo, timeRangeActivity.Timestamps,
+                timeRangeActivity.StartTimestamps, timeRangeActivity.EndTimestamps)
+                   ?? visitInfo.FieldVisitDetails.FieldVisitPeriod;
+        }
+
+        private Reading ParseReading(FieldVisitInfo visitInfo, ReadingDefinition readingDefinition)
+        {
+            var valueText = GetString(readingDefinition);
 
             if (string.IsNullOrWhiteSpace(valueText))
                 return null;
 
-            DateTimeOffset? readingTime = null;
-
-            if (readingColumn.Timestamps?.Any() ?? false)
-            {
-                readingTime = ParseTimestamp(locationInfo, readingColumn.Timestamps);
-            }
-
-            var readingValue = GetNullableDouble(readingColumn);
-
-            if (!readingValue.HasValue)
-                throw new InvalidOperationException("Should never happen");
+            var readingValue = GetDouble(readingDefinition);
 
             var reading = new Reading(
-                GetString(readingColumn.ParameterId),
-                new Measurement(readingValue.Value, GetString(readingColumn.UnitId)));
-
-            reading.DateTimeOffset = readingTime;
-            reading.Comments = GetString(readingColumn.Comments);
-            reading.ReferencePointName = GetString(readingColumn.ReferencePointName);
-            reading.SubLocation = GetString(readingColumn.SubLocation);
-            reading.SensorUniqueId = GetNullableGuid(readingColumn.SensorUniqueId);
-            reading.Uncertainty = GetNullableDouble(readingColumn.Uncertainty);
-
-            if (!string.IsNullOrWhiteSpace(readingColumn.CommentPrefix))
+                GetString(readingDefinition.ParameterId),
+                new Measurement(readingValue, GetString(readingDefinition.UnitId)))
             {
-                reading.Comments = $"{readingColumn.CommentPrefix}{reading.Comments}";
+                DateTimeOffset = ParseActivityTime(visitInfo, readingDefinition),
+                Comments = GetString(readingDefinition.Comments),
+                ReferencePointName = GetString(readingDefinition.ReferencePointName),
+                SubLocation = GetString(readingDefinition.SubLocation),
+                SensorUniqueId = GetNullableGuid(readingDefinition.SensorUniqueId),
+                Uncertainty = GetNullableDouble(readingDefinition.Uncertainty)
+            };
+
+            if (!string.IsNullOrWhiteSpace(readingDefinition.CommentPrefix))
+            {
+                reading.Comments = $"{readingDefinition.CommentPrefix}{reading.Comments}";
             }
 
-            var readingType = GetNullableEnum<ReadingType>(readingColumn.ReadingType);
+            var readingType = GetNullableEnum<ReadingType>(readingDefinition.ReadingType);
 
             if (readingType.HasValue)
                 reading.ReadingType = readingType.Value;
 
-            var publish = GetNullableBoolean(readingColumn.Publish);
-            var useLocationDatumAsReference = GetNullableBoolean(readingColumn.UseLocationDatumAsReference);
+            var publish = GetNullableBoolean(readingDefinition.Publish);
+            var useLocationDatumAsReference = GetNullableBoolean(readingDefinition.UseLocationDatumAsReference);
 
-            var method = GetString(readingColumn.Method);
+            var method = GetString(readingDefinition.Method);
 
             if (!string.IsNullOrWhiteSpace(method))
                 reading.Method = method;
 
-            var gradeCode = GetNullableInteger(readingColumn.GradeCode);
-            var gradeName = GetString(readingColumn.GradeName);
+            var gradeCode = GetNullableInteger(readingDefinition.GradeCode);
+            var gradeName = GetString(readingDefinition.GradeName);
 
             if (gradeCode.HasValue)
                 reading.Grade = Grade.FromCode(gradeCode.Value);
@@ -537,9 +610,9 @@ namespace TabularCsv
             if (useLocationDatumAsReference.HasValue)
                 reading.UseLocationDatumAsReference = useLocationDatumAsReference.Value;
 
-            var measurementDeviceManufacturer = GetString(readingColumn.MeasurementDeviceManufacturer);
-            var measurementDeviceModel = GetString(readingColumn.MeasurementDeviceModel);
-            var measurementDeviceSerialNumber = GetString(readingColumn.MeasurementDeviceSerialNumber);
+            var measurementDeviceManufacturer = GetString(readingDefinition.MeasurementDeviceManufacturer);
+            var measurementDeviceModel = GetString(readingDefinition.MeasurementDeviceModel);
+            var measurementDeviceSerialNumber = GetString(readingDefinition.MeasurementDeviceSerialNumber);
 
             if (!string.IsNullOrEmpty(measurementDeviceManufacturer)
                 || !string.IsNullOrEmpty(measurementDeviceModel)
@@ -551,8 +624,8 @@ namespace TabularCsv
                     measurementDeviceSerialNumber);
             }
 
-            var readingQualifierSeparators = GetString(readingColumn.ReadingQualifierSeparators);
-            var readingQualifiers = GetString(readingColumn.ReadingQualifiers);
+            var readingQualifierSeparators = GetString(readingDefinition.ReadingQualifierSeparators);
+            var readingQualifiers = GetString(readingDefinition.ReadingQualifiers);
 
             if (!string.IsNullOrEmpty(readingQualifiers))
             {
@@ -571,10 +644,10 @@ namespace TabularCsv
                     .ToList();
             }
 
-            var measurementDetailsCut = GetNullableDouble(readingColumn.MeasurementDetailsCut);
-            var measurementDetailsHold = GetNullableDouble(readingColumn.MeasurementDetailsHold);
-            var measurementDetailsTapeCorrection = GetNullableDouble(readingColumn.MeasurementDetailsTapeCorrection);
-            var measurementDetailsWaterLevel = GetNullableDouble(readingColumn.MeasurementDetailsWaterLevel);
+            var measurementDetailsCut = GetNullableDouble(readingDefinition.MeasurementDetailsCut);
+            var measurementDetailsHold = GetNullableDouble(readingDefinition.MeasurementDetailsHold);
+            var measurementDetailsTapeCorrection = GetNullableDouble(readingDefinition.MeasurementDetailsTapeCorrection);
+            var measurementDetailsWaterLevel = GetNullableDouble(readingDefinition.MeasurementDetailsWaterLevel);
 
             if (measurementDetailsCut.HasValue || measurementDetailsHold.HasValue || measurementDetailsTapeCorrection.HasValue ||
                 measurementDetailsWaterLevel.HasValue)
@@ -591,30 +664,23 @@ namespace TabularCsv
             return reading;
         }
 
-        private Inspection ParseInspection(LocationInfo locationInfo, InspectionDefinition inspectionColumn)
+        private Inspection ParseInspection(FieldVisitInfo visitInfo, InspectionDefinition inspectionDefinition)
         {
-            var inspectionType = GetNullableEnum<InspectionType>(inspectionColumn);
+            var inspectionType = GetNullableEnum<InspectionType>(inspectionDefinition);
 
             if (!inspectionType.HasValue)
                 return null;
 
-            DateTimeOffset? inspectionTime = null;
-
-            if (inspectionColumn.Timestamps?.Any() ?? false)
-            {
-                inspectionTime = ParseTimestamp(locationInfo, inspectionColumn.Timestamps);
-            }
-
             var inspection = new Inspection(inspectionType.Value)
             {
-                DateTimeOffset = inspectionTime,
-                Comments = GetString(inspectionColumn.Comments),
-                SubLocation = GetString(inspectionColumn.SubLocation)
+                DateTimeOffset = ParseActivityTime(visitInfo, inspectionDefinition),
+                Comments = GetString(inspectionDefinition.Comments),
+                SubLocation = GetString(inspectionDefinition.SubLocation)
             };
 
-            var measurementDeviceManufacturer = GetString(inspectionColumn.MeasurementDeviceManufacturer);
-            var measurementDeviceModel = GetString(inspectionColumn.MeasurementDeviceModel);
-            var measurementDeviceSerialNumber = GetString(inspectionColumn.MeasurementDeviceSerialNumber);
+            var measurementDeviceManufacturer = GetString(inspectionDefinition.MeasurementDeviceManufacturer);
+            var measurementDeviceModel = GetString(inspectionDefinition.MeasurementDeviceModel);
+            var measurementDeviceSerialNumber = GetString(inspectionDefinition.MeasurementDeviceSerialNumber);
 
             if (!string.IsNullOrEmpty(measurementDeviceManufacturer)
                 || !string.IsNullOrEmpty(measurementDeviceModel)
@@ -629,45 +695,36 @@ namespace TabularCsv
             return inspection;
         }
 
-        private Calibration ParseCalibration(LocationInfo locationInfo, CalibrationDefinition calibrationColumn)
+        private Calibration ParseCalibration(FieldVisitInfo visitInfo, CalibrationDefinition calibrationDefinition)
         {
-            var valueText = GetString(calibrationColumn);
+            var valueText = GetString(calibrationDefinition);
 
             if (string.IsNullOrWhiteSpace(valueText))
                 return null;
 
-            DateTimeOffset? calibrationTime = null;
-
-            if (calibrationColumn.Timestamps?.Any() ?? false)
-            {
-                calibrationTime = ParseTimestamp(locationInfo, calibrationColumn.Timestamps);
-            }
-
-            var calibrationValue = GetNullableDouble(calibrationColumn);
-
-            if (!calibrationValue.HasValue)
-                throw new InvalidOperationException("Should never happen");
+            var calibrationValue = GetDouble(calibrationDefinition);
 
             var calibration = new Calibration(
-                GetString(calibrationColumn.ParameterId),
-                GetString(calibrationColumn.UnitId),
-                calibrationValue.Value);
+                GetString(calibrationDefinition.ParameterId),
+                GetString(calibrationDefinition.UnitId),
+                calibrationValue)
+            {
+                DateTimeOffset = ParseActivityTime(visitInfo, calibrationDefinition),
+                Comments = GetString(calibrationDefinition.Comments),
+                Party = GetString(calibrationDefinition.Party),
+                SubLocation = GetString(calibrationDefinition.SubLocation),
+                SensorUniqueId = GetNullableGuid(calibrationDefinition.SensorUniqueId),
+                Standard = GetNullableDouble(calibrationDefinition.Standard)
+            };
 
-            calibration.DateTimeOffset = calibrationTime;
-            calibration.Comments = GetString(calibrationColumn.Comments);
-            calibration.Party = GetString(calibrationColumn.Party);
-            calibration.SubLocation = GetString(calibrationColumn.SubLocation);
-            calibration.SensorUniqueId = GetNullableGuid(calibrationColumn.SensorUniqueId);
-            calibration.Standard = GetNullableDouble(calibrationColumn.Standard);
-
-            var calibrationType = GetNullableEnum<CalibrationType>(calibrationColumn.CalibrationType);
+            var calibrationType = GetNullableEnum<CalibrationType>(calibrationDefinition.CalibrationType);
 
             if (calibrationType.HasValue)
                 calibration.CalibrationType = calibrationType.Value;
 
-            var publish = GetNullableBoolean(calibrationColumn.Publish);
+            var publish = GetNullableBoolean(calibrationDefinition.Publish);
 
-            var method = GetString(calibrationColumn.Method);
+            var method = GetString(calibrationDefinition.Method);
 
             if (!string.IsNullOrWhiteSpace(method))
                 calibration.Method = method;
@@ -675,9 +732,9 @@ namespace TabularCsv
             if (publish.HasValue)
                 calibration.Publish = publish.Value;
 
-            var measurementDeviceManufacturer = GetString(calibrationColumn.MeasurementDeviceManufacturer);
-            var measurementDeviceModel = GetString(calibrationColumn.MeasurementDeviceModel);
-            var measurementDeviceSerialNumber = GetString(calibrationColumn.MeasurementDeviceSerialNumber);
+            var measurementDeviceManufacturer = GetString(calibrationDefinition.MeasurementDeviceManufacturer);
+            var measurementDeviceModel = GetString(calibrationDefinition.MeasurementDeviceModel);
+            var measurementDeviceSerialNumber = GetString(calibrationDefinition.MeasurementDeviceSerialNumber);
 
             if (!string.IsNullOrEmpty(measurementDeviceManufacturer)
                 || !string.IsNullOrEmpty(measurementDeviceModel)
@@ -691,27 +748,27 @@ namespace TabularCsv
 
             DateTimeOffset? expirationDate = null;
 
-            if (calibrationColumn.StandardDetailsExpirationDate != null)
+            if (calibrationDefinition.StandardDetailsExpirationDate != null)
             {
-                expirationDate = ParseTimestamp(locationInfo,
+                expirationDate = ParseDateTimeOffset(visitInfo.LocationInfo,
                     new List<TimestampDefinition>
                     {
-                        calibrationColumn.StandardDetailsExpirationDate
+                        calibrationDefinition.StandardDetailsExpirationDate
                     });
             }
 
             calibration.StandardDetails = new StandardDetails
             {
-                LotNumber = GetString(calibrationColumn.StandardDetailsLotNumber),
-                StandardCode = GetString(calibrationColumn.StandardDetailsStandardCode),
+                LotNumber = GetString(calibrationDefinition.StandardDetailsLotNumber),
+                StandardCode = GetString(calibrationDefinition.StandardDetailsStandardCode),
                 ExpirationDate = expirationDate,
-                Temperature = GetNullableDouble(calibrationColumn.StandardDetailsTemperature),
+                Temperature = GetNullableDouble(calibrationDefinition.StandardDetailsTemperature),
             };
 
             return calibration;
         }
 
-        private ControlCondition ParseControlCondition(LocationInfo locationInfo, ControlConditionColumnDefinition controlConditionColumn)
+        private ControlCondition ParseControlCondition(FieldVisitInfo visitInfo, ControlConditionColumnDefinition controlConditionColumn)
         {
             if (controlConditionColumn == null)
                 return null;
@@ -720,7 +777,7 @@ namespace TabularCsv
 
             if (controlConditionColumn.Timestamps?.Any() ?? false)
             {
-                dateCleaned = ParseTimestamp(locationInfo, controlConditionColumn.Timestamps);
+                dateCleaned = ParseDateTimeOffset(visitInfo.LocationInfo, controlConditionColumn.Timestamps);
             }
 
             var conditionType = GetString(controlConditionColumn);
@@ -760,6 +817,57 @@ namespace TabularCsv
 
             return controlCondition;
         }
+
+        private DischargeActivity ParseAdcpDischarge(FieldVisitInfo visitInfo, AdcpDischargeDefinition adcpDischargeDefinition)
+        {
+            if (adcpDischargeDefinition == null)
+                return null;
+
+            var dischargeActivity = ParseDischargeActivity(visitInfo, adcpDischargeDefinition);
+
+            return dischargeActivity;
+        }
+
+        private DischargeActivity ParsePanelSectionDischarge(FieldVisitInfo visitInfo, ManualGaugingDischargeDefinition panelSectionDischargeDefinition)
+        {
+            if (panelSectionDischargeDefinition == null)
+                return null;
+
+            var dischargeActivity = ParseDischargeActivity(visitInfo, panelSectionDischargeDefinition);
+
+            return dischargeActivity;
+        }
+
+        private DischargeActivity ParseDischargeActivity(FieldVisitInfo visitInfo, DischargeActivityColumnDefinition dischargeDefinition)
+        {
+            var totalDischarge = GetDouble(dischargeDefinition);
+
+            var dischargeUnitId = GetString(dischargeDefinition.DischargeUnitId);
+            var dischargeInterval = ParseActivityTimeRange(visitInfo, dischargeDefinition);
+            var discharge = new Measurement(totalDischarge, dischargeUnitId);
+
+            var dischargeActivity = new DischargeActivity(dischargeInterval, discharge)
+            {
+                MeasurementId = GetString(dischargeDefinition.MeasurementId),
+                Comments = GetString(dischargeDefinition.Comments),
+                Party = GetString(dischargeDefinition.Party),
+
+            };
+
+            var gradeCode = GetNullableInteger(dischargeDefinition.GradeCode);
+            var gradeName = GetString(dischargeDefinition.GradeName);
+
+            if (gradeCode.HasValue)
+                dischargeActivity.MeasurementGrade = Grade.FromCode(gradeCode.Value);
+
+            if (!string.IsNullOrEmpty(gradeName))
+                dischargeActivity.MeasurementGrade = Grade.FromDisplayName(gradeName);
+
+            // Add gage height
+
+            return dischargeActivity;
+        }
+
 
         private bool? GetNullableBoolean(ColumnDefinition column)
         {
@@ -824,6 +932,16 @@ namespace TabularCsv
                 return value;
 
             throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{valueText}' is an invalid number.");
+        }
+
+        private double GetDouble(ColumnDefinition column)
+        {
+            var value = GetNullableDouble(column);
+
+            if (!value.HasValue)
+                throw new InvalidOperationException($"Line {LineNumber} '{column.Name()}': '{GetString(column)}' is missing a required number.");
+
+            return value.Value;
         }
 
         private TEnum? GetNullableEnum<TEnum>(ColumnDefinition column) where TEnum : struct
