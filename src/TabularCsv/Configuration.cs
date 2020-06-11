@@ -126,7 +126,7 @@ namespace TabularCsv
         public PropertyDefinition CompletedSedimentSample { get; set; }
         public PropertyDefinition CompletedWaterQualitySample { get; set; }
         public List<MergingTextDefinition> Comments { get; set; } = new List<MergingTextDefinition>();
-        public List<MergingTextDefinition> Party { get; set; } = new List<MergingTextDefinition>();
+        public PropertyDefinition Party { get; set; }
     }
 
     public class ReadingDefinition : ActivityDefinition
@@ -135,7 +135,6 @@ namespace TabularCsv
         public PropertyDefinition Value { get; set; }
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
-        public string CommentPrefix { get; set; }
         public PropertyDefinition ReadingType { get; set; }
         public PropertyDefinition Comments { get; set; }
         public PropertyDefinition GradeCode { get; set; }

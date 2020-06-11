@@ -414,7 +414,7 @@ namespace TabularCsv
             return new FieldVisitDetails(fieldVisitPeriod)
             {
                 Comments = MergeTextColumns(visit.Comments),
-                Party = MergeTextColumns(visit.Party),
+                Party = GetString(visit.Party),
                 CollectionAgency = GetString(visit.CollectionAgency),
                 Weather = GetString(visit.Weather),
                 CompletedVisitActivities = ParseCompletedVisitActivities(visit)
@@ -597,11 +597,6 @@ namespace TabularCsv
                     definition.MeasurementDeviceModel,
                     definition.MeasurementDeviceSerialNumber)
             };
-
-            if (!string.IsNullOrWhiteSpace(definition.CommentPrefix))
-            {
-                reading.Comments = $"{definition.CommentPrefix}{reading.Comments}";
-            }
 
             var readingType = GetNullableEnum<ReadingType>(definition.ReadingType);
 
