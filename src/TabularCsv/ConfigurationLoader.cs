@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FieldDataPluginFramework;
@@ -74,7 +75,12 @@ namespace TabularCsv
         {
             var lineNumber = GuessSourceLine(tomlKeyChain, targetValue);
 
-            var propertyName = $"{targetObject.GetType().FullName?.Replace($"{nameof(TabularCsv)}.", string.Empty)}.{string.Join(".", tomlKeyChain)}";
+            var typeName = targetObject
+                .GetType()
+                .FullName
+                ?.Replace($"{nameof(TabularCsv)}.", string.Empty);
+
+            var propertyName = $"{typeName}.{string.Join(".", tomlKeyChain)}";
 
             var message = $"'{propertyName}' is not a valid key.";
 
@@ -95,18 +101,28 @@ namespace TabularCsv
             );
 
             var keyTarget = tomlKeyChain.Last();
-            var valueTarget = targetValue.ToString();
+            var valueTarget = SimpleTomlTypes.Contains(targetValue.TomlType)
+                ? targetValue.ToString()
+                : null;
 
             for (var i = 0; i < lines.Length; ++i)
             {
                 var line = lines[i];
 
-                if (line.Contains(keyTarget) && line.Contains(valueTarget))
+                if (line.Contains(keyTarget) && (valueTarget == null || line.Contains(valueTarget)))
                     return 1 + i;
             }
 
-            return 0;
+            return null;
         }
+
+        private static readonly HashSet<TomlObjectType> SimpleTomlTypes = new HashSet<TomlObjectType>
+        {
+            TomlObjectType.Bool,
+            TomlObjectType.Int,
+            TomlObjectType.Float,
+            TomlObjectType.String,
+        };
 
         private PropertyDefinition ConvertFixedValueShorthandSyntax(ITomlRoot root, TomlString tomlString)
         {
