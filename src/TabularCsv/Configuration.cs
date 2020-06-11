@@ -1,8 +1,5 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
 
 namespace TabularCsv
 {
@@ -18,6 +15,10 @@ namespace TabularCsv
         public string CommentLinePrefix { get; set; }
 
         public PropertyDefinition Location { get; set; }
+        public List<TimestampDefinition> Time { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> StartTime { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> EndTime { get; set; } = new List<TimestampDefinition>();
+
         public VisitDefinition Visit { get; set; }
         public ControlConditionColumnDefinition ControlCondition { get; set; }
 
@@ -47,206 +48,8 @@ namespace TabularCsv
         }
     }
 
-    public static class ColumnDecorator
-    {
-        public static List<ColumnDefinition> GetNamedColumns(object item, string baseName = "")
-        {
-            var columnDefinitions = new List<ColumnDefinition>();
-
-            if (item == null)
-                return columnDefinitions;
-
-            if (item is ColumnDefinition itemDefinition)
-            {
-                columnDefinitions.Add(itemDefinition);
-                itemDefinition.SetNamePrefix(baseName);
-            }
-
-            var type = item.GetType();
-            var baseColumnType = typeof(ColumnDefinition);
-            var baseListType = typeof(List<>);
-            var propertyDefinitionType = typeof(PropertyDefinition);
-
-            void AddNamedColumn(ColumnDefinition column, string propertyName)
-            {
-                var columnPropertyType = column.GetType();
-
-                if (propertyDefinitionType.IsAssignableFrom(columnPropertyType))
-                {
-                    columnDefinitions.Add(column);
-                    column.SetNamePrefix($"{baseName}.{propertyName}");
-                }
-                else
-                {
-                    columnDefinitions.AddRange(GetNamedColumns(column, $"{baseName}.{propertyName}"));
-                }
-            }
-
-            var candidateProperties = type
-                .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-                .Where(p => p.CanRead && p.CanWrite)
-                .ToList();
-
-            var columnProperties = candidateProperties
-                .Where(p => baseColumnType.IsAssignableFrom(p.PropertyType))
-                .ToList();
-
-            foreach (var columnProperty in columnProperties)
-            {
-                var getMethod = columnProperty.GetGetMethod(false);
-
-                if (getMethod == null)
-                    continue;
-
-                var column = getMethod.Invoke(item, null) as ColumnDefinition;
-
-                if (column == null)
-                    continue;
-
-                AddNamedColumn(column, columnProperty.Name);
-            }
-
-            var columnCollectionProperties = candidateProperties
-                .Where(p => p.PropertyType.IsGenericType && baseListType == p.PropertyType.GetGenericTypeDefinition())
-                .ToList();
-
-            foreach (var columnCollectionProperty in columnCollectionProperties)
-            {
-                var getMethod = columnCollectionProperty.GetGetMethod(false);
-
-                if (getMethod == null)
-                    continue;
-
-                var list = getMethod.Invoke(item, null) as IEnumerable;
-
-                if (list == null)
-                    continue;
-
-                var index = 1;
-                foreach (var listItem in list)
-                {
-                    if (listItem is ColumnDefinition column)
-                    {
-                        AddNamedColumn(column, $"{columnCollectionProperty.Name}[{index}]");
-                    }
-
-                    ++index;
-                }
-            }
-
-            return columnDefinitions;
-        }
-    }
-
     public class PropertyDefinition : ColumnDefinition
     {
-    }
-
-    public abstract class ColumnDefinition
-    {
-        public const string RegexCaptureGroupName = "value";
-
-        public int? ColumnIndex { get; set; }
-        public string ColumnHeader { get; set; }
-        public string FixedValue { get; set; }
-        public string HeaderRegex { get; set; }
-        private string NamePrefix { get; set; }
-
-        public void SetNamePrefix(string namePrefix)
-        {
-            if (namePrefix?.StartsWith(".") ?? false)
-            {
-                namePrefix = namePrefix.Substring(1);
-            }
-
-            NamePrefix = namePrefix;
-        }
-
-        public bool RequiresColumnHeader()
-        {
-            return !HasFixedValue
-                   && !HasHeaderRegex
-                   && HasNamedColumn;
-        }
-
-        public bool HasFixedValue => !string.IsNullOrEmpty(FixedValue);
-        public bool HasNamedColumn => !string.IsNullOrWhiteSpace(ColumnHeader);
-        public bool HasIndexedColumn => ColumnIndex.HasValue;
-        public bool HasHeaderRegex => !string.IsNullOrEmpty(HeaderRegex);
-
-        public bool IsInvalid(out string validationMessage)
-        {
-            validationMessage = null;
-
-            if (HasHeaderRegex)
-            {
-                var regex = new Regex(HeaderRegex);
-
-                if (!regex.GetGroupNames().Contains(RegexCaptureGroupName))
-                {
-                    validationMessage = $"A named capture group is missing. Use something like: (?<{RegexCaptureGroupName}>PATTERN)";
-
-                    return true;
-                }
-            }
-
-            var setProperties = new[]
-                {
-                    HasFixedValue ? nameof(FixedValue) : null,
-                    HasHeaderRegex ? nameof(HeaderRegex) : null,
-                    HasNamedColumn ? nameof(ColumnHeader) : null,
-                    HasIndexedColumn ? nameof(ColumnIndex) : null,
-                }
-                .Where(s => !string.IsNullOrEmpty(s))
-                .ToList();
-
-            if (setProperties.Count != 1)
-            {
-                var allProperties = new[]
-                {
-                    nameof(ColumnHeader),
-                    nameof(ColumnIndex),
-                    nameof(FixedValue),
-                    nameof(HeaderRegex),
-                };
-
-                var setPropertyContext = setProperties.Any()
-                    ? $": {string.Join(", ", setProperties)}"
-                    : string.Empty;
-
-                validationMessage = $"Only one of the {string.Join(", ", allProperties)} properties can be set. You have set {setProperties.Count} properties{setPropertyContext}.";
-
-                return true;
-            }
-
-            return false;
-        }
-
-        public void AllowUnusedDefaultProperty()
-        {
-            if (IsInvalid(out _))
-            {
-                FixedValue = "?Unused?";
-                ColumnHeader = null;
-                ColumnIndex = null;
-                HeaderRegex = null;
-            }
-        }
-
-        public string Name()
-        {
-            var suffix = RequiresColumnHeader()
-                ? $"ColumnHeader='{ColumnHeader}'"
-                : HasFixedValue
-                    ? $"FixedValue='{FixedValue}'"
-                    : HasHeaderRegex
-                        ? $"HeaderRegex='{HeaderRegex}'"
-                        : HasIndexedColumn
-                            ? $"ColumnIndex[{ColumnIndex}]"
-                            : "NoContextSpecified";
-
-            return $"{NamePrefix}.{suffix}";
-        }
     }
 
     public class MergingTextDefinition : ColumnDefinition
@@ -261,18 +64,18 @@ namespace TabularCsv
         public PropertyDefinition UtcOffset { get; set; }
     }
 
-    public abstract class ActivityColumnDefinition : ColumnDefinition
+    public abstract class ActivityDefinition : ColumnDefinition
     {
-        public List<TimestampDefinition> Timestamps { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> Time { get; set; } = new List<TimestampDefinition>();
     }
 
-    public abstract class TimeRangeActivityColumnDefinition : ActivityColumnDefinition
+    public abstract class TimeRangeActivityDefinition : ActivityDefinition
     {
-        public List<TimestampDefinition> StartTimestamps { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> EndTimestamps { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> StartTime { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> EndTime { get; set; } = new List<TimestampDefinition>();
     }
 
-    public class VisitDefinition : TimeRangeActivityColumnDefinition
+    public class VisitDefinition : TimeRangeActivityDefinition
     {
         // No default property for the main visit
         public PropertyDefinition Weather { get; set; }
@@ -289,7 +92,7 @@ namespace TabularCsv
         public List<MergingTextDefinition> Party { get; set; } = new List<MergingTextDefinition>();
     }
 
-    public class ReadingDefinition : ActivityColumnDefinition
+    public class ReadingDefinition : ActivityDefinition
     {
         // Default property is Reading.Value
         public PropertyDefinition ParameterId { get; set; }
@@ -317,7 +120,7 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDetailsWaterLevel { get; set; }
     }
 
-    public class InspectionDefinition : ActivityColumnDefinition
+    public class InspectionDefinition : ActivityDefinition
     {
         // Default property is Inspection.InspectionType (enum)
         public PropertyDefinition Comments { get; set; }
@@ -327,7 +130,7 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDeviceSerialNumber { get; set; }
     }
 
-    public class CalibrationDefinition : ActivityColumnDefinition
+    public class CalibrationDefinition : ActivityDefinition
     {
         // Default property is Calibration.Value
         public PropertyDefinition ParameterId { get; set; }
@@ -349,7 +152,7 @@ namespace TabularCsv
         public PropertyDefinition StandardDetailsTemperature { get; set; }
     }
 
-    public class ControlConditionColumnDefinition : ActivityColumnDefinition
+    public class ControlConditionColumnDefinition : ActivityDefinition
     {
         // Default property is ControlCondition.ConditionType (picklist)
         public PropertyDefinition UnitId { get; set; }
@@ -360,7 +163,7 @@ namespace TabularCsv
         public PropertyDefinition DistanceToGage { get; set; }
     }
 
-    public abstract class DischargeActivityColumnDefinition : TimeRangeActivityColumnDefinition
+    public abstract class DischargeActivityDefinition : TimeRangeActivityDefinition
     {
         // Default property is DischargeActivity.TotalDischarge.Value
         public PropertyDefinition ChannelName { get; set; }
@@ -390,13 +193,13 @@ namespace TabularCsv
         public List<GageHeightMeasurement> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurement>();
     }
 
-    public class GageHeightMeasurement : ActivityColumnDefinition
+    public class GageHeightMeasurement : ActivityDefinition
     {
         // Default property is GageHeight.Value
         public PropertyDefinition Include { get; set; }
     }
 
-    public class AdcpDischargeDefinition : DischargeActivityColumnDefinition
+    public class AdcpDischargeDefinition : DischargeActivityDefinition
     {
         // Default property is AdcpDischargeSection.TotalDischarge.Value
         public PropertyDefinition SectionDischarge { get; set; }
@@ -419,7 +222,7 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDeviceSerialNumber { get; set; }
     }
 
-    public class ManualGaugingDischargeDefinition : DischargeActivityColumnDefinition
+    public class ManualGaugingDischargeDefinition : DischargeActivityDefinition
     {
         // Default property is ManualGaugingDischargeSection.TotalDischarge.Value
         public PropertyDefinition SectionDischarge { get; set; }
@@ -443,15 +246,5 @@ namespace TabularCsv
         public PropertyDefinition RangeEnd { get; set; }
         public PropertyDefinition Intercept { get; set; }
         public PropertyDefinition InterceptUnitId { get; set; }
-    }
-
-    public enum TimestampType
-    {
-        Unknown,
-        DateOnly,
-        TimeOnly,
-        DateTimeOnly,
-        DateTimeOffset,
-        DateAndSurvey123Offset,
     }
 }

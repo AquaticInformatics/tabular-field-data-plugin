@@ -37,7 +37,12 @@ namespace TabularCsv
                 // Set the name to the configuration if none is specified
                 configuration.Name = configuration.Name ?? configurationName;
 
-                configuration.Visit?.AllowUnusedDefaultProperty();
+                if (configuration.Visit == null)
+                {
+                    configuration.Visit = new VisitDefinition();
+                }
+
+                configuration.Visit.AllowUnusedDefaultProperty();
 
                 return configuration;
             }

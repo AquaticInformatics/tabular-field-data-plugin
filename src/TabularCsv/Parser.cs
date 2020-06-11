@@ -306,7 +306,7 @@ namespace TabularCsv
 
             var fieldVisitInfo = DelayedAppender.InternalConstructor<FieldVisitInfo>.Invoke(
                 locationInfo,
-                ParseVisit(locationInfo, Configuration.Visit));
+                ParseVisit(locationInfo));
 
             var readings = Configuration
                 .Readings
@@ -367,16 +367,36 @@ namespace TabularCsv
             }
         }
 
-        private FieldVisitDetails ParseVisit(LocationInfo locationInfo, VisitDefinition visit)
+        private FieldVisitDetails ParseVisit(LocationInfo locationInfo)
         {
-            if (visit == null)
-                visit = new VisitDefinition();
+            var visit = Configuration.Visit;
 
             var fieldVisitPeriod = ParseInterval(
                 locationInfo,
-                visit.Timestamps,
-                visit.StartTimestamps,
-                visit.EndTimestamps);
+                visit.Time,
+                visit.StartTime,
+                visit.EndTime)
+                ?? ParseInterval(
+                    locationInfo,
+                    Configuration.Time,
+                    Configuration.StartTime,
+                    Configuration.EndTime);
+
+            if (fieldVisitPeriod == null)
+            {
+                var allTimeColumns = Configuration.Time
+                    .Concat(Configuration.StartTime)
+                    .Concat(Configuration.EndTime)
+                    .Concat(visit.Time)
+                    .Concat(visit.StartTime)
+                    .Concat(visit.EndTime)
+                    .ToList();
+
+                if (!allTimeColumns.Any())
+                    throw new Exception($"Line {LineNumber}: No timestamp columns are configured.");
+
+                throw new Exception($"Line {LineNumber}: No timestamp could be calculated from these columns: {string.Join(", ", allTimeColumns.Select(c => c.Name()))}");
+            }
 
             return new FieldVisitDetails(fieldVisitPeriod)
             {
@@ -422,24 +442,6 @@ namespace TabularCsv
         }
 
         private DateTimeInterval ParseInterval(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns, List<TimestampDefinition> startColumns, List<TimestampDefinition> endColumns)
-        {
-            var interval = ParseNullableInterval(locationInfo, timestampColumns, startColumns, endColumns);
-
-            if (interval != null)
-                return interval;
-
-            var allTimeColumns = timestampColumns
-                .Concat(startColumns)
-                .Concat(endColumns)
-                .ToList();
-
-            if (!allTimeColumns.Any())
-                throw new Exception($"Line {LineNumber}: No timestamp columns are configured.");
-
-            throw new Exception($"Line {LineNumber}: No timestamp could be calculated from these columns: {string.Join(", ", allTimeColumns.Select(c => c.Name()))}");
-        }
-
-        private DateTimeInterval ParseNullableInterval(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns, List<TimestampDefinition> startColumns, List<TimestampDefinition> endColumns)
         {
             var time = ParseNullableDateTimeOffset(locationInfo, timestampColumns);
             var startTime = ParseNullableDateTimeOffset(locationInfo, startColumns);
@@ -542,17 +544,17 @@ namespace TabularCsv
                 .Add(existing.TimeOfDay);
         }
 
-        private DateTimeOffset ParseActivityTime(FieldVisitInfo visitInfo, ActivityColumnDefinition activity, DateTimeOffset? fallbackTime = null)
+        private DateTimeOffset ParseActivityTime(FieldVisitInfo visitInfo, ActivityDefinition activity, DateTimeOffset? fallbackTime = null)
         {
-            var time = ParseNullableDateTimeOffset(visitInfo.LocationInfo, activity.Timestamps);
+            var time = ParseNullableDateTimeOffset(visitInfo.LocationInfo, activity.Time);
 
             return time ?? fallbackTime ?? visitInfo.StartDate;
         }
 
-        private DateTimeInterval ParseActivityTimeRange(FieldVisitInfo visitInfo, TimeRangeActivityColumnDefinition timeRangeActivity)
+        private DateTimeInterval ParseActivityTimeRange(FieldVisitInfo visitInfo, TimeRangeActivityDefinition timeRangeActivity)
         {
-            return ParseNullableInterval(visitInfo.LocationInfo, timeRangeActivity.Timestamps,
-                timeRangeActivity.StartTimestamps, timeRangeActivity.EndTimestamps)
+            return ParseInterval(visitInfo.LocationInfo, timeRangeActivity.Time,
+                timeRangeActivity.StartTime, timeRangeActivity.EndTime)
                    ?? visitInfo.FieldVisitDetails.FieldVisitPeriod;
         }
 
@@ -775,9 +777,9 @@ namespace TabularCsv
 
             DateTimeOffset? dateCleaned = null;
 
-            if (controlConditionColumn.Timestamps?.Any() ?? false)
+            if (controlConditionColumn.Time?.Any() ?? false)
             {
-                dateCleaned = ParseDateTimeOffset(visitInfo.LocationInfo, controlConditionColumn.Timestamps);
+                dateCleaned = ParseDateTimeOffset(visitInfo.LocationInfo, controlConditionColumn.Time);
             }
 
             var conditionType = GetString(controlConditionColumn);
@@ -838,7 +840,7 @@ namespace TabularCsv
             return dischargeActivity;
         }
 
-        private DischargeActivity ParseDischargeActivity(FieldVisitInfo visitInfo, DischargeActivityColumnDefinition dischargeDefinition)
+        private DischargeActivity ParseDischargeActivity(FieldVisitInfo visitInfo, DischargeActivityDefinition dischargeDefinition)
         {
             var totalDischarge = GetDouble(dischargeDefinition);
 
