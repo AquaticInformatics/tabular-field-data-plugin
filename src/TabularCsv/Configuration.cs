@@ -3,9 +3,9 @@ using System.Linq;
 
 namespace TabularCsv
 {
-    public class Configuration
+    public class Configuration : TimeRangeActivityDefinition
     {
-        public string Name { get; set; }
+        public string Id { get; set; }
         public int Priority { get; set; }
         public string Separator { get; set; }
         public int HeaderRowCount { get; set; }
@@ -15,18 +15,29 @@ namespace TabularCsv
         public string CommentLinePrefix { get; set; }
 
         public PropertyDefinition Location { get; set; }
-        public List<TimestampDefinition> Time { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> StartTime { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> EndTime { get; set; } = new List<TimestampDefinition>();
 
         public VisitDefinition Visit { get; set; }
         public ControlConditionColumnDefinition ControlCondition { get; set; }
 
+        public ReadingDefinition Reading { get; set; }
         public List<ReadingDefinition> Readings { get; set; } = new List<ReadingDefinition>();
+        public List<ReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+
+        public InspectionDefinition Inspection { get; set; }
         public List<InspectionDefinition> Inspections { get; set; } = new List<InspectionDefinition>();
+        public List<InspectionDefinition> AllInspections => AllDefinitions(Inspection, Inspections);
+
+        public CalibrationDefinition Calibration { get; set; }
         public List<CalibrationDefinition> Calibrations { get; set; } = new List<CalibrationDefinition>();
+        public List<CalibrationDefinition> AllCalibrations => AllDefinitions(Calibration, Calibrations);
+
+        public AdcpDischargeDefinition AdcpDischarge { get; set; }
         public List<AdcpDischargeDefinition> AdcpDischarges { get; set; } = new List<AdcpDischargeDefinition>();
-        public List<ManualGaugingDischargeDefinition> PanelSectionDischarges { get; set; } = new List<ManualGaugingDischargeDefinition>();
+        public List<AdcpDischargeDefinition> AllAdcpDischarges => AllDefinitions(AdcpDischarge, AdcpDischarges);
+
+        public ManualGaugingDischargeDefinition PanelDischargeSummary { get; set; }
+        public List<ManualGaugingDischargeDefinition> PanelDischargeSummaries { get; set; } = new List<ManualGaugingDischargeDefinition>();
+        public List<ManualGaugingDischargeDefinition> AllPanelDischargeSummaries => AllDefinitions(PanelDischargeSummary, PanelDischargeSummaries);
 
         public bool IsHeaderSectionExpected => HeaderRowCount > 0
                                                || !string.IsNullOrEmpty(HeadersEndWith)
@@ -66,13 +77,32 @@ namespace TabularCsv
 
     public abstract class ActivityDefinition : ColumnDefinition
     {
-        public List<TimestampDefinition> Time { get; set; } = new List<TimestampDefinition>();
+        public TimestampDefinition Time { get; set; }
+        public List<TimestampDefinition> Times { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> AllTimes => AllDefinitions(Time, Times);
+
+        protected List<TDefinition> AllDefinitions<TDefinition>(TDefinition item, IEnumerable<TDefinition> items)
+            where TDefinition : ColumnDefinition
+        {
+            return new List<TDefinition>
+                {
+                    item
+                }
+                .Concat(items)
+                .Where(i => i != null)
+                .ToList();
+        }
     }
 
     public abstract class TimeRangeActivityDefinition : ActivityDefinition
     {
-        public List<TimestampDefinition> StartTime { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> EndTime { get; set; } = new List<TimestampDefinition>();
+        public TimestampDefinition StartTime { get; set; }
+        public List<TimestampDefinition> StartTimes { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> AllStartTimes => AllDefinitions(StartTime, StartTimes);
+
+        public TimestampDefinition EndTime { get; set; }
+        public List<TimestampDefinition> EndTimes { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> AllEndTimes => AllDefinitions(EndTime, EndTimes);
     }
 
     public class VisitDefinition : TimeRangeActivityDefinition
@@ -192,7 +222,10 @@ namespace TabularCsv
         public PropertyDefinition MeanGageHeightDurationHours { get; set; }
         public PropertyDefinition ManuallyCalculatedMeanGageHeight { get; set; }
         public PropertyDefinition MeanGageHeightDifferenceDuringVisit { get; set; }
+
+        public GageHeightMeasurementActivity GageHeightMeasurement { get; set; }
         public List<GageHeightMeasurementActivity> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurementActivity>();
+        public List<GageHeightMeasurementActivity> AllGageHeightMeasurements => AllDefinitions(GageHeightMeasurement, GageHeightMeasurements);
     }
 
     public class GageHeightMeasurementActivity : ActivityDefinition
@@ -244,7 +277,10 @@ namespace TabularCsv
         public PropertyDefinition MeterCalibrationFirmwareVersion { get; set; }
         public PropertyDefinition MeterCalibrationSoftwareVersion { get; set; }
         public PropertyDefinition MeterType { get; set; }
+
+        public MeterCalibrationEquationColumnDefinition MeterCalibrationEquation { get; set; }
         public List<MeterCalibrationEquationColumnDefinition> MeterCalibrationEquations { get; set; } = new List<MeterCalibrationEquationColumnDefinition>();
+        public List<MeterCalibrationEquationColumnDefinition> AllMeterCalibrationEquations => AllDefinitions(MeterCalibrationEquation, MeterCalibrationEquations);
     }
 
     public class MeterCalibrationEquationColumnDefinition : ColumnDefinition

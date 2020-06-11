@@ -312,19 +312,19 @@ namespace TabularCsv
                 ParseVisit(locationInfo));
 
             var readings = Configuration
-                .Readings
+                .AllReadings
                 .Select(r => ParseReading(fieldVisitInfo, r))
                 .Where(reading => reading != null)
                 .ToList();
 
             var inspections = Configuration
-                .Inspections
+                .AllInspections
                 .Select(i => ParseInspection(fieldVisitInfo, i))
                 .Where(inspection => inspection != null)
                 .ToList();
 
             var calibrations = Configuration
-                .Calibrations
+                .AllCalibrations
                 .Select(c => ParseCalibration(fieldVisitInfo, c))
                 .Where(calibration => calibration != null)
                 .ToList();
@@ -332,10 +332,10 @@ namespace TabularCsv
             var controlCondition = ParseControlCondition(fieldVisitInfo, Configuration.ControlCondition);
 
             var discharges = Configuration
-                .AdcpDischarges
+                .AllAdcpDischarges
                 .Select(adcp => ParseAdcpDischarge(fieldVisitInfo, adcp))
                 .Concat(Configuration
-                    .PanelSectionDischarges
+                    .AllPanelDischargeSummaries
                     .Select(panel => ParsePanelSectionDischarge(fieldVisitInfo, panel)))
                 .Where(discharge => discharge != null)
                 .ToList();
@@ -374,23 +374,23 @@ namespace TabularCsv
 
             var fieldVisitPeriod = ParseInterval(
                 locationInfo,
-                visit.Time,
-                visit.StartTime,
-                visit.EndTime)
+                visit.AllTimes,
+                visit.AllStartTimes,
+                visit.AllEndTimes)
                 ?? ParseInterval(
                     locationInfo,
-                    Configuration.Time,
-                    Configuration.StartTime,
-                    Configuration.EndTime);
+                    Configuration.AllTimes,
+                    Configuration.AllStartTimes,
+                    Configuration.AllEndTimes);
 
             if (fieldVisitPeriod == null)
             {
-                var allTimeColumns = Configuration.Time
-                    .Concat(Configuration.StartTime)
-                    .Concat(Configuration.EndTime)
-                    .Concat(visit.Time)
-                    .Concat(visit.StartTime)
-                    .Concat(visit.EndTime)
+                var allTimeColumns = Configuration.AllTimes
+                    .Concat(Configuration.AllStartTimes)
+                    .Concat(Configuration.AllEndTimes)
+                    .Concat(visit.AllTimes)
+                    .Concat(visit.AllStartTimes)
+                    .Concat(visit.AllEndTimes)
                     .ToList();
 
                 if (!allTimeColumns.Any())
@@ -547,15 +547,18 @@ namespace TabularCsv
 
         private DateTimeOffset ParseActivityTime(FieldVisitInfo visitInfo, ActivityDefinition activity, DateTimeOffset? fallbackTime = null)
         {
-            var time = ParseNullableDateTimeOffset(visitInfo.LocationInfo, activity.Time);
+            var time = ParseNullableDateTimeOffset(visitInfo.LocationInfo, activity.AllTimes);
 
             return time ?? fallbackTime ?? visitInfo.StartDate;
         }
 
         private DateTimeInterval ParseActivityTimeRange(FieldVisitInfo visitInfo, TimeRangeActivityDefinition timeRangeActivity)
         {
-            return ParseInterval(visitInfo.LocationInfo, timeRangeActivity.Time,
-                timeRangeActivity.StartTime, timeRangeActivity.EndTime)
+            return ParseInterval(
+                       visitInfo.LocationInfo,
+                       timeRangeActivity.AllTimes,
+                       timeRangeActivity.AllStartTimes,
+                       timeRangeActivity.AllEndTimes)
                    ?? visitInfo.FieldVisitDetails.FieldVisitPeriod;
         }
 
@@ -770,9 +773,9 @@ namespace TabularCsv
 
             DateTimeOffset? dateCleaned = null;
 
-            if (controlConditionColumn.Time?.Any() ?? false)
+            if (controlConditionColumn.AllTimes?.Any() ?? false)
             {
-                dateCleaned = ParseDateTimeOffset(visitInfo.LocationInfo, controlConditionColumn.Time);
+                dateCleaned = ParseDateTimeOffset(visitInfo.LocationInfo, controlConditionColumn.AllTimes);
             }
 
             var conditionType = GetString(controlConditionColumn);
@@ -964,7 +967,7 @@ namespace TabularCsv
                 .Where(p => p != null)
                 .ToList();
 
-            if (!panelDischargeDefinition.MeterCalibrationEquations.Any() && !meterProperties.Any())
+            if (!panelDischargeDefinition.AllMeterCalibrationEquations.Any() && !meterProperties.Any())
                 return null;
 
             var meterType = GetNullableEnum<MeterType>(panelDischargeDefinition.MeterType);
@@ -982,7 +985,7 @@ namespace TabularCsv
             if (meterType.HasValue)
                 meterCalibration.MeterType = meterType.Value;
 
-            foreach (var equationDefinition in panelDischargeDefinition.MeterCalibrationEquations)
+            foreach (var equationDefinition in panelDischargeDefinition.AllMeterCalibrationEquations)
             {
                 var equation = new MeterCalibrationEquation
                 {
@@ -1066,7 +1069,7 @@ namespace TabularCsv
             if (meanGageHeightDifferenceDuringVisit.HasValue)
                 dischargeActivity.MeanGageHeightDifferenceDuringVisit = new Measurement(meanGageHeightDifferenceDuringVisit.Value, distanceUnitId);
 
-            foreach (var gageHeightMeasurement in dischargeDefinition.GageHeightMeasurements)
+            foreach (var gageHeightMeasurement in dischargeDefinition.AllGageHeightMeasurements)
             {
                 var gageHeightValue = GetDouble(gageHeightMeasurement);
                 var include = GetNullableBoolean(gageHeightMeasurement.Include);

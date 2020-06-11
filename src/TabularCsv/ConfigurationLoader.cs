@@ -35,13 +35,14 @@ namespace TabularCsv
                 var configuration = Toml.ReadString<Configuration>(tomlText, settings);
 
                 // Set the name to the configuration if none is specified
-                configuration.Name = configuration.Name ?? configurationName;
+                configuration.Id = configuration.Id ?? configurationName;
 
                 if (configuration.Visit == null)
                 {
                     configuration.Visit = new VisitDefinition();
                 }
 
+                configuration.AllowUnusedDefaultProperty();
                 configuration.Visit.AllowUnusedDefaultProperty();
 
                 return configuration;
@@ -75,14 +76,14 @@ namespace TabularCsv
 
         private static bool IsEmpty(Configuration configuration)
         {
-            return configuration.Name == null
+            return configuration.Id == null
                    && configuration.Visit == null
                    && configuration.ControlCondition == null
-                   && !configuration.Readings.Any()
-                   && !configuration.Inspections.Any()
-                   && !configuration.Calibrations.Any()
-                   && !configuration.AdcpDischarges.Any()
-                   && !configuration.PanelSectionDischarges.Any();
+                   && !configuration.AllReadings.Any()
+                   && !configuration.AllInspections.Any()
+                   && !configuration.AllCalibrations.Any()
+                   && !configuration.AllAdcpDischarges.Any()
+                   && !configuration.AllPanelDischargeSummaries.Any();
         }
     }
 }
