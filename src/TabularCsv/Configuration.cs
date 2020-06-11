@@ -176,7 +176,6 @@ namespace TabularCsv
         public PropertyDefinition DistanceUnitId { get; set; }
         public PropertyDefinition WidthValue { get; set; }
         public PropertyDefinition VelocityUnitId { get; set; }
-        public PropertyDefinition VelocityValue { get; set; }
         public PropertyDefinition MeanIndexVelocity { get; set; }
         public PropertyDefinition ShowInDataCorrection { get; set; }
         public PropertyDefinition ShowInRatingDevelopment { get; set; }
@@ -190,10 +189,13 @@ namespace TabularCsv
         public PropertyDefinition QualityAssuranceComments { get; set; }
         public PropertyDefinition QuantitativeUncertainty { get; set; }
         public PropertyDefinition QualitativeUncertainty { get; set; }
-        public List<GageHeightMeasurement> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurement>();
+        public PropertyDefinition MeanGageHeightDurationHours { get; set; }
+        public PropertyDefinition ManuallyCalculatedMeanGageHeight { get; set; }
+        public PropertyDefinition MeanGageHeightDifferenceDuringVisit { get; set; }
+        public List<GageHeightMeasurementActivity> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurementActivity>();
     }
 
-    public class GageHeightMeasurement : ActivityDefinition
+    public class GageHeightMeasurementActivity : ActivityDefinition
     {
         // Default property is GageHeight.Value
         public PropertyDefinition Include { get; set; }
@@ -207,8 +209,11 @@ namespace TabularCsv
         public PropertyDefinition DeploymentMethod { get; set; }
         public PropertyDefinition MeterSuspension { get; set; }
         public PropertyDefinition NumberOfTransects { get; set; }
+        public PropertyDefinition MagneticVariation { get; set; }
+        public PropertyDefinition DischargeCoefficientVariation { get; set; }
         public PropertyDefinition PercentageOfDischargeMeasured { get; set; }
         public PropertyDefinition TransducerDepth { get; set; }
+        public PropertyDefinition VelocityAverageValue { get; set; }
         public PropertyDefinition TopEstimateExponent { get; set; }
         public PropertyDefinition TopEstimateMethod { get; set; }
         public PropertyDefinition BottomEstimateExponent { get; set; }
@@ -227,6 +232,7 @@ namespace TabularCsv
         // Default property is ManualGaugingDischargeSection.TotalDischarge.Value
         public PropertyDefinition SectionDischarge { get; set; }
         public PropertyDefinition DischargeMethod { get; set; }
+        public PropertyDefinition VelocityValue { get; set; }
         public PropertyDefinition PointVelocityObservationType { get; set; }
         public PropertyDefinition DeploymentMethod { get; set; }
         public PropertyDefinition MeterSuspension { get; set; }

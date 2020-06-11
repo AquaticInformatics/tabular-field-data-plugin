@@ -9,6 +9,7 @@ using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
 using FieldDataPluginFramework.DataModel.Calibrations;
+using FieldDataPluginFramework.DataModel.ChannelMeasurements;
 using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
 using FieldDataPluginFramework.DataModel.Inspections;
@@ -337,8 +338,6 @@ namespace TabularCsv
                 .Where(discharge => discharge != null)
                 .ToList();
 
-            // TODO: Adjust timestamps to accomodate late-binding of the timestamps.
-
             fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo, fieldVisitInfo.FieldVisitDetails);
 
             foreach (var reading in readings)
@@ -576,7 +575,11 @@ namespace TabularCsv
                 ReferencePointName = GetString(readingDefinition.ReferencePointName),
                 SubLocation = GetString(readingDefinition.SubLocation),
                 SensorUniqueId = GetNullableGuid(readingDefinition.SensorUniqueId),
-                Uncertainty = GetNullableDouble(readingDefinition.Uncertainty)
+                Uncertainty = GetNullableDouble(readingDefinition.Uncertainty),
+                MeasurementDevice = ParseMeasurementDevice(
+                    readingDefinition.MeasurementDeviceManufacturer,
+                    readingDefinition.MeasurementDeviceModel,
+                    readingDefinition.MeasurementDeviceSerialNumber)
             };
 
             if (!string.IsNullOrWhiteSpace(readingDefinition.CommentPrefix))
@@ -611,20 +614,6 @@ namespace TabularCsv
 
             if (useLocationDatumAsReference.HasValue)
                 reading.UseLocationDatumAsReference = useLocationDatumAsReference.Value;
-
-            var measurementDeviceManufacturer = GetString(readingDefinition.MeasurementDeviceManufacturer);
-            var measurementDeviceModel = GetString(readingDefinition.MeasurementDeviceModel);
-            var measurementDeviceSerialNumber = GetString(readingDefinition.MeasurementDeviceSerialNumber);
-
-            if (!string.IsNullOrEmpty(measurementDeviceManufacturer)
-                || !string.IsNullOrEmpty(measurementDeviceModel)
-                || !string.IsNullOrEmpty(measurementDeviceSerialNumber))
-            {
-                reading.MeasurementDevice = new MeasurementDevice(
-                    measurementDeviceManufacturer,
-                    measurementDeviceModel,
-                    measurementDeviceSerialNumber);
-            }
 
             var readingQualifierSeparators = GetString(readingDefinition.ReadingQualifierSeparators);
             var readingQualifiers = GetString(readingDefinition.ReadingQualifiers);
@@ -666,6 +655,28 @@ namespace TabularCsv
             return reading;
         }
 
+        private MeasurementDevice ParseMeasurementDevice(
+            PropertyDefinition manufacturerDefinition,
+            PropertyDefinition modelDefinition,
+            PropertyDefinition serialNumberDefinition)
+        {
+            var manufacturer = GetString(manufacturerDefinition);
+            var model = GetString(modelDefinition);
+            var serialNumber = GetString(serialNumberDefinition);
+
+            if (!string.IsNullOrEmpty(manufacturer)
+                || !string.IsNullOrEmpty(model)
+                || !string.IsNullOrEmpty(serialNumber))
+            {
+                return new MeasurementDevice(
+                    manufacturer,
+                    model,
+                    serialNumber);
+            }
+
+            return null;
+        }
+
         private Inspection ParseInspection(FieldVisitInfo visitInfo, InspectionDefinition inspectionDefinition)
         {
             var inspectionType = GetNullableEnum<InspectionType>(inspectionDefinition);
@@ -677,22 +688,12 @@ namespace TabularCsv
             {
                 DateTimeOffset = ParseActivityTime(visitInfo, inspectionDefinition),
                 Comments = GetString(inspectionDefinition.Comments),
-                SubLocation = GetString(inspectionDefinition.SubLocation)
+                SubLocation = GetString(inspectionDefinition.SubLocation),
+                MeasurementDevice = ParseMeasurementDevice(
+                    inspectionDefinition.MeasurementDeviceManufacturer,
+                    inspectionDefinition.MeasurementDeviceModel,
+                    inspectionDefinition.MeasurementDeviceSerialNumber)
             };
-
-            var measurementDeviceManufacturer = GetString(inspectionDefinition.MeasurementDeviceManufacturer);
-            var measurementDeviceModel = GetString(inspectionDefinition.MeasurementDeviceModel);
-            var measurementDeviceSerialNumber = GetString(inspectionDefinition.MeasurementDeviceSerialNumber);
-
-            if (!string.IsNullOrEmpty(measurementDeviceManufacturer)
-                || !string.IsNullOrEmpty(measurementDeviceModel)
-                || !string.IsNullOrEmpty(measurementDeviceSerialNumber))
-            {
-                inspection.MeasurementDevice = new MeasurementDevice(
-                    measurementDeviceManufacturer,
-                    measurementDeviceModel,
-                    measurementDeviceSerialNumber);
-            }
 
             return inspection;
         }
@@ -716,7 +717,11 @@ namespace TabularCsv
                 Party = GetString(calibrationDefinition.Party),
                 SubLocation = GetString(calibrationDefinition.SubLocation),
                 SensorUniqueId = GetNullableGuid(calibrationDefinition.SensorUniqueId),
-                Standard = GetNullableDouble(calibrationDefinition.Standard)
+                Standard = GetNullableDouble(calibrationDefinition.Standard),
+                MeasurementDevice = ParseMeasurementDevice(
+                    calibrationDefinition.MeasurementDeviceManufacturer,
+                    calibrationDefinition.MeasurementDeviceModel,
+                    calibrationDefinition.MeasurementDeviceSerialNumber)
             };
 
             var calibrationType = GetNullableEnum<CalibrationType>(calibrationDefinition.CalibrationType);
@@ -733,20 +738,6 @@ namespace TabularCsv
 
             if (publish.HasValue)
                 calibration.Publish = publish.Value;
-
-            var measurementDeviceManufacturer = GetString(calibrationDefinition.MeasurementDeviceManufacturer);
-            var measurementDeviceModel = GetString(calibrationDefinition.MeasurementDeviceModel);
-            var measurementDeviceSerialNumber = GetString(calibrationDefinition.MeasurementDeviceSerialNumber);
-
-            if (!string.IsNullOrEmpty(measurementDeviceManufacturer)
-                || !string.IsNullOrEmpty(measurementDeviceModel)
-                || !string.IsNullOrEmpty(measurementDeviceSerialNumber))
-            {
-                calibration.MeasurementDevice = new MeasurementDevice(
-                    measurementDeviceManufacturer,
-                    measurementDeviceModel,
-                    measurementDeviceSerialNumber);
-            }
 
             DateTimeOffset? expirationDate = null;
 
@@ -827,6 +818,73 @@ namespace TabularCsv
 
             var dischargeActivity = ParseDischargeActivity(visitInfo, adcpDischargeDefinition);
 
+            var channelName = GetString(adcpDischargeDefinition.ChannelName) ?? "Main";
+            var distanceUnitId = GetString(adcpDischargeDefinition.DistanceUnitId);
+            var areaUnitId = GetString(adcpDischargeDefinition.AreaUnitId);
+            var velocityUnitId = GetString(adcpDischargeDefinition.VelocityUnitId);
+
+            var sectionDischarge = GetNullableDouble(adcpDischargeDefinition.SectionDischarge)
+                                   ?? dischargeActivity.Discharge.Value;
+
+            var adcp = new AdcpDischargeSection(
+                dischargeActivity.MeasurementPeriod,
+                channelName,
+                new Measurement(sectionDischarge, dischargeActivity.Discharge.UnitId),
+                GetString(adcpDischargeDefinition.DeviceType),
+                distanceUnitId,
+                areaUnitId,
+                velocityUnitId)
+            {
+                NumberOfTransects = GetNullableInteger(adcpDischargeDefinition.NumberOfTransects),
+                MagneticVariation = GetNullableDouble(adcpDischargeDefinition.MagneticVariation),
+                DischargeCoefficientVariation = GetNullableDouble(adcpDischargeDefinition.DischargeCoefficientVariation),
+                PercentOfDischargeMeasured = GetNullableDouble(adcpDischargeDefinition.PercentageOfDischargeMeasured),
+                WidthValue = GetNullableDouble(adcpDischargeDefinition.WidthValue),
+                AreaValue = GetNullableDouble(adcpDischargeDefinition.AreaValue),
+                VelocityAverageValue = GetNullableDouble(adcpDischargeDefinition.VelocityAverageValue),
+                TransducerDepth = GetNullableDouble(adcpDischargeDefinition.TransducerDepth),
+                TopEstimateExponent = GetNullableDouble(adcpDischargeDefinition.TopEstimateExponent),
+                BottomEstimateExponent = GetNullableDouble(adcpDischargeDefinition.BottomEstimateExponent),
+                FirmwareVersion = GetString(adcpDischargeDefinition.FirmwareVersion),
+                SoftwareVersion = GetString(adcpDischargeDefinition.SoftwareVersion),
+                MeasurementDevice = ParseMeasurementDevice(
+                    adcpDischargeDefinition.MeasurementDeviceManufacturer,
+                    adcpDischargeDefinition.MeasurementDeviceModel,
+                    adcpDischargeDefinition.MeasurementDeviceSerialNumber)
+            };
+
+            var topEstimateMethod = GetString(adcpDischargeDefinition.TopEstimateMethod);
+
+            if (!string.IsNullOrEmpty(topEstimateMethod))
+                adcp.TopEstimateMethod = new TopEstimateMethodPickList(topEstimateMethod);
+
+            var bottomEstimateMethod = GetString(adcpDischargeDefinition.BottomEstimateMethod);
+
+            if (!string.IsNullOrEmpty(bottomEstimateMethod))
+                adcp.BottomEstimateMethod = new BottomEstimateMethodPickList(bottomEstimateMethod);
+
+            var navigationMethod = GetString(adcpDischargeDefinition.NavigationMethod);
+
+            if (!string.IsNullOrEmpty(navigationMethod))
+                adcp.NavigationMethod = new NavigationMethodPickList(navigationMethod);
+
+            var depthReference = GetNullableEnum<DepthReferenceType>(adcpDischargeDefinition.DepthReference);
+
+            if (depthReference.HasValue)
+                adcp.DepthReference = depthReference.Value;
+
+            var deploymentMethod = GetNullableEnum<AdcpDeploymentMethodType>(adcpDischargeDefinition.DeploymentMethod);
+
+            if (deploymentMethod.HasValue)
+                adcp.DeploymentMethod = deploymentMethod.Value;
+
+            var meterSuspension = GetNullableEnum<AdcpMeterSuspensionType>(adcpDischargeDefinition.MeterSuspension);
+
+            if (meterSuspension.HasValue)
+                adcp.MeterSuspension = meterSuspension.Value;
+
+            dischargeActivity.ChannelMeasurements.Add(adcp);
+
             return dischargeActivity;
         }
 
@@ -853,8 +911,27 @@ namespace TabularCsv
                 MeasurementId = GetString(dischargeDefinition.MeasurementId),
                 Comments = GetString(dischargeDefinition.Comments),
                 Party = GetString(dischargeDefinition.Party),
-
+                AdjustmentAmount = GetNullableDouble(dischargeDefinition.AdjustmentAmount),
+                AdjustmentType = GetNullableEnum<AdjustmentType>(dischargeDefinition.AdjustmentType),
+                ReasonForAdjustment = GetNullableEnum<ReasonForAdjustmentType>(dischargeDefinition.ReasonForAdjustment),
+                QualityAssuranceComments = GetString(dischargeDefinition.QualityAssuranceComments),
+                QualitativeUncertainty = GetNullableEnum<QualitativeUncertaintyType>(dischargeDefinition.QualitativeUncertainty),
+                QuantitativeUncertainty = GetNullableDouble(dischargeDefinition.QuantitativeUncertainty),
+                MeanGageHeightDurationHours = GetNullableDouble(dischargeDefinition.MeanGageHeightDurationHours),
             };
+
+            var showInDataCorrection = GetNullableBoolean(dischargeDefinition.ShowInDataCorrection);
+            var showInRatingDevelopment = GetNullableBoolean(dischargeDefinition.ShowInRatingDevelopment);
+            var preventAutomaticPublish = GetNullableBoolean(dischargeDefinition.PreventAutomaticPublishing);
+
+            if (showInDataCorrection.HasValue)
+                dischargeActivity.ShowInDataCorrection = showInDataCorrection.Value;
+
+            if (showInRatingDevelopment.HasValue)
+                dischargeActivity.ShowInRatingDevelopment = showInRatingDevelopment.Value;
+
+            if (preventAutomaticPublish.HasValue)
+                dischargeActivity.PreventAutomaticPublishing = preventAutomaticPublish.Value;
 
             var gradeCode = GetNullableInteger(dischargeDefinition.GradeCode);
             var gradeName = GetString(dischargeDefinition.GradeName);
@@ -865,11 +942,43 @@ namespace TabularCsv
             if (!string.IsNullOrEmpty(gradeName))
                 dischargeActivity.MeasurementGrade = Grade.FromDisplayName(gradeName);
 
-            // Add gage height
+            var velocityUnitId = GetString(dischargeDefinition.VelocityUnitId);
+            var meanIndexVelocity = GetNullableDouble(dischargeDefinition.MeanIndexVelocity);
+
+            if (meanIndexVelocity.HasValue)
+                dischargeActivity.MeanIndexVelocity = new Measurement(meanIndexVelocity.Value, velocityUnitId);
+
+            var uncertaintyType = GetNullableEnum<UncertaintyType>(dischargeDefinition.UncertaintyType);
+
+            if (uncertaintyType.HasValue)
+                dischargeActivity.ActiveUncertaintyType = uncertaintyType.Value;
+
+            var distanceUnitId = GetString(dischargeDefinition.DistanceUnitId);
+
+            var manuallyCalculatedMeanGageHeight = GetNullableDouble(dischargeDefinition.ManuallyCalculatedMeanGageHeight);
+
+            if (manuallyCalculatedMeanGageHeight.HasValue)
+                dischargeActivity.ManuallyCalculatedMeanGageHeight = new Measurement(manuallyCalculatedMeanGageHeight.Value, distanceUnitId);
+
+            var meanGageHeightDifferenceDuringVisit = GetNullableDouble(dischargeDefinition.MeanGageHeightDifferenceDuringVisit);
+
+            if (meanGageHeightDifferenceDuringVisit.HasValue)
+                dischargeActivity.MeanGageHeightDifferenceDuringVisit = new Measurement(meanGageHeightDifferenceDuringVisit.Value, distanceUnitId);
+
+            foreach (var gageHeightMeasurement in dischargeDefinition.GageHeightMeasurements)
+            {
+                var gageHeightValue = GetDouble(gageHeightMeasurement);
+                var include = GetNullableBoolean(gageHeightMeasurement.Include);
+                var gageHeight = new GageHeightMeasurement(
+                    new Measurement(gageHeightValue, distanceUnitId),
+                    ParseActivityTime(visitInfo, gageHeightMeasurement, dischargeActivity.MeasurementStartTime),
+                    include ?? true);
+
+                dischargeActivity.GageHeightMeasurements.Add(gageHeight);
+            }
 
             return dischargeActivity;
         }
-
 
         private bool? GetNullableBoolean(ColumnDefinition column)
         {
