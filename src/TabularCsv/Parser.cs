@@ -413,7 +413,7 @@ namespace TabularCsv
 
             return new FieldVisitDetails(fieldVisitPeriod)
             {
-                Comments = MergeTextColumns(visit.Comments),
+                Comments = MergeCommentText(visit),
                 Party = GetString(visit.Party),
                 CollectionAgency = GetString(visit.CollectionAgency),
                 Weather = GetString(visit.Weather),
@@ -436,11 +436,11 @@ namespace TabularCsv
             };
         }
 
-        private string MergeTextColumns(List<MergingTextDefinition> columns)
+        private string MergeCommentText(CoreDefinition definition)
         {
             var lines = new List<string>();
 
-            foreach (var column in columns)
+            foreach (var column in definition.AllComments)
             {
                 var value = GetString(column);
 
@@ -448,7 +448,7 @@ namespace TabularCsv
 
                 if (lines.Any(l => l.IndexOf(value, StringComparison.InvariantCultureIgnoreCase) >= 0)) continue;
 
-                lines.Add($"{column.Prefix}{value}");
+                lines.Add(value);
             }
 
             return string.Join("\n", lines);
@@ -587,7 +587,7 @@ namespace TabularCsv
                 new Measurement(readingValue.Value, GetString(definition.UnitId)))
             {
                 DateTimeOffset = ParseActivityTime(visitInfo, definition),
-                Comments = GetString(definition.Comments),
+                Comments = MergeCommentText(definition),
                 ReferencePointName = GetString(definition.ReferencePointName),
                 SubLocation = GetString(definition.SubLocation),
                 SensorUniqueId = GetNullableGuid(definition.SensorUniqueId),
@@ -699,7 +699,7 @@ namespace TabularCsv
             var inspection = new Inspection(inspectionType.Value)
             {
                 DateTimeOffset = ParseActivityTime(visitInfo, definition),
-                Comments = GetString(definition.Comments),
+                Comments = MergeCommentText(definition),
                 SubLocation = GetString(definition.SubLocation),
                 MeasurementDevice = ParseMeasurementDevice(
                     definition.MeasurementDeviceManufacturer,
@@ -724,7 +724,7 @@ namespace TabularCsv
                 calibrationValue.Value)
             {
                 DateTimeOffset = ParseActivityTime(visitInfo, definition),
-                Comments = GetString(definition.Comments),
+                Comments = MergeCommentText(definition),
                 Party = GetString(definition.Party),
                 SubLocation = GetString(definition.SubLocation),
                 SensorUniqueId = GetNullableGuid(definition.SensorUniqueId),
@@ -791,7 +791,7 @@ namespace TabularCsv
             var controlCondition = new ControlCondition
             {
                 Party = GetString(definition.Party),
-                Comments = GetString(definition.Comments),
+                Comments = MergeCommentText(definition),
                 DateCleaned = dateCleaned,
             };
 
@@ -1037,7 +1037,7 @@ namespace TabularCsv
             var dischargeActivity = new DischargeActivity(dischargeInterval, discharge)
             {
                 MeasurementId = GetString(definition.MeasurementId),
-                Comments = GetString(definition.Comments),
+                Comments = MergeCommentText(definition),
                 Party = GetString(definition.Party),
                 AdjustmentAmount = GetNullableDouble(definition.AdjustmentAmount),
                 AdjustmentType = GetNullableEnum<AdjustmentType>(definition.AdjustmentType),
@@ -1140,7 +1140,7 @@ namespace TabularCsv
 
             var levelSurvey = new LevelSurvey(originReferencePointName)
             {
-                Comments = GetString(definition.Comments),
+                Comments = MergeCommentText(definition),
                 Party = GetString(definition.Party),
             };
 
@@ -1171,7 +1171,7 @@ namespace TabularCsv
                 ParseActivityTime(visitInfo, definition),
                 measuredElevation.Value)
             {
-                Comments = GetString(definition.Comments),
+                Comments = MergeCommentText(definition),
             };
         }
 

@@ -67,11 +67,6 @@ namespace TabularCsv
     {
     }
 
-    public class MergingTextDefinition : ColumnDefinition
-    {
-        public string Prefix { get; set; }
-    }
-
     public class TimestampDefinition : ColumnDefinition
     {
         public string Format { get; set; }
@@ -81,12 +76,30 @@ namespace TabularCsv
 
     public abstract class CoreDefinition : ColumnDefinition
     {
+        public PropertyDefinition Comment { get; set; }
+        public PropertyDefinition MergeWithComment { get; set; }
+        public List<PropertyDefinition> MergeWithComments { get; set; } = new List<PropertyDefinition>();
+        public List<PropertyDefinition> AllComments => AllDefinitions(Comment, MergeWithComment, MergeWithComments);
+
         protected List<TDefinition> AllDefinitions<TDefinition>(TDefinition item, IEnumerable<TDefinition> items)
             where TDefinition : ColumnDefinition
         {
             return new List<TDefinition>
                 {
                     item
+                }
+                .Concat(items)
+                .Where(i => i != null)
+                .ToList();
+        }
+
+        protected List<TDefinition> AllDefinitions<TDefinition>(TDefinition item1, TDefinition item2, IEnumerable<TDefinition> items)
+            where TDefinition : ColumnDefinition
+        {
+            return new List<TDefinition>
+                {
+                    item1,
+                    item2,
                 }
                 .Concat(items)
                 .Where(i => i != null)
@@ -125,7 +138,6 @@ namespace TabularCsv
         public PropertyDefinition CompletedBiologicalSample { get; set; }
         public PropertyDefinition CompletedSedimentSample { get; set; }
         public PropertyDefinition CompletedWaterQualitySample { get; set; }
-        public List<MergingTextDefinition> Comments { get; set; } = new List<MergingTextDefinition>();
         public PropertyDefinition Party { get; set; }
     }
 
@@ -136,7 +148,6 @@ namespace TabularCsv
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
         public PropertyDefinition ReadingType { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition GradeCode { get; set; }
         public PropertyDefinition GradeName { get; set; }
         public PropertyDefinition Method { get; set; }
@@ -161,7 +172,6 @@ namespace TabularCsv
     {
         // Default property is Inspection.InspectionType (enum)
         public PropertyDefinition InspectionType { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition SubLocation { get; set; }
         public PropertyDefinition MeasurementDeviceManufacturer { get; set; }
         public PropertyDefinition MeasurementDeviceModel { get; set; }
@@ -174,7 +184,6 @@ namespace TabularCsv
         public PropertyDefinition Value { get; set; }
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition CalibrationType { get; set; }
         public PropertyDefinition Method { get; set; }
@@ -196,7 +205,6 @@ namespace TabularCsv
         // Default property is ControlCondition.ConditionType (picklist)
         public PropertyDefinition ConditionType { get; set; }
         public PropertyDefinition UnitId { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition ControlCleanedType { get; set; }
         public PropertyDefinition ControlCode { get; set; }
@@ -208,7 +216,6 @@ namespace TabularCsv
         // Default property is DischargeActivity.TotalDischarge.Value
         public PropertyDefinition TotalDischarge { get; set; }
         public PropertyDefinition ChannelName { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition MeasurementId { get; set; }
         public PropertyDefinition DischargeUnitId { get; set; }
@@ -309,7 +316,6 @@ namespace TabularCsv
     {
         // Default property is OriginReferencePointName
         public PropertyDefinition OriginReferencePointName { get; set; }
-        public PropertyDefinition Comments { get; set; }
         public PropertyDefinition Party { get; set; }
         public PropertyDefinition Method { get; set; }
 
@@ -323,6 +329,5 @@ namespace TabularCsv
         // Default property is MeasuredElevation
         public PropertyDefinition MeasuredElevation { get; set; }
         public PropertyDefinition ReferencePointName { get; set; }
-        public PropertyDefinition Comments { get; set; }
     }
 }
