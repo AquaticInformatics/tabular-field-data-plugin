@@ -13,6 +13,7 @@ using FieldDataPluginFramework.DataModel.ChannelMeasurements;
 using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
 using FieldDataPluginFramework.DataModel.Inspections;
+using FieldDataPluginFramework.DataModel.LevelSurveys;
 using FieldDataPluginFramework.DataModel.Meters;
 using FieldDataPluginFramework.DataModel.PickLists;
 using FieldDataPluginFramework.DataModel.Readings;
@@ -340,6 +341,12 @@ namespace TabularCsv
                 .Where(discharge => discharge != null)
                 .ToList();
 
+            var levelSurveys = Configuration
+                .AllLevelSurveys
+                .Select(l => ParseLevelSurvey(fieldVisitInfo, l))
+                .Where(levelSurvey => levelSurvey != null)
+                .ToList();
+
             fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo, fieldVisitInfo.FieldVisitDetails);
 
             foreach (var reading in readings)
@@ -365,6 +372,11 @@ namespace TabularCsv
             foreach (var discharge in discharges)
             {
                 ResultsAppender.AddDischargeActivity(fieldVisitInfo, discharge);
+            }
+
+            foreach (var levelSurvey in levelSurveys)
+            {
+                ResultsAppender.AddLevelSurvey(fieldVisitInfo, levelSurvey);
             }
         }
 
@@ -1082,6 +1094,46 @@ namespace TabularCsv
             }
 
             return dischargeActivity;
+        }
+
+        private LevelSurvey ParseLevelSurvey(FieldVisitInfo visitInfo, LevelSurveyDefinition levelSurveyDefinition)
+        {
+            var originReferencePointName = GetString(levelSurveyDefinition);
+
+            if (string.IsNullOrEmpty(originReferencePointName))
+                return null;
+
+            var levelSurvey = new LevelSurvey(originReferencePointName)
+            {
+                Comments = GetString(levelSurveyDefinition.Comments),
+                Party = GetString(levelSurveyDefinition.Party),
+            };
+
+            var method = GetString(levelSurveyDefinition.Method);
+
+            if (!string.IsNullOrEmpty(method))
+                levelSurvey.Method = method;
+
+            levelSurvey.LevelSurveyMeasurements = levelSurveyDefinition
+                .AllLevelSurveyMeasurements
+                .Select(m => ParseLevelSurveyMeasurement(visitInfo, m))
+                .Where(m => m != null)
+                .ToList();
+
+            return levelSurvey;
+        }
+
+        private LevelSurveyMeasurement ParseLevelSurveyMeasurement(FieldVisitInfo visitInfo, LevelSurveyMeasurementDefinition definition)
+        {
+            var measuredElevation = GetNullableDouble(definition);
+
+            if (!measuredElevation.HasValue)
+                return null;
+
+            return new LevelSurveyMeasurement(
+                GetString(definition.ReferencePointName),
+                ParseActivityTime(visitInfo, definition),
+                measuredElevation.Value);
         }
 
         private bool? GetNullableBoolean(ColumnDefinition column)
