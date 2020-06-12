@@ -46,6 +46,14 @@ namespace TabularCsv
             if (invalidIndexedColumns.Any())
                 ThrowConfigurationException(
                     $"{"column".ToQuantity(invalidIndexedColumns.Count)} have invalid {nameof(ColumnDefinition.ColumnIndex)} values <= 0.");
+
+            var invalidAliasedColumns = columnDefinitions
+                .Where(column => column.HasAlias && !Configuration.Aliases.ContainsKey(column.Alias))
+                .ToList();
+
+            if (invalidAliasedColumns.Any())
+                ThrowConfigurationException(
+                    $"No {string.Join(", ", invalidAliasedColumns.Select(c => c.Alias).Distinct().Select(s => $"[Alias.{s}]"))} tables are defined for {"aliased column".ToQuantity(invalidAliasedColumns.Count)}: {string.Join(", ", invalidAliasedColumns.Select(c => $"{c.Name()}(Alias='{c.Alias}')"))}");
         }
 
         private void ThrowConfigurationException(string message)
