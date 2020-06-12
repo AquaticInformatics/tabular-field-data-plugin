@@ -13,6 +13,7 @@ namespace TabularCsv
         public string HeadersEndBefore { get; set; }
         public bool FirstDataRowIsColumnHeader { get; set; }
         public string CommentLinePrefix { get; set; }
+        public Dictionary<string, Dictionary<string,string>> Aliases { get; set; } = new Dictionary<string, Dictionary<string, string>>();
 
         public PropertyDefinition Location { get; set; }
 

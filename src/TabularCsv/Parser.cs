@@ -1268,7 +1268,21 @@ namespace TabularCsv
             if (column == null)
                 return null;
 
-            return GetColumnValue(column);
+            var value = GetColumnValue(column);
+
+            if (value == null)
+                return null;
+
+            if (column.HasAlias)
+            {
+                if (Configuration.Aliases.TryGetValue(column.Alias, out var aliasedValues)
+                    && aliasedValues.TryGetValue(value, out var aliasedValue))
+                {
+                    return aliasedValue;
+                }
+            }
+
+            return value;
         }
 
         private string GetColumnValue(ColumnDefinition column)

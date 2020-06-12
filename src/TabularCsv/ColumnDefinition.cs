@@ -11,6 +11,8 @@ namespace TabularCsv
         public string ColumnHeader { get; set; }
         public string FixedValue { get; set; }
         public string HeaderRegex { get; set; }
+        public string Alias { get; set; }
+
         private string NamePrefix { get; set; }
 
         public void SetNamePrefix(string namePrefix)
@@ -34,6 +36,7 @@ namespace TabularCsv
         public bool HasNamedColumn => !string.IsNullOrWhiteSpace(ColumnHeader);
         public bool HasIndexedColumn => ColumnIndex.HasValue;
         public bool HasHeaderRegex => !string.IsNullOrEmpty(HeaderRegex);
+        public bool HasAlias => !string.IsNullOrEmpty(Alias);
 
         public bool IsInvalid(out string validationMessage)
         {
