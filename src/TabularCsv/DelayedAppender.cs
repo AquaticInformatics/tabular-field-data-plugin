@@ -5,6 +5,7 @@ using System.Reflection;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
 using FieldDataPluginFramework.DataModel.Calibrations;
+using FieldDataPluginFramework.DataModel.ChannelMeasurements;
 using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
 using FieldDataPluginFramework.DataModel.Inspections;
@@ -46,8 +47,106 @@ namespace TabularCsv
         {
             foreach (var delayedFieldVisit in DelayedFieldVisits)
             {
+                AdjustVisitPeriodToContainAllActivities(delayedFieldVisit);
                 AppendDelayedVisit(delayedFieldVisit);
             }
+        }
+
+        private void AdjustVisitPeriodToContainAllActivities(FieldVisitInfo visit)
+        {
+            var times = GetActivityTimes(visit)
+                .OrderBy(t => t)
+                .ToList();
+
+            if (!times.Any())
+                return;
+
+            var start = times.First();
+            var end = times.Last();
+
+            if (start == end)
+            {
+                // Avoid AQ-26134 in pre-2020.2
+                end = end.AddMinutes(1);
+
+                if (start.Date != end.Date)
+                {
+                    // Extend the start instead, so that the date remains the same
+                    end = start;
+                    start = start.AddMinutes(-1);
+                }
+            }
+
+            if (visit.StartDate == start && visit.EndDate == end)
+                return;
+
+            visit.FieldVisitDetails.FieldVisitPeriod = new DateTimeInterval(start, end);
+        }
+
+        private IEnumerable<DateTimeOffset> GetActivityTimes(FieldVisitInfo visit)
+        {
+            return new DateTimeOffset?[]
+                {
+                    visit.StartDate,
+                    visit.EndDate,
+                }
+                .Concat(visit.Readings.SelectMany(GetTimes))
+                .Concat(visit.Inspections.SelectMany(GetTimes))
+                .Concat(visit.Calibrations.SelectMany(GetTimes))
+                .Concat(visit.LevelSurveys.SelectMany(GetTimes))
+                .Concat(visit.DischargeActivities.SelectMany(GetTimes))
+                .Where(dt => dt.HasValue)
+                .Select(dt => dt.Value);
+        }
+
+        private IEnumerable<DateTimeOffset?> GetTimes(Reading item)
+        {
+            return new[]
+            {
+                item.DateTimeOffset
+            };
+        }
+
+        private IEnumerable<DateTimeOffset?> GetTimes(Inspection item)
+        {
+            return new[]
+            {
+                item.DateTimeOffset
+            };
+        }
+
+        private IEnumerable<DateTimeOffset?> GetTimes(Calibration item)
+        {
+            return new[]
+            {
+                item.DateTimeOffset
+            };
+        }
+
+        private IEnumerable<DateTimeOffset?> GetTimes(LevelSurvey item)
+        {
+            return item
+                .LevelSurveyMeasurements
+                .Select(m => (DateTimeOffset?) m.MeasurementTime);
+        }
+
+        private IEnumerable<DateTimeOffset?> GetTimes(DischargeActivity item)
+        {
+            return new DateTimeOffset?[]
+                {
+                    item.MeasurementStartTime,
+                    item.MeasurementEndTime,
+                }
+                .Concat(item.ChannelMeasurements.SelectMany(GetTimes));
+        }
+
+        private IEnumerable<DateTimeOffset?> GetTimes(ChannelMeasurementBase item)
+        {
+            return new DateTimeOffset?[]
+            {
+                item.MeasurementStartTime,
+                item.MeasurementEndTime,
+            };
         }
 
         private void AppendDelayedVisit(FieldVisitInfo delayedVisit)
