@@ -88,7 +88,13 @@ namespace TabularCsv
                 return;
             }
 
-            PrefaceRegexMatches[regex] = match.Groups[ColumnDefinition.RegexCaptureGroupName].Value;
+            var value = match
+                .Groups
+                .Cast<Group>()
+                .First(g => ColumnDefinition.RegexCaptureGroupName.Equals(g.Name, StringComparison.InvariantCultureIgnoreCase))
+                .Value;
+
+            PrefaceRegexMatches[regex] = value;
         }
 
         public void BuildColumnHeaderHeaderMap(string[] fields)

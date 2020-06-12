@@ -45,7 +45,7 @@ namespace TabularCsv
 
             if (HasPrefaceRegex)
             {
-                if (!PrefaceRegex.GetGroupNames().Contains(RegexCaptureGroupName))
+                if (!PrefaceRegex.GetGroupNames().Select(n => n.ToLowerInvariant()).Contains(RegexCaptureGroupName))
                 {
                     validationMessage = $"A named capture group is missing. Use something like: (?<{RegexCaptureGroupName}>PATTERN)";
 
