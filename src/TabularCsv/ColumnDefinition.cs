@@ -10,7 +10,7 @@ namespace TabularCsv
         public int? ColumnIndex { get; set; }
         public string ColumnHeader { get; set; }
         public string FixedValue { get; set; }
-        public string HeaderRegex { get; set; }
+        public Regex PrefaceRegex { get; set; }
         public string Alias { get; set; }
 
         private string NamePrefix { get; set; }
@@ -28,25 +28,24 @@ namespace TabularCsv
         public bool RequiresColumnHeader()
         {
             return !HasFixedValue
-                   && !HasHeaderRegex
+                   && !HasPrefaceRegex
                    && HasNamedColumn;
         }
 
         public bool HasFixedValue => !string.IsNullOrEmpty(FixedValue);
         public bool HasNamedColumn => !string.IsNullOrWhiteSpace(ColumnHeader);
         public bool HasIndexedColumn => ColumnIndex.HasValue;
-        public bool HasHeaderRegex => !string.IsNullOrEmpty(HeaderRegex);
+        public bool HasPrefaceRegex => PrefaceRegex != null;
+        public bool HasMultilineRegex => HasPrefaceRegex && 0 != (PrefaceRegex.Options & (RegexOptions.Multiline | RegexOptions.Singleline));
         public bool HasAlias => !string.IsNullOrEmpty(Alias);
 
         public bool IsInvalid(out string validationMessage)
         {
             validationMessage = null;
 
-            if (HasHeaderRegex)
+            if (HasPrefaceRegex)
             {
-                var regex = new Regex(HeaderRegex);
-
-                if (!regex.GetGroupNames().Contains(RegexCaptureGroupName))
+                if (!PrefaceRegex.GetGroupNames().Select(n => n.ToLowerInvariant()).Contains(RegexCaptureGroupName))
                 {
                     validationMessage = $"A named capture group is missing. Use something like: (?<{RegexCaptureGroupName}>PATTERN)";
 
@@ -57,7 +56,7 @@ namespace TabularCsv
             var setProperties = new[]
                 {
                     HasFixedValue ? nameof(FixedValue) : null,
-                    HasHeaderRegex ? nameof(HeaderRegex) : null,
+                    HasPrefaceRegex ? nameof(PrefaceRegex) : null,
                     HasNamedColumn ? nameof(ColumnHeader) : null,
                     HasIndexedColumn ? nameof(ColumnIndex) : null,
                 }
@@ -71,7 +70,7 @@ namespace TabularCsv
                     nameof(ColumnHeader),
                     nameof(ColumnIndex),
                     nameof(FixedValue),
-                    nameof(HeaderRegex),
+                    nameof(PrefaceRegex),
                 };
 
                 var setPropertyContext = setProperties.Any()
@@ -93,20 +92,20 @@ namespace TabularCsv
                 FixedValue = "?Unused?";
                 ColumnHeader = null;
                 ColumnIndex = null;
-                HeaderRegex = null;
+                PrefaceRegex = null;
             }
         }
 
         public string Name()
         {
             var suffix = RequiresColumnHeader()
-                ? $"ColumnHeader='{ColumnHeader}'"
+                ? $"{nameof(ColumnHeader)}='{ColumnHeader}'"
                 : HasFixedValue
-                    ? $"FixedValue='{FixedValue}'"
-                    : HasHeaderRegex
-                        ? $"HeaderRegex='{HeaderRegex}'"
+                    ? $"{nameof(FixedValue)}='{FixedValue}'"
+                    : HasPrefaceRegex
+                        ? $"{nameof(PrefaceRegex)}='{PrefaceRegex}'"
                         : HasIndexedColumn
-                            ? $"ColumnIndex[{ColumnIndex}]"
+                            ? $"{nameof(ColumnIndex)}[{ColumnIndex}]"
                             : "NoContextSpecified";
 
             return $"{NamePrefix}.{suffix}";

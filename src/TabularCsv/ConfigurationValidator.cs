@@ -16,6 +16,9 @@ namespace TabularCsv
             if (LocationInfo == null && Configuration.Location == null)
                 ThrowConfigurationException($"A {nameof(Configuration.Location)} definition is required.");
 
+            if (Configuration.Separator?.Length > 1)
+                ThrowConfigurationException($"The {nameof(Configuration.Separator)} field can only be a single character. '{Configuration.Separator}' is too long.");
+
             var columnDefinitions = Configuration.GetColumnDefinitions();
 
             var invalidColumns = columnDefinitions

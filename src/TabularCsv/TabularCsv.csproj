@@ -56,9 +56,11 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="Plugin.cs" />
+    <Compile Include="PrefaceEndDetector.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ConfigurationLoader.cs" />
     <Compile Include="ConfigurationValidator.cs" />
+    <Compile Include="RowParser.cs" />
     <Compile Include="TimestampType.cs" />
   </ItemGroup>
   <ItemGroup>

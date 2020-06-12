@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using FieldDataPluginFramework;
 using Nett;
 using Nett.Parser;
@@ -63,7 +64,10 @@ namespace TabularCsv
                     .UseTargetPropertySelector(standardSelectors => standardSelectors.IgnoreCase))
                 .ConfigureType<PropertyDefinition>(type => type
                     .WithConversionFor<TomlString>(convert => convert
-                        .FromToml(ConvertFixedValueShorthandSyntax)))
+                        .FromToml(ConvertShorthandPropertySyntax)))
+                .ConfigureType<Regex>(type => type
+                    .WithConversionFor<TomlString>(convert => convert
+                        .FromToml(ConvertRegexFromString)))
                 .ConfigurePropertyMapping(m => m
                     .OnTargetPropertyNotFound(WhenTargetPropertyNotFound))
             );
@@ -124,24 +128,96 @@ namespace TabularCsv
             TomlObjectType.String,
         };
 
-        private PropertyDefinition ConvertFixedValueShorthandSyntax(ITomlRoot root, TomlString tomlString)
+        private PropertyDefinition ConvertShorthandPropertySyntax(ITomlRoot root, TomlString tomlString)
         {
+            var text = tomlString.Value;
+
+            var match = ExcelColumnShorthandRegex.Match(text);
+
+            if (match.Success)
+                return new PropertyDefinition
+                {
+                    ColumnIndex = ConvertExcelColumnToIndex(match.Groups["columnName"].Value)
+                };
+
+            match = PrefaceShorthandRegex.Match(text);
+
+            if (match.Success)
+                return new PropertyDefinition
+                {
+                    PrefaceRegex = ConvertRegexFromString(root, tomlString)
+                };
+
             return new PropertyDefinition
             {
-                FixedValue = tomlString.Value
+                FixedValue = text
             };
         }
+
+        private static readonly Regex ExcelColumnShorthandRegex = new Regex(@"^=(?<columnName>[A-Z]+):$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        private static int ConvertExcelColumnToIndex(string columnName)
+        {
+            return columnName
+                .ToUpperInvariant()
+                .Aggregate(0, (column, letter) => 26 * column + letter - 'A' + 1);
+        }
+
+        private static readonly Regex PrefaceShorthandRegex = new Regex(@"^/(?<pattern>.+)/(?<options>[imsx]*(-[imsx]+)?)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        private Regex ConvertRegexFromString(ITomlRoot root, TomlString tomlString)
+        {
+            var text = tomlString.Value;
+
+            var match = PrefaceShorthandRegex.Match(text);
+
+            if (!match.Success)
+                return new Regex(text);
+
+            var pattern = match.Groups["pattern"].Value;
+            var optionsText = match.Groups["options"].Value;
+
+            var options = RegexOptions.IgnoreCase;
+            var addOption = true;
+
+            foreach (var ch in optionsText.ToLowerInvariant())
+            {
+                if (ch == '-')
+                {
+                    addOption = false;
+                    continue;
+                }
+
+                if (!SupportedFlags.TryGetValue(ch, out var option))
+                    continue;
+
+                if (addOption)
+                    options |= option;
+                else
+                    options &= ~option;
+            }
+
+            return new Regex(pattern, options);
+        }
+
+        private static readonly Dictionary<char, RegexOptions> SupportedFlags = new Dictionary<char, RegexOptions>
+        {
+            {'i', RegexOptions.IgnoreCase},
+            {'m', RegexOptions.Multiline},
+            {'s', RegexOptions.Singleline},
+            {'x', RegexOptions.IgnorePatternWhitespace},
+        };
 
         private static bool IsEmpty(Configuration configuration)
         {
             return configuration.Id == null
-                   && configuration.Visit == null
                    && configuration.ControlCondition == null
                    && !configuration.AllReadings.Any()
                    && !configuration.AllInspections.Any()
                    && !configuration.AllCalibrations.Any()
                    && !configuration.AllAdcpDischarges.Any()
-                   && !configuration.AllPanelDischargeSummaries.Any();
+                   && !configuration.AllPanelDischargeSummaries.Any()
+                   && !configuration.AllLevelSurveys.Any();
         }
     }
 }
