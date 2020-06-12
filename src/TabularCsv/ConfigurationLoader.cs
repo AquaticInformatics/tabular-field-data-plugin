@@ -140,12 +140,12 @@ namespace TabularCsv
                     ColumnIndex = ConvertExcelColumnToIndex(match.Groups["columnName"].Value)
                 };
 
-            match = HeaderShorthandRegex.Match(text);
+            match = PrefaceShorthandRegex.Match(text);
 
             if (match.Success)
                 return new PropertyDefinition
                 {
-                    HeaderRegex = ConvertRegexFromString(root, tomlString)
+                    PrefaceRegex = ConvertRegexFromString(root, tomlString)
                 };
 
             return new PropertyDefinition
@@ -163,13 +163,13 @@ namespace TabularCsv
                 .Aggregate(0, (column, letter) => 26 * column + letter - 'A' + 1);
         }
 
-        private static readonly Regex HeaderShorthandRegex = new Regex(@"^/(?<pattern>.+)/(?<options>[imsx]*(-[imsx]+)?)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static readonly Regex PrefaceShorthandRegex = new Regex(@"^/(?<pattern>.+)/(?<options>[imsx]*(-[imsx]+)?)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         private Regex ConvertRegexFromString(ITomlRoot root, TomlString tomlString)
         {
             var text = tomlString.Value;
 
-            var match = HeaderShorthandRegex.Match(text);
+            var match = PrefaceShorthandRegex.Match(text);
 
             if (!match.Success)
                 return new Regex(text);
@@ -211,13 +211,13 @@ namespace TabularCsv
         private static bool IsEmpty(Configuration configuration)
         {
             return configuration.Id == null
-                   && configuration.Visit == null
                    && configuration.ControlCondition == null
                    && !configuration.AllReadings.Any()
                    && !configuration.AllInspections.Any()
                    && !configuration.AllCalibrations.Any()
                    && !configuration.AllAdcpDischarges.Any()
-                   && !configuration.AllPanelDischargeSummaries.Any();
+                   && !configuration.AllPanelDischargeSummaries.Any()
+                   && !configuration.AllLevelSurveys.Any();
         }
     }
 }

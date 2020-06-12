@@ -19,7 +19,7 @@ In this context, 'tabular' means data shaped like a database table. A sequence o
 
 Most CSV files follow this general format:
 
-- An optional header section, with a few lines of summary text.
+- An optional preface section, with a few lines of free-form text.
 - An optional header row, with one named heading per column.
 - Zero or more data rows.
 

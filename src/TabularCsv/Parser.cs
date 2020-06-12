@@ -67,9 +67,9 @@ namespace TabularCsv
                 Configuration = configuration,
             };
 
-            var (headerLines, dataRowReader) = ExtractHeaderLines(configuration, csvText);
+            var (prefaceLines, dataRowReader) = ExtractPrefaceLines(configuration, csvText);
 
-            rowParser.AddHeaderLines(headerLines);
+            rowParser.AddPrefaceLines(prefaceLines);
 
             var dataRowCount = 0;
 
@@ -79,7 +79,7 @@ namespace TabularCsv
 
                 while(!fieldParser.EndOfData)
                 {
-                    rowParser.LineNumber = rowParser.HeaderLineCount + fieldParser.LineNumber;
+                    rowParser.LineNumber = rowParser.PrefaceLineCount + fieldParser.LineNumber;
 
                     string[] fields = null;
 
@@ -160,12 +160,17 @@ namespace TabularCsv
             return rowParser;
         }
 
-        private (IEnumerable<string> HeaderLines, StringReader RowReader) ExtractHeaderLines(Configuration configuration, string csvText)
+        private (IEnumerable<string> PrefaceLines, StringReader RowReader) ExtractPrefaceLines(Configuration configuration, string csvText)
         {
-            var headerLines = new List<string>();
+            var prefaceLines = new List<string>();
 
-            if (!configuration.IsHeaderSectionExpected)
-                return (headerLines, new StringReader(csvText));
+            if (!configuration.IsPrefaceExpected)
+                return (prefaceLines, new StringReader(csvText));
+
+            var prefaceEndDetector = new PrefaceEndDetector(configuration)
+            {
+                Separator = configuration.Separator ?? DefaultFieldSeparator
+            };
 
             using (var reader = new StringReader(csvText))
             {
@@ -176,26 +181,29 @@ namespace TabularCsv
                     if (line == null)
                         break;
 
-                    if (!string.IsNullOrEmpty(configuration.HeadersEndBefore) && line.StartsWith(configuration.HeadersEndBefore))
+                    if (prefaceEndDetector.IsFirstHeaderLine(line))
                     {
-                        // This line needs to be included in the start of the data section
+                        // This line needs to be included in the start of the header section
                         var builder = new StringBuilder(line);
                         builder.AppendLine();
                         builder.Append(reader.ReadToEnd());
 
-                        return (headerLines, new StringReader(builder.ToString()));
+                        return (prefaceLines, new StringReader(builder.ToString()));
                     }
 
-                    headerLines.Add(line);
+                    prefaceLines.Add(line);
 
-                    if (configuration.HeaderRowCount > 0 && headerLines.Count >= configuration.HeaderRowCount)
+                    if (configuration.MaximumPrefaceLines > 0 && prefaceLines.Count > configuration.MaximumPrefaceLines)
+                        throw new Exception($"{nameof(configuration.MaximumPrefaceLines)} of {configuration.MaximumPrefaceLines} exceeded.");
+
+                    if (configuration.PrefaceRowCount > 0 && prefaceLines.Count >= configuration.PrefaceRowCount)
                         break;
 
-                    if (string.IsNullOrEmpty(configuration.HeadersEndWith) && line.StartsWith(configuration.HeadersEndWith))
+                    if (prefaceEndDetector.IsLastPrefaceLine(line))
                         break;
                 }
 
-                return (headerLines, new StringReader(reader.ReadToEnd()));
+                return (prefaceLines, new StringReader(reader.ReadToEnd()));
             }
         }
 
@@ -231,9 +239,9 @@ namespace TabularCsv
 
             var configurations = configurationDirectory
                 .GetFiles("*.toml")
-                .Select(fi => configurationLoader.Load(fi.FullName))
-                .Where(s => s != null)
-                .OrderBy(s => s.Priority)
+                .Select(fileInfo => configurationLoader.Load(fileInfo.FullName))
+                .Where(configuration => configuration != null)
+                .OrderBy(configuration => configuration.Priority)
                 .ToList();
 
             if (!configurations.Any())
@@ -243,7 +251,7 @@ namespace TabularCsv
             }
 
             configurations = configurations
-                .Where(s => LocationInfo != null || s.Location != null)
+                .Where(configuration => LocationInfo != null || configuration.Location != null)
                 .ToList();
 
             foreach (var configuration in configurations)

@@ -8,11 +8,14 @@ namespace TabularCsv
         public string Id { get; set; }
         public int Priority { get; set; }
         public string Separator { get; set; }
-        public int HeaderRowCount { get; set; }
-        public string HeadersEndWith { get; set; }
-        public string HeadersEndBefore { get; set; }
+        public int PrefaceRowCount { get; set; }
+        public string PrefaceEndsWith { get; set; }
+        public string PrefaceEndsBefore { get; set; }
+        public int MaximumPrefaceLines { get; set; } = 50;
         public bool FirstDataRowIsColumnHeader { get; set; }
         public string CommentLinePrefix { get; set; }
+        public bool StrictMode { get; set; } = true;
+
         public Dictionary<string, Dictionary<string,string>> Aliases { get; set; } = new Dictionary<string, Dictionary<string, string>>();
 
         public PropertyDefinition Location { get; set; }
@@ -44,9 +47,10 @@ namespace TabularCsv
         public List<LevelSurveyDefinition> LevelSurveys { get; set; } = new List<LevelSurveyDefinition>();
         public List<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(LevelSurvey, LevelSurveys);
 
-        public bool IsHeaderSectionExpected => HeaderRowCount > 0
-                                               || !string.IsNullOrEmpty(HeadersEndWith)
-                                               || !string.IsNullOrEmpty(HeadersEndBefore);
+        public bool IsPrefaceExpected => PrefaceRowCount > 0
+                                               || !string.IsNullOrEmpty(PrefaceEndsWith)
+                                               || !string.IsNullOrEmpty(PrefaceEndsBefore)
+                                               || GetColumnDefinitions().Any(c => c.HasPrefaceRegex);
 
         public bool IsHeaderRowRequired => FirstDataRowIsColumnHeader
                                            || GetColumnDefinitions().Any(c => c.RequiresColumnHeader());

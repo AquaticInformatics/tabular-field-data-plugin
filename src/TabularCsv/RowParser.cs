@@ -16,6 +16,7 @@ using FieldDataPluginFramework.DataModel.Meters;
 using FieldDataPluginFramework.DataModel.PickLists;
 using FieldDataPluginFramework.DataModel.Readings;
 using FieldDataPluginFramework.DataModel.Verticals;
+using Humanizer;
 
 namespace TabularCsv
 {
@@ -27,12 +28,12 @@ namespace TabularCsv
         public DelayedAppender ResultsAppender { get; set; }
         public LocationInfo LocationInfo { get; set; }
 
-        public int HeaderLineCount => HeaderLines.Count;
+        public int PrefaceLineCount => PrefaceLines.Count;
 
         private string[] Fields { get; set; }
-        private List<string> HeaderLines { get; } = new List<string>();
-        private string MultiLineHeader { get; set; }
-        private Dictionary<Regex, string> HeaderRegexMatches { get; } = new Dictionary<Regex, string>();
+        private List<string> PrefaceLines { get; } = new List<string>();
+        private string MultilinePreface { get; set; }
+        private Dictionary<Regex, string> PrefaceRegexMatches { get; } = new Dictionary<Regex, string>();
         private Dictionary<string, int> ColumnHeaderMap { get; set; } = new Dictionary<string, int>();
 
         public void Parse(string[] fields)
@@ -42,46 +43,52 @@ namespace TabularCsv
             ParseRow();
         }
 
-        public void AddHeaderLines(IEnumerable<string> headerLines)
+        public void AddPrefaceLines(IEnumerable<string> prefaceLines)
         {
-            HeaderLines.AddRange(headerLines);
+            PrefaceLines.AddRange(prefaceLines);
 
-            MultiLineHeader = string.Join(Environment.NewLine, HeaderLines);
+            MultilinePreface = string.Join(Environment.NewLine, PrefaceLines);
 
-            BuildHeaderRegex();
+            BuildPrefaceRegexMatches();
         }
 
-        private void BuildHeaderRegex()
+        private void BuildPrefaceRegexMatches()
         {
             var regexColumns = Configuration
                 .GetColumnDefinitions()
-                .Where(column => column.HasHeaderRegex)
+                .Where(column => column.HasPrefaceRegex)
                 .ToList();
 
             foreach (var regexColumn in regexColumns)
             {
                 if (regexColumn.HasMultilineRegex)
                 {
-                    AddHeaderRegexMatch(regexColumn.HeaderRegex, regexColumn.HeaderRegex.Match(MultiLineHeader));
+                    AddPrefaceRegexMatch(regexColumn.PrefaceRegex, regexColumn.PrefaceRegex.Match(MultilinePreface));
                     continue;
                 }
 
-                foreach (var match in HeaderLines.Select(headerLine => regexColumn.HeaderRegex.Match(headerLine)).Where(match => match.Success))
+                foreach (var match in PrefaceLines.Select(prefaceLine => regexColumn.PrefaceRegex.Match(prefaceLine)).Where(match => match.Success))
                 {
-                    AddHeaderRegexMatch(regexColumn.HeaderRegex, match);
+                    AddPrefaceRegexMatch(regexColumn.PrefaceRegex, match);
                 }
             }
+
+            var unmatchedRegexColumns = regexColumns
+                .Where(r => !PrefaceRegexMatches.ContainsKey(r.PrefaceRegex))
+                .ToList();
+
+            if (Configuration.StrictMode && unmatchedRegexColumns.Any())
+                throw new ArgumentException($"{"preface regex column".ToQuantity(unmatchedRegexColumns.Count)} did not match anything from the {"preface line".ToQuantity(PrefaceLines.Count)}: {string.Join(", ", unmatchedRegexColumns.Select(c => c.Name()))}");
         }
 
-        private void AddHeaderRegexMatch(Regex regex, Match match)
+        private void AddPrefaceRegexMatch(Regex regex, Match match)
         {
             if (!match.Success)
             {
-                // TODO: When strict mode is enabled, throw an exception to indicate no match was found.
                 return;
             }
 
-            HeaderRegexMatches[regex] = match.Groups[ColumnDefinition.RegexCaptureGroupName].Value;
+            PrefaceRegexMatches[regex] = match.Groups[ColumnDefinition.RegexCaptureGroupName].Value;
         }
 
         public void BuildColumnHeaderHeaderMap(string[] fields)
@@ -1079,8 +1086,8 @@ namespace TabularCsv
 
         private string GetColumnValue(ColumnDefinition column)
         {
-            if (column.HasHeaderRegex)
-                return HeaderRegexMatches.TryGetValue(column.HeaderRegex, out var value)
+            if (column.HasPrefaceRegex)
+                return PrefaceRegexMatches.TryGetValue(column.PrefaceRegex, out var value)
                     ? value
                     : null;
 
