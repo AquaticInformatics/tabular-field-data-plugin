@@ -10,7 +10,7 @@ namespace TabularCsv
         public int? ColumnIndex { get; set; }
         public string ColumnHeader { get; set; }
         public string FixedValue { get; set; }
-        public string HeaderRegex { get; set; }
+        public Regex HeaderRegex { get; set; }
         public string Alias { get; set; }
 
         private string NamePrefix { get; set; }
@@ -35,7 +35,8 @@ namespace TabularCsv
         public bool HasFixedValue => !string.IsNullOrEmpty(FixedValue);
         public bool HasNamedColumn => !string.IsNullOrWhiteSpace(ColumnHeader);
         public bool HasIndexedColumn => ColumnIndex.HasValue;
-        public bool HasHeaderRegex => !string.IsNullOrEmpty(HeaderRegex);
+        public bool HasHeaderRegex => HeaderRegex != null;
+        public bool HasMultilineRegex => HasHeaderRegex && 0 != (HeaderRegex.Options & (RegexOptions.Multiline | RegexOptions.Singleline));
         public bool HasAlias => !string.IsNullOrEmpty(Alias);
 
         public bool IsInvalid(out string validationMessage)
@@ -44,9 +45,7 @@ namespace TabularCsv
 
             if (HasHeaderRegex)
             {
-                var regex = new Regex(HeaderRegex);
-
-                if (!regex.GetGroupNames().Contains(RegexCaptureGroupName))
+                if (!HeaderRegex.GetGroupNames().Contains(RegexCaptureGroupName))
                 {
                     validationMessage = $"A named capture group is missing. Use something like: (?<{RegexCaptureGroupName}>PATTERN)";
 

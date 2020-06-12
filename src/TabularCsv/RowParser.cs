@@ -31,7 +31,8 @@ namespace TabularCsv
 
         private string[] Fields { get; set; }
         private List<string> HeaderLines { get; } = new List<string>();
-        private Dictionary<string, string> HeaderRegexMatches { get; } = new Dictionary<string, string>();
+        private string MultiLineHeader { get; set; }
+        private Dictionary<Regex, string> HeaderRegexMatches { get; } = new Dictionary<Regex, string>();
         private Dictionary<string, int> ColumnHeaderMap { get; set; } = new Dictionary<string, int>();
 
         public void Parse(string[] fields)
@@ -45,6 +46,8 @@ namespace TabularCsv
         {
             HeaderLines.AddRange(headerLines);
 
+            MultiLineHeader = string.Join(Environment.NewLine, HeaderLines);
+
             BuildHeaderRegex();
         }
 
@@ -57,13 +60,28 @@ namespace TabularCsv
 
             foreach (var regexColumn in regexColumns)
             {
-                var regex = new Regex(regexColumn.HeaderRegex);
-
-                foreach (var match in HeaderLines.Select(headerLine => regex.Match(headerLine)).Where(match => match.Success))
+                if (regexColumn.HasMultilineRegex)
                 {
-                    HeaderRegexMatches[regexColumn.HeaderRegex] = match.Groups[ColumnDefinition.RegexCaptureGroupName].Value;
+                    AddHeaderRegexMatch(regexColumn.HeaderRegex, regexColumn.HeaderRegex.Match(MultiLineHeader));
+                    continue;
+                }
+
+                foreach (var match in HeaderLines.Select(headerLine => regexColumn.HeaderRegex.Match(headerLine)).Where(match => match.Success))
+                {
+                    AddHeaderRegexMatch(regexColumn.HeaderRegex, match);
                 }
             }
+        }
+
+        private void AddHeaderRegexMatch(Regex regex, Match match)
+        {
+            if (!match.Success)
+            {
+                // TODO: When strict mode is enabled, throw an exception to indicate no match was found.
+                return;
+            }
+
+            HeaderRegexMatches[regex] = match.Groups[ColumnDefinition.RegexCaptureGroupName].Value;
         }
 
         public void BuildColumnHeaderHeaderMap(string[] fields)
