@@ -2,224 +2,269 @@ classDiagram
 
   TimeRangeActivity <|-- Configuration
   class Configuration {
-      Id
-      Priority
-      Separator
-      PrefaceRowCount
-      PrefaceEndsWith
-      PrefaceEndsBefore
-      MaximumPrefaceLines
-      FirstDataRowIsColumnHeader
-      CommentLinePrefix
-      StrictMode
-      Aliases
-      Location
-      Visit
-      ControlCondition
-      Readings[]
-      Inspections[]
-      Calibrations[]
-      AdcpDischarges[]
-      PanelDischargeSummaries[]
-      LevelSurveys[]
+    Id
+    Priority
+    Separator
+    PrefaceRowCount
+    PrefaceEndsWith
+    PrefaceEndsBefore
+    MaximumPrefaceLines
+    FirstDataRowIsColumnHeader
+    CommentLinePrefix
+    StrictMode
+    Aliases
+    Location
+    Visit
+    ControlCondition
+    Reading
+    Readings
+    Inspection
+    Inspections
+    Calibration
+    Calibrations
+    AdcpDischarge
+    AdcpDischarges
+    PanelDischargeSummary
+    PanelDischargeSummaries
+    LevelSurvey
+    LevelSurveys
   }
+  link Configuration "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Configuration" "See Configuration details"
 
-  class ActivityWithComment {
-      Comment
-      MergeWithComment[]
+  Column <|-- Property
+  class Property {
   }
-  
-  ActivityWithComment <|-- Activity
+  link Property "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Property" "See Property details"
+
+  Column <|-- Timestamp
+  class Timestamp {
+    Format
+    Type
+    UtcOffset
+  }
+  link Timestamp "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Timestamp" "See Timestamp details"
+
+  Column <|-- Core
+  class Core {
+    Comment
+    MergeWithComment
+    MergeWithComments
+  }
+  link Core "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Core" "See Core details"
+
+  Core <|-- Activity
   class Activity {
-      Time[]
+    Time
+    Times
   }
-  
+  link Activity "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Activity" "See Activity details"
+
   Activity <|-- TimeRangeActivity
   class TimeRangeActivity {
-      StartTime[]
-      EndTime[]
+    StartTime
+    StartTimes
+    EndTime
+    EndTimes
   }
-  
+  link TimeRangeActivity "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/TimeRangeActivity" "See TimeRangeActivity details"
+
   TimeRangeActivity <|-- Visit
   class Visit {
-      Weather
-      CollectionAgency
-      CompletedGroundWaterLevels
-      CompletedLevelSurvey
-      CompletedRecorderData
-      CompletedSafetyInspection
-      CompletedOtherSample
-      CompletedBiologicalSample
-      CompletedSedimentSample
-      CompletedWaterQualitySample
-      Party
+    Weather
+    CollectionAgency
+    CompletedGroundWaterLevels
+    CompletedLevelSurvey
+    CompletedRecorderData
+    CompletedSafetyInspection
+    CompletedOtherSample
+    CompletedBiologicalSample
+    CompletedSedimentSample
+    CompletedWaterQualitySample
+    Party
   }
-  
+  link Visit "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Visit" "See Visit details"
+
   Activity <|-- Reading
   class Reading {
-      Value
-      ParameterId
-      UnitId
-      ReadingType
-      GradeCode
-      GradeName
-      Method
-      Publish
-      ReferencePointName
-      SensorUniqueId
-      SubLocation
-      UseLocationDatumAsReference
-      Uncertainty
-      MeasurementDeviceManufacturer
-      MeasurementDeviceModel
-      MeasurementDeviceSerialNumber
-      ReadingQualifiers
-      ReadingQualifierSeparators
-      MeasurementDetailsCut
-      MeasurementDetailsHold
-      MeasurementDetailsTapeCorrection
-      MeasurementDetailsWaterLevel
+    Value
+    ParameterId
+    UnitId
+    ReadingType
+    GradeCode
+    GradeName
+    Method
+    Publish
+    ReferencePointName
+    SensorUniqueId
+    SubLocation
+    UseLocationDatumAsReference
+    Uncertainty
+    MeasurementDeviceManufacturer
+    MeasurementDeviceModel
+    MeasurementDeviceSerialNumber
+    ReadingQualifiers
+    ReadingQualifierSeparators
+    MeasurementDetailsCut
+    MeasurementDetailsHold
+    MeasurementDetailsTapeCorrection
+    MeasurementDetailsWaterLevel
   }
-  
+  link Reading "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Reading" "See Reading details"
+
   Activity <|-- Inspection
   class Inspection {
-      InspectionType
-      SubLocation
-      MeasurementDeviceManufacturer
-      MeasurementDeviceModel
-      MeasurementDeviceSerialNumber
+    InspectionType
+    SubLocation
+    MeasurementDeviceManufacturer
+    MeasurementDeviceModel
+    MeasurementDeviceSerialNumber
   }
-  
+  link Inspection "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Inspection" "See Inspection details"
+
   Activity <|-- Calibration
   class Calibration {
-      Value
-      ParameterId
-      UnitId
-      Party
-      CalibrationType
-      Method
-      Publish
-      SensorUniqueId
-      SubLocation
-      Standard
-      MeasurementDeviceManufacturer
-      MeasurementDeviceModel
-      MeasurementDeviceSerialNumber
-      StandardDetailsLotNumber
-      StandardDetailsStandardCode
-      StandardDetailsExpirationDate
-      StandardDetailsTemperature
+    Value
+    ParameterId
+    UnitId
+    Party
+    CalibrationType
+    Method
+    Publish
+    SensorUniqueId
+    SubLocation
+    Standard
+    MeasurementDeviceManufacturer
+    MeasurementDeviceModel
+    MeasurementDeviceSerialNumber
+    StandardDetailsLotNumber
+    StandardDetailsStandardCode
+    StandardDetailsExpirationDate
+    StandardDetailsTemperature
   }
-  
+  link Calibration "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Calibration" "See Calibration details"
+
   Activity <|-- ControlCondition
   class ControlCondition {
-      ConditionType
-      UnitId
-      Party
-      ControlCleanedType
-      ControlCode
-      DistanceToGage
+    ConditionType
+    UnitId
+    Party
+    ControlCleanedType
+    ControlCode
+    DistanceToGage
   }
-  
+  link ControlCondition "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/ControlCondition" "See ControlCondition details"
+
   TimeRangeActivity <|-- DischargeActivity
   class DischargeActivity {
-      TotalDischarge
-      ChannelName
-      Party
-      MeasurementId
-      DischargeUnitId
-      AreaUnitId
-      AreaValue
-      DistanceUnitId
-      WidthValue
-      VelocityUnitId
-      MeanIndexVelocity
-      ShowInDataCorrection
-      ShowInRatingDevelopment
-      PreventAutomaticPublishing
-      AdjustmentType
-      AdjustmentAmount
-      ReasonForAdjustment
-      GradeCode
-      GradeName
-      UncertaintyType
-      QualityAssuranceComments
-      QuantitativeUncertainty
-      QualitativeUncertainty
-      MeanGageHeightDurationHours
-      ManuallyCalculatedMeanGageHeight
-      MeanGageHeightDifferenceDuringVisit
-      GageHeightMeasurements[]
+    TotalDischarge
+    ChannelName
+    Party
+    MeasurementId
+    DischargeUnitId
+    AreaUnitId
+    AreaValue
+    DistanceUnitId
+    WidthValue
+    VelocityUnitId
+    MeanIndexVelocity
+    ShowInDataCorrection
+    ShowInRatingDevelopment
+    PreventAutomaticPublishing
+    AdjustmentType
+    AdjustmentAmount
+    ReasonForAdjustment
+    GradeCode
+    GradeName
+    UncertaintyType
+    QualityAssuranceComments
+    QuantitativeUncertainty
+    QualitativeUncertainty
+    MeanGageHeightDurationHours
+    ManuallyCalculatedMeanGageHeight
+    MeanGageHeightDifferenceDuringVisit
+    GageHeightMeasurement
+    GageHeightMeasurements
   }
-  
+  link DischargeActivity "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/DischargeActivity" "See DischargeActivity details"
+
   Activity <|-- GageHeightMeasurement
   class GageHeightMeasurement {
-      Value
-      Include
+    Value
+    Include
   }
-  
+  link GageHeightMeasurement "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/GageHeightMeasurement" "See GageHeightMeasurement details"
+
   DischargeActivity <|-- AdcpDischarge
   class AdcpDischarge {
-      SectionDischarge
-      DeviceType
-      DeploymentMethod
-      MeterSuspension
-      NumberOfTransects
-      MagneticVariation
-      DischargeCoefficientVariation
-      PercentageOfDischargeMeasured
-      TransducerDepth
-      VelocityAverageValue
-      TopEstimateExponent
-      TopEstimateMethod
-      BottomEstimateExponent
-      BottomEstimateMethod
-      NavigationMethod
-      FirmwareVersion
-      SoftwareVersion
-      DepthReference
-      MeasurementDeviceManufacturer
-      MeasurementDeviceModel
-      MeasurementDeviceSerialNumber
+    SectionDischarge
+    DeviceType
+    DeploymentMethod
+    MeterSuspension
+    NumberOfTransects
+    MagneticVariation
+    DischargeCoefficientVariation
+    PercentageOfDischargeMeasured
+    TransducerDepth
+    VelocityAverageValue
+    TopEstimateExponent
+    TopEstimateMethod
+    BottomEstimateExponent
+    BottomEstimateMethod
+    NavigationMethod
+    FirmwareVersion
+    SoftwareVersion
+    DepthReference
+    MeasurementDeviceManufacturer
+    MeasurementDeviceModel
+    MeasurementDeviceSerialNumber
   }
-  
+  link AdcpDischarge "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/AdcpDischarge" "See AdcpDischarge details"
+
   DischargeActivity <|-- ManualGaugingDischarge
   class ManualGaugingDischarge {
-      SectionDischarge
-      StartPoint
-      DischargeMethod
-      VelocityAverageValue
-      VelocityObservationMethod
-      DeploymentMethod
-      MeterSuspension
-      MeterCalibrationManufacturer
-      MeterCalibrationModel
-      MeterCalibrationSerialNumber
-      MeterCalibrationConfiguration
-      MeterCalibrationFirmwareVersion
-      MeterCalibrationSoftwareVersion
-      MeterType
-      MeterCalibrationEquations[]
+    SectionDischarge
+    StartPoint
+    DischargeMethod
+    VelocityAverageValue
+    VelocityObservationMethod
+    DeploymentMethod
+    MeterSuspension
+    MeterCalibrationManufacturer
+    MeterCalibrationModel
+    MeterCalibrationSerialNumber
+    MeterCalibrationConfiguration
+    MeterCalibrationFirmwareVersion
+    MeterCalibrationSoftwareVersion
+    MeterType
+    MeterCalibrationEquation
+    MeterCalibrationEquations
   }
+  link ManualGaugingDischarge "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/ManualGaugingDischarge" "See ManualGaugingDischarge details"
 
+  Column <|-- MeterCalibrationEquation
   class MeterCalibrationEquation {
-      Slope
-      RangeStart
-      RangeEnd
-      Intercept
-      InterceptUnitId
+    Slope
+    RangeStart
+    RangeEnd
+    Intercept
+    InterceptUnitId
   }
-  
-  ActivityWithComment <|-- LevelSurvey
+  link MeterCalibrationEquation "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/MeterCalibrationEquation" "See MeterCalibrationEquation details"
+
+  Core <|-- LevelSurvey
   class LevelSurvey {
-      OriginReferencePointName
-      Party
-      Method
-      LevelSurveyMeasurements[]
+    OriginReferencePointName
+    Party
+    Method
+    LevelSurveyMeasurement
+    LevelSurveyMeasurements
   }
-  
+  link LevelSurvey "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/LevelSurvey" "See LevelSurvey details"
+
   Activity <|-- LevelSurveyMeasurement
   class LevelSurveyMeasurement {
-      MeasuredElevation
-      ReferencePointName
+    MeasuredElevation
+    ReferencePointName
   }
+  link LevelSurveyMeasurement "https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/LevelSurveyMeasurement" "See LevelSurveyMeasurement details"
+

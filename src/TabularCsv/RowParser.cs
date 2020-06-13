@@ -577,7 +577,7 @@ namespace TabularCsv
             return calibration;
         }
 
-        private ControlCondition ParseControlCondition(FieldVisitInfo visitInfo, ControlConditionColumnDefinition definition)
+        private ControlCondition ParseControlCondition(FieldVisitInfo visitInfo, ControlConditionDefinition definition)
         {
             if (definition == null)
                 return null;
