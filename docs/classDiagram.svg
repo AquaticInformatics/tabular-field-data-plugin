@@ -1,0 +1,563 @@
+<svg id="mermaid-1592009556444" width="1433.66015625" xmlns="http://www.w3.org/2000/svg" height="1185" viewBox="-20 -20 1433.66015625 1185"><style>
+
+
+
+#mermaid-1592009556444 .label {
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family);
+  color: #333; }
+
+#mermaid-1592009556444 .label text {
+  fill: #333; }
+
+#mermaid-1592009556444 .node rect,
+#mermaid-1592009556444 .node circle,
+#mermaid-1592009556444 .node ellipse,
+#mermaid-1592009556444 .node polygon,
+#mermaid-1592009556444 .node path {
+  fill: #ECECFF;
+  stroke: #9370DB;
+  stroke-width: 1px; }
+
+#mermaid-1592009556444 .node .label {
+  text-align: center; }
+
+#mermaid-1592009556444 .node.clickable {
+  cursor: pointer; }
+
+#mermaid-1592009556444 .arrowheadPath {
+  fill: #333333; }
+
+#mermaid-1592009556444 .edgePath .path {
+  stroke: #333333;
+  stroke-width: 1.5px; }
+
+#mermaid-1592009556444 .edgeLabel {
+  background-color: #e8e8e8;
+  text-align: center; }
+#mermaid-1592009556444   .edgeLabel rect {
+    opacity: 0.5; }
+
+#mermaid-1592009556444 .cluster rect {
+  fill: #ffffde;
+  stroke: #aaaa33;
+  stroke-width: 1px; }
+
+#mermaid-1592009556444 .cluster text {
+  fill: #333; }
+
+#mermaid-1592009556444 div.mermaidTooltip {
+  position: absolute;
+  text-align: center;
+  max-width: 200px;
+  padding: 2px;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family);
+  font-size: 12px;
+  background: #ffffde;
+  border: 1px solid #aaaa33;
+  border-radius: 2px;
+  pointer-events: none;
+  z-index: 100; }
+
+#mermaid-1592009556444 .actor {
+  stroke: #CCCCFF;
+  fill: #ECECFF; }
+
+#mermaid-1592009556444 text.actor {
+  fill: black;
+  stroke: none; }
+
+#mermaid-1592009556444 .actor-line {
+  stroke: grey; }
+
+#mermaid-1592009556444 .messageLine0 {
+  stroke-width: 1.5;
+  stroke-dasharray: '2 2';
+  stroke: #333; }
+
+#mermaid-1592009556444 .messageLine1 {
+  stroke-width: 1.5;
+  stroke-dasharray: '2 2';
+  stroke: #333; }
+
+#mermaid-1592009556444 #arrowhead {
+  fill: #333; }
+
+#mermaid-1592009556444 .sequenceNumber {
+  fill: white; }
+
+#mermaid-1592009556444 #sequencenumber {
+  fill: #333; }
+
+#mermaid-1592009556444 #crosshead path {
+  fill: #333 !important;
+  stroke: #333 !important; }
+
+#mermaid-1592009556444 .messageText {
+  fill: #333;
+  stroke: none; }
+
+#mermaid-1592009556444 .labelBox {
+  stroke: #CCCCFF;
+  fill: #ECECFF; }
+
+#mermaid-1592009556444 .labelText {
+  fill: black;
+  stroke: none; }
+
+#mermaid-1592009556444 .loopText {
+  fill: black;
+  stroke: none; }
+
+#mermaid-1592009556444 .loopLine {
+  stroke-width: 2;
+  stroke-dasharray: '2 2';
+  stroke: #CCCCFF; }
+
+#mermaid-1592009556444 .note {
+  stroke: #aaaa33;
+  fill: #fff5ad; }
+
+#mermaid-1592009556444 .noteText {
+  fill: black;
+  stroke: none;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family);
+  font-size: 14px; }
+
+#mermaid-1592009556444 .activation0 {
+  fill: #f4f4f4;
+  stroke: #666; }
+
+#mermaid-1592009556444 .activation1 {
+  fill: #f4f4f4;
+  stroke: #666; }
+
+#mermaid-1592009556444 .activation2 {
+  fill: #f4f4f4;
+  stroke: #666; }
+
+
+#mermaid-1592009556444 .mermaid-main-font {
+  font-family: "trebuchet ms", verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 .section {
+  stroke: none;
+  opacity: 0.2; }
+
+#mermaid-1592009556444 .section0 {
+  fill: rgba(102, 102, 255, 0.49); }
+
+#mermaid-1592009556444 .section2 {
+  fill: #fff400; }
+
+#mermaid-1592009556444 .section1,
+#mermaid-1592009556444 .section3 {
+  fill: white;
+  opacity: 0.2; }
+
+#mermaid-1592009556444 .sectionTitle0 {
+  fill: #333; }
+
+#mermaid-1592009556444 .sectionTitle1 {
+  fill: #333; }
+
+#mermaid-1592009556444 .sectionTitle2 {
+  fill: #333; }
+
+#mermaid-1592009556444 .sectionTitle3 {
+  fill: #333; }
+
+#mermaid-1592009556444 .sectionTitle {
+  text-anchor: start;
+  font-size: 11px;
+  text-height: 14px;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+
+#mermaid-1592009556444 .grid .tick {
+  stroke: lightgrey;
+  opacity: 0.8;
+  shape-rendering: crispEdges; }
+#mermaid-1592009556444   .grid .tick text {
+    font-family: 'trebuchet ms', verdana, arial;
+    font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 .grid path {
+  stroke-width: 0; }
+
+
+#mermaid-1592009556444 .today {
+  fill: none;
+  stroke: red;
+  stroke-width: 2px; }
+
+
+
+#mermaid-1592009556444 .task {
+  stroke-width: 2; }
+
+#mermaid-1592009556444 .taskText {
+  text-anchor: middle;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 .taskText:not([font-size]) {
+  font-size: 11px; }
+
+#mermaid-1592009556444 .taskTextOutsideRight {
+  fill: black;
+  text-anchor: start;
+  font-size: 11px;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 .taskTextOutsideLeft {
+  fill: black;
+  text-anchor: end;
+  font-size: 11px; }
+
+
+#mermaid-1592009556444 .task.clickable {
+  cursor: pointer; }
+
+#mermaid-1592009556444 .taskText.clickable {
+  cursor: pointer;
+  fill: #003163 !important;
+  font-weight: bold; }
+
+#mermaid-1592009556444 .taskTextOutsideLeft.clickable {
+  cursor: pointer;
+  fill: #003163 !important;
+  font-weight: bold; }
+
+#mermaid-1592009556444 .taskTextOutsideRight.clickable {
+  cursor: pointer;
+  fill: #003163 !important;
+  font-weight: bold; }
+
+
+#mermaid-1592009556444 .taskText0,
+#mermaid-1592009556444 .taskText1,
+#mermaid-1592009556444 .taskText2,
+#mermaid-1592009556444 .taskText3 {
+  fill: white; }
+
+#mermaid-1592009556444 .task0,
+#mermaid-1592009556444 .task1,
+#mermaid-1592009556444 .task2,
+#mermaid-1592009556444 .task3 {
+  fill: #8a90dd;
+  stroke: #534fbc; }
+
+#mermaid-1592009556444 .taskTextOutside0,
+#mermaid-1592009556444 .taskTextOutside2 {
+  fill: black; }
+
+#mermaid-1592009556444 .taskTextOutside1,
+#mermaid-1592009556444 .taskTextOutside3 {
+  fill: black; }
+
+
+#mermaid-1592009556444 .active0,
+#mermaid-1592009556444 .active1,
+#mermaid-1592009556444 .active2,
+#mermaid-1592009556444 .active3 {
+  fill: #bfc7ff;
+  stroke: #534fbc; }
+
+#mermaid-1592009556444 .activeText0,
+#mermaid-1592009556444 .activeText1,
+#mermaid-1592009556444 .activeText2,
+#mermaid-1592009556444 .activeText3 {
+  fill: black !important; }
+
+
+#mermaid-1592009556444 .done0,
+#mermaid-1592009556444 .done1,
+#mermaid-1592009556444 .done2,
+#mermaid-1592009556444 .done3 {
+  stroke: grey;
+  fill: lightgrey;
+  stroke-width: 2; }
+
+#mermaid-1592009556444 .doneText0,
+#mermaid-1592009556444 .doneText1,
+#mermaid-1592009556444 .doneText2,
+#mermaid-1592009556444 .doneText3 {
+  fill: black !important; }
+
+
+#mermaid-1592009556444 .crit0,
+#mermaid-1592009556444 .crit1,
+#mermaid-1592009556444 .crit2,
+#mermaid-1592009556444 .crit3 {
+  stroke: #ff8888;
+  fill: red;
+  stroke-width: 2; }
+
+#mermaid-1592009556444 .activeCrit0,
+#mermaid-1592009556444 .activeCrit1,
+#mermaid-1592009556444 .activeCrit2,
+#mermaid-1592009556444 .activeCrit3 {
+  stroke: #ff8888;
+  fill: #bfc7ff;
+  stroke-width: 2; }
+
+#mermaid-1592009556444 .doneCrit0,
+#mermaid-1592009556444 .doneCrit1,
+#mermaid-1592009556444 .doneCrit2,
+#mermaid-1592009556444 .doneCrit3 {
+  stroke: #ff8888;
+  fill: lightgrey;
+  stroke-width: 2;
+  cursor: pointer;
+  shape-rendering: crispEdges; }
+
+#mermaid-1592009556444 .milestone {
+  transform: rotate(45deg) scale(0.8, 0.8); }
+
+#mermaid-1592009556444 .milestoneText {
+  font-style: italic; }
+
+#mermaid-1592009556444 .doneCritText0,
+#mermaid-1592009556444 .doneCritText1,
+#mermaid-1592009556444 .doneCritText2,
+#mermaid-1592009556444 .doneCritText3 {
+  fill: black !important; }
+
+#mermaid-1592009556444 .activeCritText0,
+#mermaid-1592009556444 .activeCritText1,
+#mermaid-1592009556444 .activeCritText2,
+#mermaid-1592009556444 .activeCritText3 {
+  fill: black !important; }
+
+#mermaid-1592009556444 .titleText {
+  text-anchor: middle;
+  font-size: 18px;
+  fill: black;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 g.classGroup text {
+  fill: #9370DB;
+  stroke: none;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family);
+  font-size: 10px; }
+#mermaid-1592009556444   g.classGroup text .title {
+    font-weight: bolder; }
+
+#mermaid-1592009556444 g.clickable {
+  cursor: pointer; }
+
+#mermaid-1592009556444 g.classGroup rect {
+  fill: #ECECFF;
+  stroke: #9370DB; }
+
+#mermaid-1592009556444 g.classGroup line {
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 .classLabel .box {
+  stroke: none;
+  stroke-width: 0;
+  fill: #ECECFF;
+  opacity: 0.5; }
+
+#mermaid-1592009556444 .classLabel .label {
+  fill: #9370DB;
+  font-size: 10px; }
+
+#mermaid-1592009556444 .relation {
+  stroke: #9370DB;
+  stroke-width: 1;
+  fill: none; }
+
+#mermaid-1592009556444 .dashed-line {
+  stroke-dasharray: 3; }
+
+#mermaid-1592009556444 #compositionStart {
+  fill: #9370DB;
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 #compositionEnd {
+  fill: #9370DB;
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 #aggregationStart {
+  fill: #ECECFF;
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 #aggregationEnd {
+  fill: #ECECFF;
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 #dependencyStart {
+  fill: #9370DB;
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 #dependencyEnd {
+  fill: #9370DB;
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 #extensionStart {
+  fill: #9370DB;
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 #extensionEnd {
+  fill: #9370DB;
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 .commit-id,
+#mermaid-1592009556444 .commit-msg,
+#mermaid-1592009556444 .branch-label {
+  fill: lightgrey;
+  color: lightgrey;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 .pieTitleText {
+  text-anchor: middle;
+  font-size: 25px;
+  fill: black;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 .slice {
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 g.stateGroup text {
+  fill: #9370DB;
+  stroke: none;
+  font-size: 10px;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 g.stateGroup text {
+  fill: #9370DB;
+  stroke: none;
+  font-size: 10px; }
+
+#mermaid-1592009556444 g.stateGroup .state-title {
+  font-weight: bolder;
+  fill: black; }
+
+#mermaid-1592009556444 g.stateGroup rect {
+  fill: #ECECFF;
+  stroke: #9370DB; }
+
+#mermaid-1592009556444 g.stateGroup line {
+  stroke: #9370DB;
+  stroke-width: 1; }
+
+#mermaid-1592009556444 .transition {
+  stroke: #9370DB;
+  stroke-width: 1;
+  fill: none; }
+
+#mermaid-1592009556444 .stateGroup .composit {
+  fill: white;
+  border-bottom: 1px; }
+
+#mermaid-1592009556444 .stateGroup .alt-composit {
+  fill: #e0e0e0;
+  border-bottom: 1px; }
+
+#mermaid-1592009556444 .state-note {
+  stroke: #aaaa33;
+  fill: #fff5ad; }
+#mermaid-1592009556444   .state-note text {
+    fill: black;
+    stroke: none;
+    font-size: 10px; }
+
+#mermaid-1592009556444 .stateLabel .box {
+  stroke: none;
+  stroke-width: 0;
+  fill: #ECECFF;
+  opacity: 0.5; }
+
+#mermaid-1592009556444 .stateLabel text {
+  fill: black;
+  font-size: 10px;
+  font-weight: bold;
+  font-family: 'trebuchet ms', verdana, arial;
+  font-family: var(--mermaid-font-family); }
+
+#mermaid-1592009556444 .node circle.state-start {
+  fill: black;
+  stroke: black; }
+
+#mermaid-1592009556444 .node circle.state-end {
+  fill: black;
+  stroke: white;
+  stroke-width: 1.5; }
+
+#mermaid-1592009556444 #statediagram-barbEnd {
+  fill: #9370DB; }
+
+#mermaid-1592009556444 .statediagram-cluster rect {
+  fill: #ECECFF;
+  stroke: #9370DB;
+  stroke-width: 1px; }
+
+#mermaid-1592009556444 .statediagram-cluster rect.outer {
+  rx: 5px;
+  ry: 5px; }
+
+#mermaid-1592009556444 .statediagram-state .divider {
+  stroke: #9370DB; }
+
+#mermaid-1592009556444 .statediagram-state .title-state {
+  rx: 5px;
+  ry: 5px; }
+
+#mermaid-1592009556444 .statediagram-cluster.statediagram-cluster .inner {
+  fill: white; }
+
+#mermaid-1592009556444 .statediagram-cluster.statediagram-cluster-alt .inner {
+  fill: #e0e0e0; }
+
+#mermaid-1592009556444 .statediagram-cluster .inner {
+  rx: 0;
+  ry: 0; }
+
+#mermaid-1592009556444 .statediagram-state rect.basic {
+  rx: 5px;
+  ry: 5px; }
+
+#mermaid-1592009556444 .statediagram-state rect.divider {
+  stroke-dasharray: 10,10;
+  fill: #efefef; }
+
+#mermaid-1592009556444 .note-edge {
+  stroke-dasharray: 5; }
+
+#mermaid-1592009556444 .statediagram-note rect {
+  fill: #fff5ad;
+  stroke: #aaaa33;
+  stroke-width: 1px;
+  rx: 0;
+  ry: 0; }
+
+:root {
+  --mermaid-font-family: '"trebuchet ms", verdana, arial';
+  --mermaid-font-family: "Comic Sans MS", "Comic Sans", cursive; }
+
+:root { --mermaid-font-family: "trebuchet ms", verdana, arial;}</style><style>#mermaid-1592009556444 {
+    color: rgb(0, 0, 0);
+    font: 16px "trebuchet ms", verdana, arial;
+  }</style><g></g><defs><marker id="extensionStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 1,7 L18,13 V 1 Z"></path></marker></defs><defs><marker id="extensionEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 1,1 V 13 L18,7 Z"></path></marker></defs><defs><marker id="compositionStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="compositionEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="aggregationStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="aggregationEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="dependencyStart" class="extension" refX="0" refY="7" markerWidth="190" markerHeight="240" orient="auto"><path d="M 5,7 L9,13 L1,7 L9,1 Z"></path></marker></defs><defs><marker id="dependencyEnd" refX="19" refY="7" markerWidth="20" markerHeight="28" orient="auto"><path d="M 18,7 L9,13 L14,7 L9,1 Z"></path></marker></defs><g id="classid-TimeRangeActivity-7957" class="classGroup " transform="translate(125.09765625,352 )"><rect x="0" y="0" width="99.109375" height="51"></rect><text y="15" x="0"><tspan class="title" x="5">TimeRangeActivity</tspan></text><line x1="0" y1="21" y2="21" x2="99.109375"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">StartTime[]</tspan><tspan x="5" dy="10">EndTime[]</tspan></text><line x1="0" y1="47" y2="47" x2="99.109375"></line><text x="5" y="62" fill="white" class="classText"></text></g><g id="classid-Configuration-7958" class="classGroup " transform="translate(0,588 )"><rect x="0" y="0" width="147.46875" height="231"></rect><text y="15" x="0"><tspan class="title" x="42.140625">Configuration</tspan></text><line x1="0" y1="21" y2="21" x2="147.46875"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">Id</tspan><tspan x="5" dy="10">Priority</tspan><tspan x="5" dy="10">Separator</tspan><tspan x="5" dy="10">PrefaceRowCount</tspan><tspan x="5" dy="10">PrefaceEndsWith</tspan><tspan x="5" dy="10">PrefaceEndsBefore</tspan><tspan x="5" dy="10">MaximumPrefaceLines</tspan><tspan x="5" dy="10">FirstDataRowIsColumnHeader</tspan><tspan x="5" dy="10">CommentLinePrefix</tspan><tspan x="5" dy="10">StrictMode</tspan><tspan x="5" dy="10">Aliases</tspan><tspan x="5" dy="10">Location</tspan><tspan x="5" dy="10">Visit</tspan><tspan x="5" dy="10">ControlCondition</tspan><tspan x="5" dy="10">Readings[]</tspan><tspan x="5" dy="10">Inspections[]</tspan><tspan x="5" dy="10">Calibrations[]</tspan><tspan x="5" dy="10">AdcpDischarges[]</tspan><tspan x="5" dy="10">PanelDischargeSummaries[]</tspan><tspan x="5" dy="10">LevelSurveys[]</tspan></text><line x1="0" y1="227" y2="227" x2="147.46875"></line><text x="5" y="242" fill="white" class="classText"></text></g><g id="classid-ActivityWithComment-7959" class="classGroup " transform="translate(912.76171875,15 )"><rect x="0" y="0" width="114.609375" height="51"></rect><text y="15" x="0"><tspan class="title" x="5">ActivityWithComment</tspan></text><line x1="0" y1="21" y2="21" x2="114.609375"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">Comment</tspan><tspan x="5" dy="10">MergeWithComment[]</tspan></text><line x1="0" y1="47" y2="47" x2="114.609375"></line><text x="5" y="62" fill="white" class="classText"></text></g><g id="classid-Activity-7960" class="classGroup " transform="translate(874.15625,146 )"><rect x="0" y="0" width="47.9375" height="41"></rect><text y="15" x="0"><tspan class="title" x="5">Activity</tspan></text><line x1="0" y1="21" y2="21" x2="47.9375"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">Time[]</tspan></text><line x1="0" y1="37" y2="37" x2="47.9375"></line><text x="5" y="52" fill="white" class="classText"></text></g><g id="classid-Visit-7961" class="classGroup " transform="translate(197.46875,633 )"><rect x="0" y="0" width="156.203125" height="141"></rect><text y="15" x="0"><tspan class="title" x="66.9453125">Visit</tspan></text><line x1="0" y1="21" y2="21" x2="156.203125"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">Weather</tspan><tspan x="5" dy="10">CollectionAgency</tspan><tspan x="5" dy="10">CompletedGroundWaterLevels</tspan><tspan x="5" dy="10">CompletedLevelSurvey</tspan><tspan x="5" dy="10">CompletedRecorderData</tspan><tspan x="5" dy="10">CompletedSafetyInspection</tspan><tspan x="5" dy="10">CompletedOtherSample</tspan><tspan x="5" dy="10">CompletedBiologicalSample</tspan><tspan x="5" dy="10">CompletedSedimentSample</tspan><tspan x="5" dy="10">CompletedWaterQualitySample</tspan><tspan x="5" dy="10">Party</tspan></text><line x1="0" y1="137" y2="137" x2="156.203125"></line><text x="5" y="152" fill="white" class="classText"></text></g><g id="classid-Reading-7962" class="classGroup " transform="translate(274.20703125,252 )"><rect x="0" y="0" width="174.046875" height="251"></rect><text y="15" x="0"><tspan class="title" x="68.0859375">Reading</tspan></text><line x1="0" y1="21" y2="21" x2="174.046875"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">Value</tspan><tspan x="5" dy="10">ParameterId</tspan><tspan x="5" dy="10">UnitId</tspan><tspan x="5" dy="10">ReadingType</tspan><tspan x="5" dy="10">GradeCode</tspan><tspan x="5" dy="10">GradeName</tspan><tspan x="5" dy="10">Method</tspan><tspan x="5" dy="10">Publish</tspan><tspan x="5" dy="10">ReferencePointName</tspan><tspan x="5" dy="10">SensorUniqueId</tspan><tspan x="5" dy="10">SubLocation</tspan><tspan x="5" dy="10">UseLocationDatumAsReference</tspan><tspan x="5" dy="10">Uncertainty</tspan><tspan x="5" dy="10">MeasurementDeviceManufacturer</tspan><tspan x="5" dy="10">MeasurementDeviceModel</tspan><tspan x="5" dy="10">MeasurementDeviceSerialNumber</tspan><tspan x="5" dy="10">ReadingQualifiers</tspan><tspan x="5" dy="10">ReadingQualifierSeparators</tspan><tspan x="5" dy="10">MeasurementDetailsCut</tspan><tspan x="5" dy="10">MeasurementDetailsHold</tspan><tspan x="5" dy="10">MeasurementDetailsTapeCorrection</tspan><tspan x="5" dy="10">MeasurementDetailsWaterLevel</tspan></text><line x1="0" y1="247" y2="247" x2="174.046875"></line><text x="5" y="262" fill="white" class="classText"></text></g><g id="classid-Inspection-7963" class="classGroup " transform="translate(498.25390625,337 )"><rect x="0" y="0" width="165.96875" height="81"></rect><text y="15" x="0"><tspan class="title" x="58.8359375">Inspection</tspan></text><line x1="0" y1="21" y2="21" x2="165.96875"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">InspectionType</tspan><tspan x="5" dy="10">SubLocation</tspan><tspan x="5" dy="10">MeasurementDeviceManufacturer</tspan><tspan x="5" dy="10">MeasurementDeviceModel</tspan><tspan x="5" dy="10">MeasurementDeviceSerialNumber</tspan></text><line x1="0" y1="77" y2="77" x2="165.96875"></line><text x="5" y="92" fill="white" class="classText"></text></g><g id="classid-Calibration-7964" class="classGroup " transform="translate(714.22265625,277 )"><rect x="0" y="0" width="165.96875" height="201"></rect><text y="15" x="0"><tspan class="title" x="57.4375">Calibration</tspan></text><line x1="0" y1="21" y2="21" x2="165.96875"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">Value</tspan><tspan x="5" dy="10">ParameterId</tspan><tspan x="5" dy="10">UnitId</tspan><tspan x="5" dy="10">Party</tspan><tspan x="5" dy="10">CalibrationType</tspan><tspan x="5" dy="10">Method</tspan><tspan x="5" dy="10">Publish</tspan><tspan x="5" dy="10">SensorUniqueId</tspan><tspan x="5" dy="10">SubLocation</tspan><tspan x="5" dy="10">Standard</tspan><tspan x="5" dy="10">MeasurementDeviceManufacturer</tspan><tspan x="5" dy="10">MeasurementDeviceModel</tspan><tspan x="5" dy="10">MeasurementDeviceSerialNumber</tspan><tspan x="5" dy="10">StandardDetailsLotNumber</tspan><tspan x="5" dy="10">StandardDetailsStandardCode</tspan><tspan x="5" dy="10">StandardDetailsExpirationDate</tspan><tspan x="5" dy="10">StandardDetailsTemperature</tspan></text><line x1="0" y1="197" y2="197" x2="165.96875"></line><text x="5" y="212" fill="white" class="classText"></text></g><g id="classid-ControlCondition-7965" class="classGroup " transform="translate(930.19140625,332 )"><rect x="0" y="0" width="105.265625" height="91"></rect><text y="15" x="0"><tspan class="title" x="12.828125">ControlCondition</tspan></text><line x1="0" y1="21" y2="21" x2="105.265625"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">ConditionType</tspan><tspan x="5" dy="10">UnitId</tspan><tspan x="5" dy="10">Party</tspan><tspan x="5" dy="10">ControlCleanedType</tspan><tspan x="5" dy="10">ControlCode</tspan><tspan x="5" dy="10">DistanceToGage</tspan></text><line x1="0" y1="87" y2="87" x2="105.265625"></line><text x="5" y="102" fill="white" class="classText"></text></g><g id="classid-DischargeActivity-7966" class="classGroup " transform="translate(504.58984375,553 )"><rect x="0" y="0" width="186.359375" height="301"></rect><text y="15" x="0"><tspan class="title" x="52.1484375">DischargeActivity</tspan></text><line x1="0" y1="21" y2="21" x2="186.359375"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">TotalDischarge</tspan><tspan x="5" dy="10">ChannelName</tspan><tspan x="5" dy="10">Party</tspan><tspan x="5" dy="10">MeasurementId</tspan><tspan x="5" dy="10">DischargeUnitId</tspan><tspan x="5" dy="10">AreaUnitId</tspan><tspan x="5" dy="10">AreaValue</tspan><tspan x="5" dy="10">DistanceUnitId</tspan><tspan x="5" dy="10">WidthValue</tspan><tspan x="5" dy="10">VelocityUnitId</tspan><tspan x="5" dy="10">MeanIndexVelocity</tspan><tspan x="5" dy="10">ShowInDataCorrection</tspan><tspan x="5" dy="10">ShowInRatingDevelopment</tspan><tspan x="5" dy="10">PreventAutomaticPublishing</tspan><tspan x="5" dy="10">AdjustmentType</tspan><tspan x="5" dy="10">AdjustmentAmount</tspan><tspan x="5" dy="10">ReasonForAdjustment</tspan><tspan x="5" dy="10">GradeCode</tspan><tspan x="5" dy="10">GradeName</tspan><tspan x="5" dy="10">UncertaintyType</tspan><tspan x="5" dy="10">QualityAssuranceComments</tspan><tspan x="5" dy="10">QuantitativeUncertainty</tspan><tspan x="5" dy="10">QualitativeUncertainty</tspan><tspan x="5" dy="10">MeanGageHeightDurationHours</tspan><tspan x="5" dy="10">ManuallyCalculatedMeanGageHeight</tspan><tspan x="5" dy="10">MeanGageHeightDifferenceDuringVisit</tspan><tspan x="5" dy="10">GageHeightMeasurements[]</tspan></text><line x1="0" y1="297" y2="297" x2="186.359375"></line><text x="5" y="312" fill="white" class="classText"></text></g><g id="classid-GageHeightMeasurement-7967" class="classGroup " transform="translate(1085.45703125,352 )"><rect x="0" y="0" width="127.296875" height="51"></rect><text y="15" x="0"><tspan class="title" x="5">GageHeightMeasurement</tspan></text><line x1="0" y1="21" y2="21" x2="127.296875"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">Value</tspan><tspan x="5" dy="10">Include</tspan></text><line x1="0" y1="47" y2="47" x2="127.296875"></line><text x="5" y="62" fill="white" class="classText"></text></g><g id="classid-AdcpDischarge-7968" class="classGroup " transform="translate(514.28515625,904 )"><rect x="0" y="0" width="166.96875" height="241"></rect><text y="15" x="0"><tspan class="title" x="48.75">AdcpDischarge</tspan></text><line x1="0" y1="21" y2="21" x2="166.96875"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">SectionDischarge</tspan><tspan x="5" dy="10">DeviceType</tspan><tspan x="5" dy="10">DeploymentMethod</tspan><tspan x="5" dy="10">MeterSuspension</tspan><tspan x="5" dy="10">NumberOfTransects</tspan><tspan x="5" dy="10">MagneticVariation</tspan><tspan x="5" dy="10">DischargeCoefficientVariation</tspan><tspan x="5" dy="10">PercentageOfDischargeMeasured</tspan><tspan x="5" dy="10">TransducerDepth</tspan><tspan x="5" dy="10">VelocityAverageValue</tspan><tspan x="5" dy="10">TopEstimateExponent</tspan><tspan x="5" dy="10">TopEstimateMethod</tspan><tspan x="5" dy="10">BottomEstimateExponent</tspan><tspan x="5" dy="10">BottomEstimateMethod</tspan><tspan x="5" dy="10">NavigationMethod</tspan><tspan x="5" dy="10">FirmwareVersion</tspan><tspan x="5" dy="10">SoftwareVersion</tspan><tspan x="5" dy="10">DepthReference</tspan><tspan x="5" dy="10">MeasurementDeviceManufacturer</tspan><tspan x="5" dy="10">MeasurementDeviceModel</tspan><tspan x="5" dy="10">MeasurementDeviceSerialNumber</tspan></text><line x1="0" y1="237" y2="237" x2="166.96875"></line><text x="5" y="252" fill="white" class="classText"></text></g><g id="classid-ManualGaugingDischarge-7969" class="classGroup " transform="translate(731.25390625,934 )"><rect x="0" y="0" width="166.421875" height="181"></rect><text y="15" x="0"><tspan class="title" x="25.1484375">ManualGaugingDischarge</tspan></text><line x1="0" y1="21" y2="21" x2="166.421875"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">SectionDischarge</tspan><tspan x="5" dy="10">StartPoint</tspan><tspan x="5" dy="10">DischargeMethod</tspan><tspan x="5" dy="10">VelocityAverageValue</tspan><tspan x="5" dy="10">VelocityObservationMethod</tspan><tspan x="5" dy="10">DeploymentMethod</tspan><tspan x="5" dy="10">MeterSuspension</tspan><tspan x="5" dy="10">MeterCalibrationManufacturer</tspan><tspan x="5" dy="10">MeterCalibrationModel</tspan><tspan x="5" dy="10">MeterCalibrationSerialNumber</tspan><tspan x="5" dy="10">MeterCalibrationConfiguration</tspan><tspan x="5" dy="10">MeterCalibrationFirmwareVersion</tspan><tspan x="5" dy="10">MeterCalibrationSoftwareVersion</tspan><tspan x="5" dy="10">MeterType</tspan><tspan x="5" dy="10">MeterCalibrationEquations[]</tspan></text><line x1="0" y1="177" y2="177" x2="166.421875"></line><text x="5" y="192" fill="white" class="classText"></text></g><g id="classid-MeterCalibrationEquation-7970" class="classGroup " transform="translate(1077.37109375,0 )"><rect x="0" y="0" width="130.546875" height="81"></rect><text y="15" x="0"><tspan class="title" x="5">MeterCalibrationEquation</tspan></text><line x1="0" y1="21" y2="21" x2="130.546875"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">Slope</tspan><tspan x="5" dy="10">RangeStart</tspan><tspan x="5" dy="10">RangeEnd</tspan><tspan x="5" dy="10">Intercept</tspan><tspan x="5" dy="10">InterceptUnitId</tspan></text><line x1="0" y1="77" y2="77" x2="130.546875"></line><text x="5" y="92" fill="white" class="classText"></text></g><g id="classid-LevelSurvey-7971" class="classGroup " transform="translate(972.09375,131 )"><rect x="0" y="0" width="139.828125" height="71"></rect><text y="15" x="0"><tspan class="title" x="41.1328125">LevelSurvey</tspan></text><line x1="0" y1="21" y2="21" x2="139.828125"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">OriginReferencePointName</tspan><tspan x="5" dy="10">Party</tspan><tspan x="5" dy="10">Method</tspan><tspan x="5" dy="10">LevelSurveyMeasurements[]</tspan></text><line x1="0" y1="67" y2="67" x2="139.828125"></line><text x="5" y="82" fill="white" class="classText"></text></g><g id="classid-LevelSurveyMeasurement-7972" class="classGroup " transform="translate(1262.75390625,352 )"><rect x="0" y="0" width="130.90625" height="51"></rect><text y="15" x="0"><tspan class="title" x="5">LevelSurveyMeasurement</tspan></text><line x1="0" y1="21" y2="21" x2="130.90625"></line><text x="5" y="31" fill="white" class="classText"><tspan x="5">MeasuredElevation</tspan><tspan x="5" dy="10">ReferencePointName</tspan></text><line x1="0" y1="47" y2="47" x2="130.90625"></line><text x="5" y="62" fill="white" class="classText"></text></g><path d="M157.5532859219269,403L143.58346743493908,423.8333333333333C129.61364894795128,444.6666666666667,101.67401197397562,486.3333333333333,87.70419348698782,517.1666666666666C73.734375,548,73.734375,568,73.734375,578L73.734375,588" id="edge4786" class="relation" marker-start="url(#extensionStart)"></path><path d="M942.0586832061068,66L934.7364026717556,72.66666666666667C927.4141221374044,79.33333333333333,912.7695610687023,92.66666666666667,905.4472805343512,106C898.125,119.33333333333333,898.125,132.66666666666666,898.125,139.33333333333334L898.125,146" id="edge4787" class="relation" marker-start="url(#extensionStart)"></path><path d="M874.15625,168.50437343757594L757.572265625,178.25364453131328C640.98828125,188.00291562505063,407.8203125,207.50145781252533,291.236328125,238.08406223959597C174.65234375,268.6666666666667,174.65234375,310.3333333333333,174.65234375,331.1666666666667L174.65234375,352" id="edge4788" class="relation" marker-start="url(#extensionStart)"></path><path d="M191.7514015780731,403L205.72122006506092,423.8333333333333C219.69103855204875,444.6666666666667,247.63067552602436,486.3333333333333,261.60049401301217,524.6666666666666C275.5703125,563,275.5703125,598,275.5703125,615.5L275.5703125,633" id="edge4789" class="relation" marker-start="url(#extensionStart)"></path><path d="M874.15625,169.20092036814725L788.6686197916666,178.8341003067894C703.1809895833334,188.4672802454315,532.2057291666666,207.73364012271577,446.7180989583333,221.53348672802454C361.23046875,235.33333333333334,361.23046875,243.66666666666666,361.23046875,247.83333333333334L361.23046875,252" id="edge4790" class="relation" marker-start="url(#extensionStart)"></path><path d="M874.15625,171.0761128163406L825.3365885416666,180.39676068028385C776.5169270833334,189.71740854422706,678.8776041666666,208.35870427211353,630.0579427083334,236.0126854693901C581.23828125,263.6666666666667,581.23828125,300.3333333333333,581.23828125,318.6666666666667L581.23828125,337" id="edge4791" class="relation" marker-start="url(#extensionStart)"></path><path d="M874.15625,180.8691890845752L861.3313802083334,188.55765757047934C848.5065104166666,196.24612605638345,822.8567708333334,211.62306302819172,810.0319010416666,227.6448648474292C797.20703125,243.66666666666666,797.20703125,260.3333333333333,797.20703125,268.6666666666667L797.20703125,277" id="edge4792" class="relation" marker-start="url(#extensionStart)"></path><path d="M922.09375,183.62069363095512L932.2154947916666,190.85057802579593C942.3372395833334,198.08046242063674,962.5807291666666,212.54023121031835,972.7024739583334,237.2701156051592C982.82421875,262,982.82421875,297,982.82421875,314.5L982.82421875,332" id="edge4793" class="relation" marker-start="url(#extensionStart)"></path><path d="M224.20703125,395.1262763344966L286.4674479166667,417.27189694541386C348.7278645833333,439.4175175563311,473.2486979166667,483.70875877816553,535.5091145833334,510.0210460557494C597.76953125,536.3333333333334,597.76953125,544.6666666666666,597.76953125,548.8333333333334L597.76953125,553" id="edge4794" class="relation" marker-start="url(#extensionStart)"></path><path d="M922.09375,172.27777777777777L959.9290364583334,181.39814814814815C997.7643229166666,190.5185185185185,1073.4348958333333,208.75925925925927,1111.2701822916667,238.71296296296296C1149.10546875,268.6666666666667,1149.10546875,310.3333333333333,1149.10546875,331.1666666666667L1149.10546875,352" id="edge4795" class="relation" marker-start="url(#extensionStart)"></path><path d="M597.76953125,854L597.76953125,858.1666666666666C597.76953125,862.3333333333334,597.76953125,870.6666666666666,597.76953125,879C597.76953125,887.3333333333334,597.76953125,895.6666666666666,597.76953125,899.8333333333334L597.76953125,904" id="edge4796" class="relation" marker-start="url(#extensionStart)"></path><path d="M690.94921875,778.9655694559614L711.53515625,795.6379745466344C732.12109375,812.3103796373076,773.29296875,845.6551898186539,793.87890625,871.4942615759936C814.46484375,897.3333333333334,814.46484375,915.6666666666666,814.46484375,924.8333333333334L814.46484375,934" id="edge4797" class="relation" marker-start="url(#extensionStart)"></path><path d="M998.0741292938932,66L1005.3964098282444,72.66666666666667C1012.7186903625956,79.33333333333333,1027.3632514312978,92.66666666666667,1034.6855319656488,103.5C1042.0078125,114.33333333333333,1042.0078125,122.66666666666667,1042.0078125,126.83333333333333L1042.0078125,131" id="edge4798" class="relation" marker-start="url(#extensionStart)"></path><path d="M922.09375,169.87170416254168L989.779296875,179.39308680211806C1057.46484375,188.91446944169445,1192.8359375,207.9572347208472,1260.521484375,238.31195069375693C1328.20703125,268.6666666666667,1328.20703125,310.3333333333333,1328.20703125,331.1666666666667L1328.20703125,352" id="edge4799" class="relation" marker-start="url(#extensionStart)"></path></svg>

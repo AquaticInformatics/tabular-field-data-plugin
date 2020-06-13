@@ -137,7 +137,8 @@ namespace TabularCsv
                     item.MeasurementStartTime,
                     item.MeasurementEndTime,
                 }
-                .Concat(item.ChannelMeasurements.SelectMany(GetTimes));
+                .Concat(item.ChannelMeasurements.SelectMany(GetTimes))
+                .Concat(item.GageHeightMeasurements.Select(g => g.MeasurementTime));
         }
 
         private IEnumerable<DateTimeOffset?> GetTimes(ChannelMeasurementBase item)

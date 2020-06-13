@@ -29,6 +29,8 @@ The Tabular plugin can parse these types of files, with some configuration guida
 
 Please see the [plugin wiki](../../wiki) for a detailed description of the configuration format and examples.
 
+The [class diagram](docs/Readme.md) gives an idea of the property names which can be set.
+
 If you had the following CSV file representing air temperature field visit readings from various locations in your network:
 
 ```csv
