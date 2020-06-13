@@ -6,7 +6,7 @@ namespace TabularCsv
     public class Configuration : TimeRangeActivityDefinition
     {
         public string Id { get; set; }
-        public int Priority { get; set; }
+        public int Priority { get; set; } = 1;
         public string Separator { get; set; }
         public int PrefaceRowCount { get; set; }
         public string PrefaceEndsWith { get; set; }

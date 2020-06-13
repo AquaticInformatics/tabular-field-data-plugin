@@ -240,7 +240,7 @@ namespace TabularCsv
             var configurations = configurationDirectory
                 .GetFiles("*.toml")
                 .Select(fileInfo => configurationLoader.Load(fileInfo.FullName))
-                .Where(configuration => configuration != null)
+                .Where(configuration => configuration?.Priority > 0)
                 .OrderBy(configuration => configuration.Priority)
                 .ToList();
 
