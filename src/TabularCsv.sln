@@ -18,6 +18,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6183BD37-E
 		..\docs\Readme.md = ..\docs\Readme.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocGenerator", "DocGenerator\DocGenerator.csproj", "{C54337B5-5115-4163-A76F-E8583C19A4B1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,6 +30,10 @@ Global
 		{519AF63B-97A0-456A-A793-34418BD52892}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{519AF63B-97A0-456A-A793-34418BD52892}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{519AF63B-97A0-456A-A793-34418BD52892}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

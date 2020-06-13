@@ -21,7 +21,7 @@ namespace TabularCsv
         public PropertyDefinition Location { get; set; }
 
         public VisitDefinition Visit { get; set; }
-        public ControlConditionColumnDefinition ControlCondition { get; set; }
+        public ControlConditionDefinition ControlCondition { get; set; }
 
         public ReadingDefinition Reading { get; set; }
         public List<ReadingDefinition> Readings { get; set; } = new List<ReadingDefinition>();
@@ -205,7 +205,7 @@ namespace TabularCsv
         public PropertyDefinition StandardDetailsTemperature { get; set; }
     }
 
-    public class ControlConditionColumnDefinition : ActivityDefinition
+    public class ControlConditionDefinition : ActivityDefinition
     {
         // Default property is ControlCondition.ConditionType (picklist)
         public PropertyDefinition ConditionType { get; set; }
