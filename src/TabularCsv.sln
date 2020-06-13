@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.136
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabularCsv", "TabularCsv\TabularCsv.csproj", "{519AF63B-97A0-456A-A793-34418BD52892}"
 EndProject
@@ -9,6 +9,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RepoRoot", "RepoRoot", "{0F
 	ProjectSection(SolutionItems) = preProject
 		..\appveyor.yml = ..\appveyor.yml
 		..\README.md = ..\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6183BD37-EE4E-4160-904B-FD9C35A25A31}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\classDiagram.mermaid = ..\docs\classDiagram.mermaid
+		..\docs\classDiagram.svg = ..\docs\classDiagram.svg
+		..\docs\Readme.md = ..\docs\Readme.md
 	EndProjectSection
 EndProject
 Global

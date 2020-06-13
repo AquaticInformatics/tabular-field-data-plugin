@@ -1,0 +1,225 @@
+classDiagram
+
+  TimeRangeActivity <|-- Configuration
+  class Configuration {
+      Id
+      Priority
+      Separator
+      PrefaceRowCount
+      PrefaceEndsWith
+      PrefaceEndsBefore
+      MaximumPrefaceLines
+      FirstDataRowIsColumnHeader
+      CommentLinePrefix
+      StrictMode
+      Aliases
+      Location
+      Visit
+      ControlCondition
+      Readings[]
+      Inspections[]
+      Calibrations[]
+      AdcpDischarges[]
+      PanelDischargeSummaries[]
+      LevelSurveys[]
+  }
+
+  class ActivityWithComment {
+      Comment
+      MergeWithComment[]
+  }
+  
+  ActivityWithComment <|-- Activity
+  class Activity {
+      Time[]
+  }
+  
+  Activity <|-- TimeRangeActivity
+  class TimeRangeActivity {
+      StartTime[]
+      EndTime[]
+  }
+  
+  TimeRangeActivity <|-- Visit
+  class Visit {
+      Weather
+      CollectionAgency
+      CompletedGroundWaterLevels
+      CompletedLevelSurvey
+      CompletedRecorderData
+      CompletedSafetyInspection
+      CompletedOtherSample
+      CompletedBiologicalSample
+      CompletedSedimentSample
+      CompletedWaterQualitySample
+      Party
+  }
+  
+  Activity <|-- Reading
+  class Reading {
+      Value
+      ParameterId
+      UnitId
+      ReadingType
+      GradeCode
+      GradeName
+      Method
+      Publish
+      ReferencePointName
+      SensorUniqueId
+      SubLocation
+      UseLocationDatumAsReference
+      Uncertainty
+      MeasurementDeviceManufacturer
+      MeasurementDeviceModel
+      MeasurementDeviceSerialNumber
+      ReadingQualifiers
+      ReadingQualifierSeparators
+      MeasurementDetailsCut
+      MeasurementDetailsHold
+      MeasurementDetailsTapeCorrection
+      MeasurementDetailsWaterLevel
+  }
+  
+  Activity <|-- Inspection
+  class Inspection {
+      InspectionType
+      SubLocation
+      MeasurementDeviceManufacturer
+      MeasurementDeviceModel
+      MeasurementDeviceSerialNumber
+  }
+  
+  Activity <|-- Calibration
+  class Calibration {
+      Value
+      ParameterId
+      UnitId
+      Party
+      CalibrationType
+      Method
+      Publish
+      SensorUniqueId
+      SubLocation
+      Standard
+      MeasurementDeviceManufacturer
+      MeasurementDeviceModel
+      MeasurementDeviceSerialNumber
+      StandardDetailsLotNumber
+      StandardDetailsStandardCode
+      StandardDetailsExpirationDate
+      StandardDetailsTemperature
+  }
+  
+  Activity <|-- ControlCondition
+  class ControlCondition {
+      ConditionType
+      UnitId
+      Party
+      ControlCleanedType
+      ControlCode
+      DistanceToGage
+  }
+  
+  TimeRangeActivity <|-- DischargeActivity
+  class DischargeActivity {
+      TotalDischarge
+      ChannelName
+      Party
+      MeasurementId
+      DischargeUnitId
+      AreaUnitId
+      AreaValue
+      DistanceUnitId
+      WidthValue
+      VelocityUnitId
+      MeanIndexVelocity
+      ShowInDataCorrection
+      ShowInRatingDevelopment
+      PreventAutomaticPublishing
+      AdjustmentType
+      AdjustmentAmount
+      ReasonForAdjustment
+      GradeCode
+      GradeName
+      UncertaintyType
+      QualityAssuranceComments
+      QuantitativeUncertainty
+      QualitativeUncertainty
+      MeanGageHeightDurationHours
+      ManuallyCalculatedMeanGageHeight
+      MeanGageHeightDifferenceDuringVisit
+      GageHeightMeasurements[]
+  }
+  
+  Activity <|-- GageHeightMeasurement
+  class GageHeightMeasurement {
+      Value
+      Include
+  }
+  
+  DischargeActivity <|-- AdcpDischarge
+  class AdcpDischarge {
+      SectionDischarge
+      DeviceType
+      DeploymentMethod
+      MeterSuspension
+      NumberOfTransects
+      MagneticVariation
+      DischargeCoefficientVariation
+      PercentageOfDischargeMeasured
+      TransducerDepth
+      VelocityAverageValue
+      TopEstimateExponent
+      TopEstimateMethod
+      BottomEstimateExponent
+      BottomEstimateMethod
+      NavigationMethod
+      FirmwareVersion
+      SoftwareVersion
+      DepthReference
+      MeasurementDeviceManufacturer
+      MeasurementDeviceModel
+      MeasurementDeviceSerialNumber
+  }
+  
+  DischargeActivity <|-- ManualGaugingDischarge
+  class ManualGaugingDischarge {
+      SectionDischarge
+      StartPoint
+      DischargeMethod
+      VelocityAverageValue
+      VelocityObservationMethod
+      DeploymentMethod
+      MeterSuspension
+      MeterCalibrationManufacturer
+      MeterCalibrationModel
+      MeterCalibrationSerialNumber
+      MeterCalibrationConfiguration
+      MeterCalibrationFirmwareVersion
+      MeterCalibrationSoftwareVersion
+      MeterType
+      MeterCalibrationEquations[]
+  }
+
+  class MeterCalibrationEquation {
+      Slope
+      RangeStart
+      RangeEnd
+      Intercept
+      InterceptUnitId
+  }
+  
+  ActivityWithComment <|-- LevelSurvey
+  class LevelSurvey {
+      OriginReferencePointName
+      Party
+      Method
+      LevelSurveyMeasurements[]
+  }
+  
+  Activity <|-- LevelSurveyMeasurement
+  class LevelSurveyMeasurement {
+      MeasuredElevation
+      ReferencePointName
+  }
