@@ -249,9 +249,9 @@ namespace TabularCsv
 
             if (match.Success)
             {
-                alias = ValueOrNull(match.Groups["alias"].Value);
+                alias = ValueOrNull(match.Groups["alias"].Value.Trim());
 
-                var columnText = ValueOrNull(match.Groups["columnHeader"].Value);
+                var columnText = ValueOrNull(match.Groups["columnHeader"].Value.Trim());
 
                 if (!string.IsNullOrEmpty(columnText))
                 {
@@ -259,7 +259,7 @@ namespace TabularCsv
 
                     if (excelMatch.Success)
                     {
-                        columnIndex = ConvertExcelColumnToIndex(excelMatch.Groups["columnName"].Value);
+                        columnIndex = ConvertExcelColumnToIndex(excelMatch.Groups["columnName"].Value.Trim());
                     }
                     else if (int.TryParse(columnText, out var index))
                     {
@@ -274,7 +274,7 @@ namespace TabularCsv
                 {
                     prefaceRegex = CreateRegex(
                         ValueOrNull(match.Groups["regexPattern"].Value),
-                        ValueOrNull(match.Groups["regexOptions"].Value));
+                        ValueOrNull(match.Groups["regexOptions"].Value.Trim()));
                 }
             }
             else
