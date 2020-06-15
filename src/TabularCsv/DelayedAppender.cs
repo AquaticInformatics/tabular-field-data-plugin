@@ -47,14 +47,14 @@ namespace TabularCsv
         {
             foreach (var delayedFieldVisit in DelayedFieldVisits)
             {
-                AdjustVisitPeriodToContainAllActivities(delayedFieldVisit);
                 AppendDelayedVisit(delayedFieldVisit);
             }
         }
 
-        private void AdjustVisitPeriodToContainAllActivities(FieldVisitInfo visit)
+        public void AdjustVisitPeriodToContainAllActivities(FieldVisitInfo visit)
         {
             var times = GetActivityTimes(visit)
+                .Where(t => t != DateTimeOffset.MinValue && t != DateTimeOffset.MaxValue)
                 .OrderBy(t => t)
                 .ToList();
 

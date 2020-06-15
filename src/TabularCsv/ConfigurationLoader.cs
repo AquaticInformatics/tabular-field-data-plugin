@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -46,9 +47,6 @@ namespace TabularCsv
                     configuration.Visit = new VisitDefinition();
                 }
 
-                configuration.AllowUnusedDefaultProperty();
-                configuration.Visit.AllowUnusedDefaultProperty();
-
                 return configuration;
             }
             catch (ParseException exception)
@@ -62,9 +60,15 @@ namespace TabularCsv
             var settings = TomlSettings.Create(s => s
                 .ConfigurePropertyMapping(m => m
                     .UseTargetPropertySelector(standardSelectors => standardSelectors.IgnoreCase))
+                .ConfigureType<TimestampDefinition>(type => type
+                    .WithConversionFor<TomlString>(convert => convert
+                        .FromToml(ConvertShorthandTimestampSyntax)))
                 .ConfigureType<PropertyDefinition>(type => type
                     .WithConversionFor<TomlString>(convert => convert
                         .FromToml(ConvertShorthandPropertySyntax)))
+                .ConfigureType<PropertyDefinition>(type => type
+                    .WithConversionFor<TomlInt>(convert => convert
+                        .FromToml(ConvertShorthandColumnIndex)))
                 .ConfigureType<Regex>(type => type
                     .WithConversionFor<TomlString>(convert => convert
                         .FromToml(ConvertRegexFromString)))
@@ -128,33 +132,188 @@ namespace TabularCsv
             TomlObjectType.String,
         };
 
+        private TimestampDefinition ConvertShorthandTimestampSyntax(ITomlRoot root, TomlString tomlString)
+        {
+            var text = tomlString.Value;
+
+            var match = TimestampPropertyRegex.Match(text);
+
+            if (!match.Success)
+                throw new ArgumentException($"'{text}' is not a supported timestamp string syntax.");
+
+            var property = ParsePropertyDefinition(match.Groups["property"].Value);
+
+            var timestamp = new TimestampDefinition
+            {
+                FixedValue = property.FixedValue,
+                ColumnHeader = property.ColumnHeader,
+                ColumnIndex = property.ColumnIndex,
+                PrefaceRegex = property.PrefaceRegex,
+                Alias = property.Alias,
+            };
+
+            foreach (var capture in match.Groups["timestampOption"].Captures.Cast<Capture>())
+            {
+                var optionText = capture.Value.Trim();
+
+                if (string.IsNullOrEmpty(optionText))
+                    continue;
+
+                if (Enum.TryParse<TimestampType>(optionText, true, out var timestampType))
+                {
+                    if (timestamp.Type.HasValue)
+                        throw new ArgumentException($"{nameof(timestamp.Type)} is already set to {timestamp.Type} and cannot be changed to {timestampType}.");
+
+                    timestamp.Type = timestampType;
+                }
+                else if (TryParseUtcOffset(optionText, out var timeSpan))
+                {
+                    if (timestamp.UtcOffset != null)
+                        throw new ArgumentException($"{nameof(timestamp.UtcOffset)} is already set to {timestamp.UtcOffset.Name()} and cannot be changed to '{optionText}'.");
+
+                    timestamp.UtcOffset = new PropertyDefinition
+                    {
+                        FixedValue = $"{timeSpan}"
+                    };
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(timestamp.Format))
+                        throw new ArgumentException($"{nameof(timestamp.Format)} is already set to '{timestamp.Format}' and cannot be changed to '{optionText}'.");
+
+                    timestamp.Format = optionText;
+                }
+            }
+
+            if (!timestamp.Type.HasValue)
+                timestamp.Type = TimestampType.DateTimeOffset;
+
+            if (string.IsNullOrEmpty(timestamp.Format))
+                timestamp.Format = "O";
+
+            return timestamp;
+        }
+
+        private bool TryParseUtcOffset(string text, out TimeSpan timeSpan)
+        {
+            timeSpan = TimeSpan.Zero;
+
+            const string utcPrefix = "UTC";
+
+            if (text.StartsWith(utcPrefix, StringComparison.InvariantCultureIgnoreCase))
+            {
+                var timeSpanText = text.Substring(utcPrefix.Length);
+
+                if (timeSpanText.StartsWith("+"))
+                    timeSpanText = timeSpanText.Substring(1);
+
+                if (!timeSpanText.Contains(":"))
+                    timeSpanText += ":00";
+
+                if (TimeSpan.TryParse(timeSpanText, CultureInfo.InvariantCulture, out timeSpan))
+                    return true;
+            }
+
+            return false;
+        }
+
+        private PropertyDefinition ConvertShorthandColumnIndex(ITomlRoot root, TomlInt tomlInt)
+        {
+            var columnIndex = tomlInt.Value;
+
+            if (columnIndex <= 0 || columnIndex > int.MaxValue)
+                throw new ParseException($"{columnIndex} is an invalid {nameof(ColumnDefinition.ColumnIndex)} value. Must be > 0.");
+
+            return new PropertyDefinition
+            {
+                ColumnIndex = (int) columnIndex
+            };
+        }
+
         private PropertyDefinition ConvertShorthandPropertySyntax(ITomlRoot root, TomlString tomlString)
         {
             var text = tomlString.Value;
 
-            var match = ExcelColumnShorthandRegex.Match(text);
+            return ParsePropertyDefinition(text);
+        }
+
+        private static PropertyDefinition ParsePropertyDefinition(string text)
+        {
+            string fixedValue = null;
+            string columnHeader = null;
+            Regex prefaceRegex = null;
+            int? columnIndex = null;
+            string alias = null;
+
+            var match = PropertyWithAliasRegex.Match(text);
 
             if (match.Success)
-                return new PropertyDefinition
-                {
-                    ColumnIndex = ConvertExcelColumnToIndex(match.Groups["columnName"].Value)
-                };
+            {
+                alias = ValueOrNull(match.Groups["alias"].Value.Trim());
 
-            match = PrefaceShorthandRegex.Match(text);
+                var columnText = ValueOrNull(match.Groups["columnHeader"].Value.Trim());
 
-            if (match.Success)
-                return new PropertyDefinition
+                if (!string.IsNullOrEmpty(columnText))
                 {
-                    PrefaceRegex = ConvertRegexFromString(root, tomlString)
-                };
+                    var excelMatch = ExcelColumnShorthandRegex.Match(columnText);
+
+                    if (excelMatch.Success)
+                    {
+                        columnIndex = ConvertExcelColumnToIndex(excelMatch.Groups["columnName"].Value.Trim());
+                    }
+                    else if (int.TryParse(columnText, out var index))
+                    {
+                        columnIndex = index;
+                    }
+                    else
+                    {
+                        columnHeader = columnText;
+                    }
+                }
+                else
+                {
+                    prefaceRegex = CreateRegex(
+                        ValueOrNull(match.Groups["regexPattern"].Value),
+                        ValueOrNull(match.Groups["regexOptions"].Value.Trim()));
+                }
+            }
+            else
+            {
+                fixedValue = text;
+            }
 
             return new PropertyDefinition
             {
-                FixedValue = text
+                FixedValue = fixedValue,
+                ColumnHeader = columnHeader,
+                ColumnIndex = columnIndex,
+                PrefaceRegex = prefaceRegex,
+                Alias = alias
             };
         }
 
-        private static readonly Regex ExcelColumnShorthandRegex = new Regex(@"^=(?<columnName>[A-Z]+):$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static string ValueOrNull(string text)
+        {
+            return string.IsNullOrEmpty(text)
+                ? null
+                : text;
+        }
+
+        private static readonly Regex InternalPropertyRegex = new Regex(
+            @"(@(?<columnHeader>[^{|]+)|/(?<regexPattern>.+)/(?<regexOptions>[imsx]*(-[imsx]+)?))(\s*\{\s*(?<alias>[^}]+)\s*})?",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        private static readonly Regex PropertyWithAliasRegex = new Regex(
+            $@"^{InternalPropertyRegex}$",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        private static readonly Regex ExcelColumnShorthandRegex = new Regex(
+            @"^@\s*(?<columnName>[A-Z]+)\s*$",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        private static readonly Regex TimestampPropertyRegex = new Regex(
+            $@"^(?<property>{InternalPropertyRegex})(\s*\|(?<timestampOption>[^|]+))*$",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         private static int ConvertExcelColumnToIndex(string columnName)
         {
@@ -163,24 +322,30 @@ namespace TabularCsv
                 .Aggregate(0, (column, letter) => 26 * column + letter - 'A' + 1);
         }
 
-        private static readonly Regex PrefaceShorthandRegex = new Regex(@"^/(?<pattern>.+)/(?<options>[imsx]*(-[imsx]+)?)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-
         private Regex ConvertRegexFromString(ITomlRoot root, TomlString tomlString)
         {
             var text = tomlString.Value;
 
-            var match = PrefaceShorthandRegex.Match(text);
+            var match = PropertyWithAliasRegex.Match(text);
 
             if (!match.Success)
                 return new Regex(text);
 
-            var pattern = match.Groups["pattern"].Value;
-            var optionsText = match.Groups["options"].Value;
+            var pattern = match.Groups["regexPattern"].Value;
+            var optionsText = match.Groups["regexOptions"].Value;
+
+            return CreateRegex(pattern, optionsText);
+        }
+
+        private static Regex CreateRegex(string pattern, string optionsText)
+        {
+            if (string.IsNullOrEmpty(pattern))
+                return null;
 
             var options = RegexOptions.IgnoreCase;
             var addOption = true;
 
-            foreach (var ch in optionsText.ToLowerInvariant())
+            foreach (var ch in optionsText?.ToLowerInvariant() ?? string.Empty)
             {
                 if (ch == '-')
                 {

@@ -77,23 +77,14 @@ namespace TabularCsv
                     ? $": {string.Join(", ", setProperties)}"
                     : string.Empty;
 
-                validationMessage = $"Only one of the {string.Join(", ", allProperties)} properties can be set. You have set {setProperties.Count} properties{setPropertyContext}.";
+                validationMessage = setProperties.Any()
+                    ? $"Only one of the {string.Join(", ", allProperties)} properties can be set. You have set {setProperties.Count} properties{setPropertyContext}."
+                    : $"You must set exactly one of the {string.Join(", ", allProperties)} properties.";
 
                 return true;
             }
 
             return false;
-        }
-
-        public void AllowUnusedDefaultProperty()
-        {
-            if (IsInvalid(out _))
-            {
-                FixedValue = "?Unused?";
-                ColumnHeader = null;
-                ColumnIndex = null;
-                PrefaceRegex = null;
-            }
         }
 
         public string Name()

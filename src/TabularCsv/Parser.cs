@@ -71,6 +71,16 @@ namespace TabularCsv
 
             rowParser.AddPrefaceLines(prefaceLines);
 
+            if (!rowParser.IsPrefaceValid())
+                return ParseFileResult.CannotParse();
+
+            if (configuration.IsHeaderRowRequired)
+            {
+                rowParser.RemainingHeaderLines = configuration.HeaderRowCount > 0
+                    ? configuration.HeaderRowCount
+                    : 1;
+            }
+
             var dataRowCount = 0;
 
             using (var reader = dataRowReader)
@@ -106,8 +116,9 @@ namespace TabularCsv
                     {
                         try
                         {
-                            rowParser.BuildColumnHeaderHeaderMap(fields);
-                            ++dataRowCount;
+                            if (rowParser.IsHeaderFullyParsed(fields))
+                                ++dataRowCount;
+
                             continue;
                         }
                         catch (Exception exception)
@@ -240,7 +251,7 @@ namespace TabularCsv
             var configurations = configurationDirectory
                 .GetFiles("*.toml")
                 .Select(fileInfo => configurationLoader.Load(fileInfo.FullName))
-                .Where(configuration => configuration != null)
+                .Where(configuration => configuration?.Priority > 0)
                 .OrderBy(configuration => configuration.Priority)
                 .ToList();
 

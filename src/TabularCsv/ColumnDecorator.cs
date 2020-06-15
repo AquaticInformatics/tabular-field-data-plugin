@@ -23,7 +23,13 @@ namespace TabularCsv
             var type = item.GetType();
             var baseColumnType = typeof(ColumnDefinition);
             var baseListType = typeof(List<>);
+            var coreType = typeof(CoreDefinition);
             var propertyDefinitionType = typeof(PropertyDefinition);
+
+            void AddNamedColumns(object coreItem, string propertyName)
+            {
+                columnDefinitions.AddRange(GetNamedColumns(coreItem, $"{baseName}.{propertyName}"));
+            }
 
             void AddNamedColumn(ColumnDefinition column, string propertyName)
             {
@@ -36,7 +42,7 @@ namespace TabularCsv
                 }
                 else
                 {
-                    columnDefinitions.AddRange(GetNamedColumns(column, $"{baseName}.{propertyName}"));
+                    AddNamedColumns(column, propertyName);
                 }
             }
 
@@ -64,6 +70,25 @@ namespace TabularCsv
                 AddNamedColumn(column, columnProperty.Name);
             }
 
+            var coreProperties = candidateProperties
+                .Where(p => coreType.IsAssignableFrom(p.PropertyType))
+                .ToList();
+
+            foreach (var coreProperty in coreProperties)
+            {
+                var getMethod = coreProperty.GetGetMethod(false);
+
+                if (getMethod == null)
+                    continue;
+
+                var coreItem = getMethod.Invoke(item, null) as CoreDefinition;
+
+                if (coreItem == null)
+                    continue;
+
+                AddNamedColumns(coreItem, coreProperty.Name);
+            }
+
             var columnCollectionProperties = candidateProperties
                 .Where(p => p.PropertyType.IsGenericType && baseListType == p.PropertyType.GetGenericTypeDefinition())
                 .ToList();
@@ -83,9 +108,15 @@ namespace TabularCsv
                 var index = 1;
                 foreach (var listItem in list)
                 {
+                    var propertyName = $"{columnCollectionProperty.Name}[{index}]";
+
                     if (listItem is ColumnDefinition column)
                     {
-                        AddNamedColumn(column, $"{columnCollectionProperty.Name}[{index}]");
+                        AddNamedColumn(column, propertyName);
+                    }
+                    else if (listItem is CoreDefinition coreItem)
+                    {
+                        AddNamedColumns(coreItem, propertyName);
                     }
 
                     ++index;
