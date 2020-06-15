@@ -46,9 +46,6 @@ namespace TabularCsv
                     configuration.Visit = new VisitDefinition();
                 }
 
-                configuration.AllowUnusedDefaultProperty();
-                configuration.Visit.AllowUnusedDefaultProperty();
-
                 return configuration;
             }
             catch (ParseException exception)
@@ -65,6 +62,9 @@ namespace TabularCsv
                 .ConfigureType<PropertyDefinition>(type => type
                     .WithConversionFor<TomlString>(convert => convert
                         .FromToml(ConvertShorthandPropertySyntax)))
+                .ConfigureType<PropertyDefinition>(type => type
+                    .WithConversionFor<TomlInt>(convert => convert
+                        .FromToml(ConvertShorthandColumnIndex)))
                 .ConfigureType<Regex>(type => type
                     .WithConversionFor<TomlString>(convert => convert
                         .FromToml(ConvertRegexFromString)))
@@ -128,33 +128,90 @@ namespace TabularCsv
             TomlObjectType.String,
         };
 
+        private PropertyDefinition ConvertShorthandColumnIndex(ITomlRoot root, TomlInt tomlInt)
+        {
+            var columnIndex = tomlInt.Value;
+
+            if (columnIndex <= 0 || columnIndex > int.MaxValue)
+                throw new ParseException($"{columnIndex} is an invalid {nameof(ColumnDefinition.ColumnIndex)} value. Must be > 0.");
+
+            return new PropertyDefinition
+            {
+                ColumnIndex = (int) columnIndex
+            };
+        }
+
         private PropertyDefinition ConvertShorthandPropertySyntax(ITomlRoot root, TomlString tomlString)
         {
             var text = tomlString.Value;
 
-            var match = ExcelColumnShorthandRegex.Match(text);
+            string fixedValue = null;
+            string columnHeader = null;
+            Regex prefaceRegex = null;
+            int? columnIndex = null;
+            string alias = null;
+
+            var match = PropertyWithAliasRegex.Match(text);
 
             if (match.Success)
-                return new PropertyDefinition
-                {
-                    ColumnIndex = ConvertExcelColumnToIndex(match.Groups["columnName"].Value)
-                };
+            {
+                alias = ValueOrNull(match.Groups["alias"].Value);
 
-            match = PrefaceShorthandRegex.Match(text);
+                var columnText = ValueOrNull(match.Groups["columnHeader"].Value);
 
-            if (match.Success)
-                return new PropertyDefinition
+                if (!string.IsNullOrEmpty(columnText))
                 {
-                    PrefaceRegex = ConvertRegexFromString(root, tomlString)
-                };
+                    var excelMatch = ExcelColumnShorthandRegex.Match(columnText);
+
+                    if (excelMatch.Success)
+                    {
+                        columnIndex = ConvertExcelColumnToIndex(excelMatch.Groups["columnName"].Value);
+                    }
+                    else if (int.TryParse(columnText, out var index))
+                    {
+                        columnIndex = index;
+                    }
+                    else
+                    {
+                        columnHeader = columnText;
+                    }
+                }
+                else
+                {
+                    prefaceRegex = CreateRegex(
+                        ValueOrNull(match.Groups["regexPattern"].Value),
+                        ValueOrNull(match.Groups["regexOptions"].Value));
+                }
+            }
+            else
+            {
+                fixedValue = text;
+            }
 
             return new PropertyDefinition
             {
-                FixedValue = text
+                FixedValue = fixedValue,
+                ColumnHeader = columnHeader,
+                ColumnIndex = columnIndex,
+                PrefaceRegex = prefaceRegex,
+                Alias = alias
             };
         }
 
-        private static readonly Regex ExcelColumnShorthandRegex = new Regex(@"^=(?<columnName>[A-Z]+):$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+        private static string ValueOrNull(string text)
+        {
+            return string.IsNullOrEmpty(text)
+                ? null
+                : text;
+        }
+
+        private static readonly Regex PropertyWithAliasRegex = new Regex(
+            @"^(@(?<columnHeader>[^{]+)|/(?<regexPattern>.+)/(?<regexOptions>[imsx]*(-[imsx]+)?))(\s*\{\s*(?<alias>[^}]+)\s*})?$",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+
+        private static readonly Regex ExcelColumnShorthandRegex = new Regex(
+            @"^@\s*(?<columnName>[A-Z]+)\s*$",
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         private static int ConvertExcelColumnToIndex(string columnName)
         {
@@ -163,24 +220,30 @@ namespace TabularCsv
                 .Aggregate(0, (column, letter) => 26 * column + letter - 'A' + 1);
         }
 
-        private static readonly Regex PrefaceShorthandRegex = new Regex(@"^/(?<pattern>.+)/(?<options>[imsx]*(-[imsx]+)?)$", RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
-
         private Regex ConvertRegexFromString(ITomlRoot root, TomlString tomlString)
         {
             var text = tomlString.Value;
 
-            var match = PrefaceShorthandRegex.Match(text);
+            var match = PropertyWithAliasRegex.Match(text);
 
             if (!match.Success)
                 return new Regex(text);
 
-            var pattern = match.Groups["pattern"].Value;
-            var optionsText = match.Groups["options"].Value;
+            var pattern = match.Groups["regexPattern"].Value;
+            var optionsText = match.Groups["regexOptions"].Value;
+
+            return CreateRegex(pattern, optionsText);
+        }
+
+        private static Regex CreateRegex(string pattern, string optionsText)
+        {
+            if (string.IsNullOrEmpty(pattern))
+                return null;
 
             var options = RegexOptions.IgnoreCase;
             var addOption = true;
 
-            foreach (var ch in optionsText.ToLowerInvariant())
+            foreach (var ch in optionsText?.ToLowerInvariant() ?? string.Empty)
             {
                 if (ch == '-')
                 {

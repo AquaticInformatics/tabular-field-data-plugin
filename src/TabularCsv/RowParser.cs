@@ -27,6 +27,7 @@ namespace TabularCsv
         public ILog Log { get; set; }
         public DelayedAppender ResultsAppender { get; set; }
         public LocationInfo LocationInfo { get; set; }
+        public int RemainingHeaderLines { get; set; }
 
         public int PrefaceLineCount => PrefaceLines.Count;
 
@@ -35,6 +36,7 @@ namespace TabularCsv
         private string MultilinePreface { get; set; }
         private Dictionary<Regex, string> PrefaceRegexMatches { get; } = new Dictionary<Regex, string>();
         private Dictionary<string, int> ColumnHeaderMap { get; set; } = new Dictionary<string, int>();
+        private Exception LastHeaderException { get; set; }
 
         public void Parse(string[] fields)
         {
@@ -97,14 +99,47 @@ namespace TabularCsv
             PrefaceRegexMatches[regex] = value;
         }
 
-        public void BuildColumnHeaderHeaderMap(string[] fields)
+        public bool IsPrefaceValid()
         {
-            var validator = new ConfigurationValidator
-            {
-                Configuration = Configuration
-            };
+            if (!string.IsNullOrEmpty(Configuration.PrefaceMustContain) &&
+                MultilinePreface.IndexOf(Configuration.PrefaceMustContain, StringComparison.InvariantCultureIgnoreCase) < 0)
+                return false;
 
-            ColumnHeaderMap = validator.BuildColumnHeaderHeaderMap(fields);
+            if (Configuration.PrefaceMustMatchRegex != null &&
+                !Configuration.PrefaceMustMatchRegex.IsMatch(MultilinePreface))
+                return false;
+
+            return true;
+        }
+
+        public bool IsHeaderFullyParsed(string[] headerFields)
+        {
+            if (!ColumnHeaderMap.Any())
+            {
+                var validator = new ConfigurationValidator
+                {
+                    Configuration = Configuration
+                };
+
+                try
+                {
+                    ColumnHeaderMap = validator.BuildColumnHeaderMap(headerFields);
+                }
+                catch (Exception exception)
+                {
+                    LastHeaderException = exception;
+                }
+            }
+
+            --RemainingHeaderLines;
+
+            if (RemainingHeaderLines > 0)
+                return false;
+
+            if (!ColumnHeaderMap.Any() && LastHeaderException != null)
+                throw LastHeaderException;
+
+            return true;
         }
 
         private void ParseRow()
@@ -152,8 +187,6 @@ namespace TabularCsv
                 .Where(levelSurvey => levelSurvey != null)
                 .ToList();
 
-            fieldVisitInfo = ResultsAppender.AddFieldVisit(locationInfo, fieldVisitInfo.FieldVisitDetails);
-
             foreach (var reading in readings)
             {
                 ResultsAppender.AddReading(fieldVisitInfo, reading);
@@ -183,6 +216,31 @@ namespace TabularCsv
             {
                 ResultsAppender.AddLevelSurvey(fieldVisitInfo, levelSurvey);
             }
+
+            ResultsAppender.AdjustVisitPeriodToContainAllActivities(fieldVisitInfo);
+
+            ThrowIfNoVisitTimes(fieldVisitInfo, locationInfo);
+
+            ResultsAppender.AddFieldVisit(locationInfo, fieldVisitInfo.FieldVisitDetails);
+        }
+
+        private void ThrowIfNoVisitTimes(FieldVisitInfo fieldVisitInfo, LocationInfo locationInfo)
+        {
+            if (fieldVisitInfo.StartDate != DateTimeOffset.MinValue && fieldVisitInfo.EndDate != DateTimeOffset.MaxValue)
+                return;
+
+            var allTimeColumns = Configuration.AllTimes
+                .Concat(Configuration.AllStartTimes)
+                .Concat(Configuration.AllEndTimes)
+                .Concat(Configuration.Visit.AllTimes)
+                .Concat(Configuration.Visit.AllStartTimes)
+                .Concat(Configuration.Visit.AllEndTimes)
+                .ToList();
+
+            if (!allTimeColumns.Any())
+                throw new Exception($"Line {LineNumber}: '{locationInfo.LocationIdentifier}': No timestamp columns are configured and none of the visit activities have a valid timestamp.");
+
+            throw new Exception($"Line {LineNumber}: '{locationInfo.LocationIdentifier}': No timestamp could be calculated from these columns: {string.Join(", ", allTimeColumns.Select(c => c.Name()))}");
         }
 
         private FieldVisitDetails ParseVisit(LocationInfo locationInfo)
@@ -190,31 +248,16 @@ namespace TabularCsv
             var visit = Configuration.Visit;
 
             var fieldVisitPeriod = ParseInterval(
-                locationInfo,
-                visit.AllTimes,
-                visit.AllStartTimes,
-                visit.AllEndTimes)
-                ?? ParseInterval(
-                    locationInfo,
-                    Configuration.AllTimes,
-                    Configuration.AllStartTimes,
-                    Configuration.AllEndTimes);
-
-            if (fieldVisitPeriod == null)
-            {
-                var allTimeColumns = Configuration.AllTimes
-                    .Concat(Configuration.AllStartTimes)
-                    .Concat(Configuration.AllEndTimes)
-                    .Concat(visit.AllTimes)
-                    .Concat(visit.AllStartTimes)
-                    .Concat(visit.AllEndTimes)
-                    .ToList();
-
-                if (!allTimeColumns.Any())
-                    throw new Exception($"Line {LineNumber}: No timestamp columns are configured.");
-
-                throw new Exception($"Line {LineNumber}: No timestamp could be calculated from these columns: {string.Join(", ", allTimeColumns.Select(c => c.Name()))}");
-            }
+                                       locationInfo,
+                                       visit.AllTimes,
+                                       visit.AllStartTimes,
+                                       visit.AllEndTimes)
+                                   ?? ParseInterval(
+                                       locationInfo,
+                                       Configuration.AllTimes,
+                                       Configuration.AllStartTimes,
+                                       Configuration.AllEndTimes)
+                                   ?? new DateTimeInterval(DateTimeOffset.MinValue, DateTimeOffset.MaxValue); // This wide interval will be shrunk down later
 
             return new FieldVisitDetails(fieldVisitPeriod)
             {
@@ -364,25 +407,47 @@ namespace TabularCsv
 
         private DateTimeOffset ParseActivityTime(FieldVisitInfo visitInfo, ActivityDefinition activity, DateTimeOffset? fallbackTime = null)
         {
-            var time = ParseNullableDateTimeOffset(visitInfo.LocationInfo, activity.AllTimes);
+            var time = ParseNullableDateTimeOffset(visitInfo.LocationInfo, activity.AllTimes)
+                       ?? fallbackTime
+                       ?? visitInfo.StartDate;
 
-            return time ?? fallbackTime ?? visitInfo.StartDate;
+            if (time != DateTimeOffset.MinValue)
+                return time;
+
+            var allTimeColumns = activity.AllTimes;
+
+            if (!allTimeColumns.Any())
+                throw new ArgumentException($"Line {LineNumber}: '{visitInfo.LocationInfo.LocationIdentifier}': Can't infer activity time because no timestamp columns are configured.");
+
+            throw new ArgumentException($"Line {LineNumber}: '{visitInfo.LocationInfo.LocationIdentifier}': No timestamp could be calculated from these columns: {string.Join(", ", allTimeColumns.Select(c => c.Name()))}");
         }
 
         private DateTimeInterval ParseActivityTimeRange(FieldVisitInfo visitInfo, TimeRangeActivityDefinition timeRangeActivity)
         {
-            return ParseInterval(
+            var interval = ParseInterval(
                        visitInfo.LocationInfo,
                        timeRangeActivity.AllTimes,
                        timeRangeActivity.AllStartTimes,
                        timeRangeActivity.AllEndTimes)
                    ?? visitInfo.FieldVisitDetails.FieldVisitPeriod;
+
+            if (interval.Start != DateTimeOffset.MinValue || interval.End != DateTimeOffset.MaxValue)
+                return interval;
+
+            var allTimeColumns = timeRangeActivity.AllTimes
+                .Concat(timeRangeActivity.AllStartTimes)
+                .Concat(timeRangeActivity.AllEndTimes)
+                .ToList();
+
+            if (!allTimeColumns.Any())
+                throw new ArgumentException($"Line {LineNumber}: '{visitInfo.LocationInfo.LocationIdentifier}': Can't infer activity time range because no timestamp columns are configured.");
+
+            throw new ArgumentException($"Line {LineNumber}: '{visitInfo.LocationInfo.LocationIdentifier}': No time interval could be calculated from these columns: {string.Join(", ", allTimeColumns.Select(c => c.Name()))}");
         }
 
         private Reading ParseReading(FieldVisitInfo visitInfo, ReadingDefinition definition)
         {
-            var readingValue = GetNullableDouble(definition.Value)
-                               ?? GetNullableDouble(definition);
+            var readingValue = GetNullableDouble(definition.Value);
 
             if (!readingValue.HasValue)
                 return null;
@@ -495,8 +560,7 @@ namespace TabularCsv
 
         private Inspection ParseInspection(FieldVisitInfo visitInfo, InspectionDefinition definition)
         {
-            var inspectionType = GetNullableEnum<InspectionType>(definition.InspectionType)
-                                 ?? GetNullableEnum<InspectionType>(definition);
+            var inspectionType = GetNullableEnum<InspectionType>(definition.InspectionType);
 
             if (!inspectionType.HasValue)
                 return null;
@@ -517,8 +581,7 @@ namespace TabularCsv
 
         private Calibration ParseCalibration(FieldVisitInfo visitInfo, CalibrationDefinition definition)
         {
-            var calibrationValue = GetNullableDouble(definition.Value)
-                                   ?? GetNullableDouble(definition);
+            var calibrationValue = GetNullableDouble(definition.Value);
 
             if (!calibrationValue.HasValue)
                 return null;
@@ -589,7 +652,7 @@ namespace TabularCsv
                 dateCleaned = ParseDateTimeOffset(visitInfo.LocationInfo, definition.AllTimes);
             }
 
-            var conditionType = GetString(definition.ConditionType) ?? GetString(definition);
+            var conditionType = GetString(definition.ConditionType);
             var controlCode = GetString(definition.ControlCode);
             var controlCleanedType = GetNullableEnum<ControlCleanedType>(definition.ControlCleanedType);
 
@@ -629,8 +692,7 @@ namespace TabularCsv
 
         private DischargeActivity ParseAdcpDischarge(FieldVisitInfo visitInfo, AdcpDischargeDefinition definition)
         {
-            var totalDischarge = GetNullableDouble(definition.TotalDischarge)
-                                 ?? GetNullableDouble(definition);
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge);
 
             if (!totalDischarge.HasValue)
                 return null;
@@ -709,8 +771,7 @@ namespace TabularCsv
 
         private DischargeActivity ParsePanelSectionDischarge(FieldVisitInfo visitInfo, ManualGaugingDischargeDefinition definition)
         {
-            var totalDischarge = GetNullableDouble(definition.TotalDischarge)
-                                 ?? GetNullableDouble(definition);
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge);
 
             if (!totalDischarge.HasValue)
                 return null;
@@ -921,8 +982,7 @@ namespace TabularCsv
             string distanceUnitId,
             DateTimeOffset dischargeTime)
         {
-            var gageHeightValue = GetNullableDouble(definition.Value)
-                                  ?? GetNullableDouble(definition);
+            var gageHeightValue = GetNullableDouble(definition.Value);
 
             if (!gageHeightValue.HasValue)
                 return null;
@@ -937,8 +997,7 @@ namespace TabularCsv
 
         private LevelSurvey ParseLevelSurvey(FieldVisitInfo visitInfo, LevelSurveyDefinition definition)
         {
-            var originReferencePointName = GetString(definition.OriginReferencePointName)
-                                           ?? GetString(definition);
+            var originReferencePointName = GetString(definition.OriginReferencePointName);
 
             if (string.IsNullOrEmpty(originReferencePointName))
                 return null;
@@ -965,8 +1024,7 @@ namespace TabularCsv
 
         private LevelSurveyMeasurement ParseLevelSurveyMeasurement(FieldVisitInfo visitInfo, LevelSurveyMeasurementDefinition definition)
         {
-            var measuredElevation = GetNullableDouble(definition.MeasuredElevation)
-                                    ?? GetNullableDouble(definition);
+            var measuredElevation = GetNullableDouble(definition.MeasuredElevation);
 
             if (!measuredElevation.HasValue)
                 return null;
