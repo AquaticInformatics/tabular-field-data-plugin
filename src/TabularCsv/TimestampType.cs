@@ -2,7 +2,6 @@
 {
     public enum TimestampType
     {
-        Unknown,
         DateOnly,
         TimeOnly,
         DateTimeOnly,

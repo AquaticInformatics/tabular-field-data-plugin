@@ -41,18 +41,13 @@ LOC2, 1988-Feb-8 15:10, -3.5
 
 Then this configuration description would parse those rows into air temperation field visit readings:
 ```toml
-[Location]
-ColumnHeader = 'The Location'
-
-[Time]
-Format = 'yyyy-MMM-d H:m'
-Type = 'DateTimeOnly'
-ColumnHeader = 'The Time'
+Location = '@The Location'
+Time = '@The Time | yyyy-MMM-d H:m | DateTimeOnly'
 
 [Reading]
+Value = '@The Temperature'
 ParameterId = 'TA'
 UnitId = 'degC'
-ColumnHeader = 'The Temperature'
 ```
 
 The format of the configuration description looks a bit like older Windows INI files, but is actually the [TOML format](https://github.com/toml-lang/toml/blob/master/README.md#example), but you don't really need to understand the inner workings of TOML. Instead you'll just need to read through the wiki examples and find something similar to your data and modify it from there.

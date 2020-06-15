@@ -80,7 +80,7 @@ namespace TabularCsv
     public class TimestampDefinition : ColumnDefinition
     {
         public string Format { get; set; }
-        public TimestampType Type { get; set; }
+        public TimestampType? Type { get; set; }
         public PropertyDefinition UtcOffset { get; set; }
     }
 

@@ -349,7 +349,10 @@ namespace TabularCsv
                     DateTimeStyles.None, out var value))
                     throw new Exception($"Line {LineNumber}: '{timeText}' can't be parsed as a timestamp using the '{timestampColumn.Format}' format.");
 
-                if (!TimestampParsers.TryGetValue(timestampColumn.Type, out var timeParser))
+                if (!timestampColumn.Type.HasValue)
+                    throw new Exception($"{timestampColumn.Name()} has no configured {nameof(timestampColumn.Type)}: You must specify one of {string.Join(", ", Enum.GetNames(typeof(TimestampType)))}");
+
+                if (!TimestampParsers.TryGetValue(timestampColumn.Type.Value, out var timeParser))
                     throw new Exception($"{timestampColumn.Name()} Type={timestampColumn.Type} is not a supported time type");
 
                 var utcOffset = GetNullableTimeSpan(timestampColumn.UtcOffset);
