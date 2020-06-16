@@ -94,7 +94,8 @@ namespace TabularCsv
                 .Groups
                 .Cast<Group>()
                 .First(g => ColumnDefinition.RegexCaptureGroupName.Equals(g.Name, StringComparison.InvariantCultureIgnoreCase))
-                .Value;
+                .Value
+                .Trim();
 
             PrefaceRegexMatches[regex] = value;
         }
@@ -510,7 +511,8 @@ namespace TabularCsv
                 {
                     qualifiers = readingQualifiers
                         .Split(readingQualifierSeparators.ToArray())
-                        .Where(s => !string.IsNullOrWhiteSpace(s))
+                        .Select(s => s.Trim())
+                        .Where(s => !string.IsNullOrEmpty(s))
                         .ToArray();
                 }
 
