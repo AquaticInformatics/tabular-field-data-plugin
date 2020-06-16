@@ -41,11 +41,14 @@ namespace TabularCsv
                 {
                     foreach (var configuration in configurations)
                     {
-                        var result = ParseDataFile(configuration, csvText);
+                        using (LocaleScope.WithLocale(configuration.LocaleName))
+                        {
+                            var result = ParseDataFile(configuration, csvText);
 
-                        if (result.Status == ParseFileStatus.CannotParse) continue;
+                            if (result.Status == ParseFileStatus.CannotParse) continue;
 
-                        return result;
+                            return result;
+                        }
                     }
 
                     return ParseFileResult.CannotParse();

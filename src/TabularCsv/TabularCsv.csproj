@@ -61,6 +61,7 @@
     <Compile Include="ConfigurationLoader.cs" />
     <Compile Include="ConfigurationValidator.cs" />
     <Compile Include="RowParser.cs" />
+    <Compile Include="LocaleScope.cs" />
     <Compile Include="TimestampType.cs" />
   </ItemGroup>
   <ItemGroup>
