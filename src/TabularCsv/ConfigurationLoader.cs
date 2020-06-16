@@ -255,15 +255,9 @@ namespace TabularCsv
 
                 if (!string.IsNullOrEmpty(columnText))
                 {
-                    var excelMatch = ExcelColumnShorthandRegex.Match(columnText);
-
-                    if (excelMatch.Success)
+                    if (TryParseInteger(columnText, out var indexValue))
                     {
-                        columnIndex = ConvertExcelColumnToIndex(excelMatch.Groups["columnName"].Value.Trim());
-                    }
-                    else if (int.TryParse(columnText, out var index))
-                    {
-                        columnIndex = index;
+                        columnIndex = indexValue;
                     }
                     else
                     {
@@ -299,6 +293,27 @@ namespace TabularCsv
                 : text;
         }
 
+        private static bool TryParseInteger(string text, out int value)
+        {
+            value = 0;
+
+            if (!text.StartsWith("#"))
+                return false;
+
+            text = text.Substring(1).Trim();
+
+            if (int.TryParse(text, out value))
+                return true;
+
+            var match = ExcelColumnShorthandRegex.Match(text);
+
+            if (!match.Success)
+                return false;
+
+            value = ConvertExcelColumnToIndex(match.Groups["columnName"].Value.Trim());
+            return true;
+        }
+
         private static readonly Regex InternalPropertyRegex = new Regex(
             @"(@(?<columnHeader>[^{|]+)|/(?<regexPattern>.+)/(?<regexOptions>[imsx]*(-[imsx]+)?))(\s*\{\s*(?<alias>[^}]+)\s*})?",
             RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -308,7 +323,7 @@ namespace TabularCsv
             RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         private static readonly Regex ExcelColumnShorthandRegex = new Regex(
-            @"^@\s*(?<columnName>[A-Z]+)\s*$",
+            @"^\s*(?<columnName>[A-Z]+)\s*$",
             RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
         private static readonly Regex TimestampPropertyRegex = new Regex(
