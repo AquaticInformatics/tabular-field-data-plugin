@@ -171,7 +171,11 @@ namespace TabularCsv
                 .Where(calibration => calibration != null)
                 .ToList();
 
-            var controlCondition = ParseControlCondition(fieldVisitInfo, Configuration.ControlCondition);
+            var controlConditions = new[]
+                {
+                    ParseControlCondition(fieldVisitInfo, Configuration.ControlCondition)
+                }
+                .ToList();
 
             var discharges = Configuration
                 .AllAdcpDischarges
@@ -188,41 +192,95 @@ namespace TabularCsv
                 .Where(levelSurvey => levelSurvey != null)
                 .ToList();
 
+            MergeParsedActivities(
+                locationInfo,
+                fieldVisitInfo,
+                readings,
+                inspections,
+                calibrations,
+                controlConditions,
+                discharges,
+                levelSurveys);
+        }
+
+        private void MergeParsedActivities(
+            LocationInfo locationInfo,
+            FieldVisitInfo fieldVisitInfo,
+            List<Reading> readings,
+            List<Inspection> inspections,
+            List<Calibration> calibrations,
+            List<ControlCondition> controlConditions,
+            List<DischargeActivity> discharges,
+            List<LevelSurvey> levelSurveys)
+        {
+            // Add all the activities to the visit
             foreach (var reading in readings)
             {
-                ResultsAppender.AddReading(fieldVisitInfo, reading);
+                fieldVisitInfo.Readings.Add(reading);
             }
 
             foreach (var inspection in inspections)
             {
-                ResultsAppender.AddInspection(fieldVisitInfo, inspection);
+                fieldVisitInfo.Inspections.Add(inspection);
             }
 
             foreach (var calibration in calibrations)
             {
-                ResultsAppender.AddCalibration(fieldVisitInfo, calibration);
+                fieldVisitInfo.Calibrations.Add(calibration);
             }
 
-            if (controlCondition != null)
+            foreach (var controlCondition in controlConditions)
             {
-                ResultsAppender.AddControlCondition(fieldVisitInfo, controlCondition);
+                fieldVisitInfo.ControlConditions.Add(controlCondition);
             }
 
             foreach (var discharge in discharges)
             {
-                ResultsAppender.AddDischargeActivity(fieldVisitInfo, discharge);
+                fieldVisitInfo.DischargeActivities.Add(discharge);
             }
 
             foreach (var levelSurvey in levelSurveys)
             {
-                ResultsAppender.AddLevelSurvey(fieldVisitInfo, levelSurvey);
+                fieldVisitInfo.LevelSurveys.Add(levelSurvey);
             }
 
+            // Now ensure the visit actually contains all of its activities
             ResultsAppender.AdjustVisitPeriodToContainAllActivities(fieldVisitInfo);
 
             ThrowIfNoVisitTimes(fieldVisitInfo, locationInfo);
 
-            ResultsAppender.AddFieldVisit(locationInfo, fieldVisitInfo.FieldVisitDetails);
+            var mergedVisit = ResultsAppender.AddFieldVisit(locationInfo, fieldVisitInfo.FieldVisitDetails);
+
+            // Now add all the activities into the merged visit
+            foreach (var reading in readings)
+            {
+                ResultsAppender.AddReading(mergedVisit, reading);
+            }
+
+            foreach (var inspection in inspections)
+            {
+                ResultsAppender.AddInspection(mergedVisit, inspection);
+            }
+
+            foreach (var calibration in calibrations)
+            {
+                ResultsAppender.AddCalibration(mergedVisit, calibration);
+            }
+
+            foreach (var controlCondition in controlConditions)
+            {
+                ResultsAppender.AddControlCondition(mergedVisit, controlCondition);
+            }
+
+            foreach (var discharge in discharges)
+            {
+                ResultsAppender.AddDischargeActivity(mergedVisit, discharge);
+            }
+
+            foreach (var levelSurvey in levelSurveys)
+            {
+                ResultsAppender.AddLevelSurvey(mergedVisit, levelSurvey);
+            }
         }
 
         private void ThrowIfNoVisitTimes(FieldVisitInfo fieldVisitInfo, LocationInfo locationInfo)
@@ -386,9 +444,9 @@ namespace TabularCsv
         private static DateTimeOffset MergeDate(TimeSpan? utcOffset, DateTimeOffset existing, DateTimeOffset value)
         {
             return new DateTimeOffset(
-                existing.Date,
+                value.Date,
                 existing.Offset)
-                .Add(value.TimeOfDay);
+                .Add(existing.TimeOfDay);
         }
 
         private static DateTimeOffset MergeDateTime(TimeSpan? utcOffset, DateTimeOffset existing, DateTimeOffset value)
