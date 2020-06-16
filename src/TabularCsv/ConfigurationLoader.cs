@@ -63,6 +63,9 @@ namespace TabularCsv
                 .ConfigureType<TimestampDefinition>(type => type
                     .WithConversionFor<TomlString>(convert => convert
                         .FromToml(ConvertShorthandTimestampSyntax)))
+                .ConfigureType<List<TimestampDefinition>>(type => type
+                    .WithConversionFor<TomlTableArray>(convert => convert
+                        .FromToml(ConvertTimeStampList)))
                 .ConfigureType<PropertyDefinition>(type => type
                     .WithConversionFor<TomlString>(convert => convert
                         .FromToml(ConvertShorthandPropertySyntax)))
@@ -131,6 +134,91 @@ namespace TabularCsv
             TomlObjectType.Float,
             TomlObjectType.String,
         };
+
+        private List<TimestampDefinition> ConvertTimeStampList(ITomlRoot root, TomlTableArray tomlTableArray)
+        {
+            return tomlTableArray
+                .Items
+                .Select(t => CreateTimestampFromTable(root, t))
+                .ToList();
+        }
+
+        private TimestampDefinition CreateTimestampFromTable(ITomlRoot root, TomlTable tomlTable)
+        {
+            var property = CreatePropertyFromTable(root, tomlTable);
+
+            var timestamp = new TimestampDefinition
+            {
+                FixedValue = property.FixedValue,
+                ColumnHeader = property.ColumnHeader,
+                ColumnIndex = property.ColumnIndex,
+                PrefaceRegex = property.PrefaceRegex,
+                Alias = property.Alias,
+            };
+
+            if (TryGetValue<TomlString>(tomlTable, nameof(TimestampDefinition.Type), out var tomlString)
+                && Enum.TryParse<TimestampType>(tomlString.Value, true, out var type))
+            {
+                timestamp.Type = type;
+            }
+
+            if (TryGetValue(tomlTable, nameof(TimestampDefinition.Format), out tomlString))
+                timestamp.Format = tomlString.Value;
+
+            if (tomlTable.TryGetValue(nameof(TimestampDefinition.UtcOffset), out var tomlObject))
+                timestamp.UtcOffset = CreatePropertyFromObject(root, tomlObject);
+
+            return timestamp;
+        }
+
+        private PropertyDefinition CreatePropertyFromObject(ITomlRoot root, TomlObject tomlObject)
+        {
+            if (tomlObject is TomlString tomlString)
+                return ConvertShorthandPropertySyntax(root, tomlString);
+
+            if (tomlObject is TomlTable tomlTable)
+            {
+                return CreatePropertyFromTable(root, tomlTable);
+            }
+
+            throw new ArgumentException($"Can't convert type '{tomlObject.TomlType}' to a {nameof(PropertyDefinition)}");
+        }
+
+        private PropertyDefinition CreatePropertyFromTable(ITomlRoot root, TomlTable tomlTable)
+        {
+            var definition = new PropertyDefinition();
+
+            if (TryGetValue<TomlString>(tomlTable, nameof(PropertyDefinition.FixedValue), out var tomlString))
+                definition.FixedValue = tomlString.Value;
+
+            if (TryGetValue(tomlTable, nameof(PropertyDefinition.ColumnHeader), out tomlString))
+                definition.ColumnHeader = tomlString.Value;
+
+            if (TryGetValue<TomlInt>(tomlTable, nameof(PropertyDefinition.ColumnIndex), out var tomlInt))
+                definition.ColumnIndex = (int)tomlInt.Value;
+
+            if (TryGetValue(tomlTable, nameof(PropertyDefinition.PrefaceRegex), out tomlString))
+                definition.PrefaceRegex = ConvertRegexFromString(root, tomlString);
+
+
+            if (TryGetValue(tomlTable, nameof(PropertyDefinition.Alias), out tomlString))
+                definition.Alias = tomlString.Value;
+
+            return definition;
+        }
+
+        private bool TryGetValue<TTomlType>(TomlTable tomlTable, string key, out TTomlType value) where TTomlType : TomlValue
+        {
+            value = null;
+
+            if (tomlTable.TryGetValue(key, out var tomlObject) && tomlObject is TTomlType valueObject)
+            {
+                value = valueObject;
+                return true;
+            }
+
+            return false;
+        }
 
         private TimestampDefinition ConvertShorthandTimestampSyntax(ITomlRoot root, TomlString tomlString)
         {
