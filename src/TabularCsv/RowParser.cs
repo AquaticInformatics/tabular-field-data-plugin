@@ -1225,10 +1225,12 @@ namespace TabularCsv
                 ? ColumnHeaderMap[column.ColumnHeader]
                 : column.ColumnIndex ?? 0;
 
-            if (fieldIndex <= 0 || fieldIndex > Fields.Length)
+            if (fieldIndex <= 0)
                 throw new ArgumentException($"Line {LineNumber} '{column.Name()}' has an invalid index={fieldIndex}.");
 
-            return Fields[fieldIndex - 1];
+            return fieldIndex <= Fields.Length
+                ? Fields[fieldIndex - 1]
+                : null;
         }
     }
 }
