@@ -175,6 +175,7 @@ namespace TabularCsv
                 {
                     ParseControlCondition(fieldVisitInfo, Configuration.ControlCondition)
                 }
+                .Where(controlCondition => controlCondition != null)
                 .ToList();
 
             var discharges = Configuration
