@@ -405,9 +405,22 @@ namespace TabularCsv
             {
                 var timeText = GetString(timestampColumn);
 
-                if (!DateTimeOffset.TryParseExact(timeText, timestampColumn.Format, CultureInfo.InvariantCulture,
-                    DateTimeStyles.None, out var value))
-                    throw new Exception($"Line {LineNumber}: '{timeText}' can't be parsed as a timestamp using the '{timestampColumn.Format}' format.");
+                const IFormatProvider currentThreadCulture = null;
+                const DateTimeStyles styles = DateTimeStyles.AllowWhiteSpaces;
+
+                var formats = timestampColumn.Formats;
+                DateTimeOffset value;
+
+                if (formats == null || !formats.Any())
+                {
+                    if (!DateTimeOffset.TryParse(timeText, currentThreadCulture, styles, out value))
+                        throw new Exception($"Line {LineNumber}: '{timeText}' can't be parsed as a timestamp using the default format.");
+                }
+                else
+                {
+                    if (!DateTimeOffset.TryParseExact(timeText, timestampColumn.Formats, currentThreadCulture, styles, out value))
+                        throw new Exception($"Line {LineNumber}: '{timeText}' can't be parsed as a timestamp using the '{string.Join(", ", formats)}' {"format".ToQuantity(formats.Length, ShowQuantityAs.None)}.");
+                }
 
                 if (!timestampColumn.Type.HasValue)
                     throw new Exception($"{timestampColumn.Name()} has no configured {nameof(timestampColumn.Type)}: You must specify one of {string.Join(", ", Enum.GetNames(typeof(TimestampType)))}");

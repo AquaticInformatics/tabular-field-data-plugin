@@ -17,6 +17,7 @@ namespace TabularCsv
         public Regex PrefaceMustMatchRegex { get; set; }
         public int MaximumPrefaceLines { get; set; } = 50;
         public int HeaderRowCount { get; set; }
+        public bool NoDataRowsExpected { get; set; }
         public string CommentLinePrefix { get; set; }
         public bool StrictMode { get; set; } = true;
 
@@ -51,6 +52,8 @@ namespace TabularCsv
         public List<LevelSurveyDefinition> LevelSurveys { get; set; } = new List<LevelSurveyDefinition>();
         public List<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(LevelSurvey, LevelSurveys);
 
+        public bool IsDisabled => Priority <= 0;
+
         public bool IsPrefaceExpected => PrefaceRowCount > 0
                                                || !string.IsNullOrEmpty(PrefaceEndsWith)
                                                || !string.IsNullOrEmpty(PrefaceEndsBefore)
@@ -80,7 +83,7 @@ namespace TabularCsv
 
     public class TimestampDefinition : ColumnDefinition
     {
-        public string Format { get; set; }
+        public string[] Formats { get; set; }
         public TimestampType? Type { get; set; }
         public PropertyDefinition UtcOffset { get; set; }
     }

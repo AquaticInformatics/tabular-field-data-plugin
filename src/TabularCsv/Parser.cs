@@ -158,6 +158,12 @@ namespace TabularCsv
                     ++dataRowCount;
                 }
 
+                if (dataRowCount == 0 && configuration.NoDataRowsExpected)
+                {
+                    // When all the data comes from the preface, then this will parse the preface context
+                    rowParser.Parse(new string[0]);
+                }
+
                 return ParseFileResult.SuccessfullyParsedAndDataValid();
             }
         }
@@ -251,10 +257,13 @@ namespace TabularCsv
                 Log = Log
             };
 
-            var configurations = configurationDirectory
+            var allConfigurations = configurationDirectory
                 .GetFiles("*.toml")
                 .Select(fileInfo => configurationLoader.Load(fileInfo.FullName))
-                .Where(configuration => configuration?.Priority > 0)
+                .ToList();
+
+            var configurations = allConfigurations
+                .Where(configuration => !configuration?.IsDisabled ?? false)
                 .OrderBy(configuration => configuration.Priority)
                 .ToList();
 

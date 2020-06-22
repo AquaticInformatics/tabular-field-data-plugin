@@ -13,6 +13,9 @@ namespace TabularCsv
 
         public void Validate()
         {
+            if (Configuration.IsDisabled)
+                return;
+
             if (LocationInfo == null && Configuration.Location == null)
                 ThrowConfigurationException($"A {nameof(Configuration.Location)} definition is required.");
 
@@ -73,7 +76,7 @@ namespace TabularCsv
                 .ToList();
 
             var unknownHeaderColumns = headerColumns
-                .Where(column => !headerFields.Any(field => field.Equals(column.ColumnHeader, StringComparison.InvariantCultureIgnoreCase)))
+                .Where(column => !headerFields.Any(field => FieldMatchesColumn(field, column)))
                 .ToList();
 
             var unknownHeadersMessage =
@@ -84,6 +87,30 @@ namespace TabularCsv
 
             if (unknownHeaderColumns.Any())
                 ThrowConfigurationException(unknownHeadersMessage);
+
+            var duplicateHeaderFields = headerColumns
+                .Where(column => headerFields.Count(field => FieldMatchesColumn(field, column)) > 1)
+                .Select(column => column.ColumnHeader)
+                .Distinct()
+                .ToList();
+
+            if (duplicateHeaderFields.Any())
+            {
+                var duplicateColumnIndexes = duplicateHeaderFields
+                    .Select(field =>
+                    {
+                        var indexes = headerFields
+                            .Select((headerField,index) => headerField.Equals(field, StringComparison.InvariantCultureIgnoreCase) ? index + 1 : 0)
+                            .Where(index => index > 0)
+                            .ToList();
+
+                        return $"'{field}' occurs at {nameof(ColumnDefinition.ColumnIndex)} {string.Join(" and ", indexes)}";
+                    })
+                    .ToList();
+
+                ThrowConfigurationException(
+                    $"The header row has {$"ambiguous {nameof(ColumnDefinition.ColumnHeader)} name".ToQuantity(duplicateHeaderFields.Count)}: {string.Join(", ", duplicateColumnIndexes)}");
+            }
 
             var indexedColumns = columnDefinitions
                 .Where(c => c.HasIndexedColumn)
@@ -102,6 +129,14 @@ namespace TabularCsv
                     tuple => tuple.HeaderValue,
                     tuple => tuple.HeaderIndex,
                     StringComparer.InvariantCultureIgnoreCase);
+        }
+
+        private static bool FieldMatchesColumn(string field, ColumnDefinition column)
+        {
+            if (field == null || column?.ColumnHeader == null)
+                return false;
+
+            return field.Equals(column.ColumnHeader, StringComparison.InvariantCultureIgnoreCase);
         }
     }
 }

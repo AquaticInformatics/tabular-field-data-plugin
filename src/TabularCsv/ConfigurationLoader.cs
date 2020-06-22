@@ -162,8 +162,17 @@ namespace TabularCsv
                 timestamp.Type = type;
             }
 
-            if (TryGetValue(tomlTable, nameof(TimestampDefinition.Format), out tomlString))
-                timestamp.Format = tomlString.Value;
+            if (TryGetValue(tomlTable, nameof(TimestampDefinition.Formats), out tomlString))
+            {
+                timestamp.Formats = new[] {tomlString.Value};
+            }
+            else if (TryGetValue<TomlArray>(tomlTable, nameof(TimestampDefinition.Formats), out var tomlArray))
+            {
+                timestamp.Formats = tomlArray
+                    .Items
+                    .Select(item => item.Get<string>())
+                    .ToArray();
+            }
 
             if (tomlTable.TryGetValue(nameof(TimestampDefinition.UtcOffset), out var tomlObject))
                 timestamp.UtcOffset = CreatePropertyFromObject(root, tomlObject);
@@ -266,18 +275,14 @@ namespace TabularCsv
                 }
                 else
                 {
-                    if (!string.IsNullOrEmpty(timestamp.Format))
-                        throw new ArgumentException($"{nameof(timestamp.Format)} is already set to '{timestamp.Format}' and cannot be changed to '{optionText}'.");
-
-                    timestamp.Format = optionText;
+                    timestamp.Formats = new List<string>(timestamp.Formats ?? new string[0])
+                        .Concat(new[] {optionText})
+                        .ToArray();
                 }
             }
 
             if (!timestamp.Type.HasValue)
-                timestamp.Type = TimestampType.DateTimeOffset;
-
-            if (string.IsNullOrEmpty(timestamp.Format))
-                timestamp.Format = "O";
+                timestamp.Type = TimestampType.DateTimeOnly;
 
             return timestamp;
         }
