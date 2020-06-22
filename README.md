@@ -39,10 +39,10 @@ LOC1, 2020-Jun-12 12:35, 20.5
 LOC2, 1988-Feb-8 15:10, -3.5
 ```
 
-Then this configuration description would parse those rows into air temperation field visit readings:
+Then this configuration description would parse those rows into air temperature field visit readings:
 ```toml
 Location = '@The Location'
-Time = '@The Time | yyyy-MMM-d H:m | DateTimeOnly'
+Time = '@The Time'
 
 [Reading]
 Value = '@The Temperature'
