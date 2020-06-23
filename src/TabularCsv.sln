@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6183BD37-E
 	ProjectSection(SolutionItems) = preProject
 		..\docs\classDiagram.mermaid = ..\docs\classDiagram.mermaid
 		..\docs\classDiagram.svg = ..\docs\classDiagram.svg
+		..\docs\publish-test-drive.sh = ..\docs\publish-test-drive.sh
 		..\docs\Readme.md = ..\docs\Readme.md
 	EndProjectSection
 EndProject
