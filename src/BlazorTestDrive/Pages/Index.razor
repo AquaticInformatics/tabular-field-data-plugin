@@ -1,0 +1,736 @@
+﻿@page "/"
+
+@using FieldDataPluginFramework.DataModel
+@using FieldDataPluginFramework.DataModel.Calibrations
+@using FieldDataPluginFramework.DataModel.DischargeActivities
+@using FieldDataPluginFramework.DataModel.PickLists
+@using FieldDataPluginFramework.DataModel.Readings
+@using System.Text
+@using FieldDataPluginFramework.DataModel.ChannelMeasurements
+@using FieldDataPluginFramework.DataModel.Meters
+
+<h1>Let's test drive your tabular field data!</h1>
+
+<table style="width: 100%;">
+    <tr><td>Your config:</td><td><textarea rows="8" cols="80" @bind="Config"></textarea></td></tr>
+    <tr><td>Your CSV:</td><td><textarea rows="4" cols="80" @bind="Csv"></textarea></td></tr>
+    <tr><td><input id="Button1" type="button" value="Go" @onclick="Parse" /></td></tr>
+    <tr><td>Details:</td><td><textarea rows="2" cols="80" @bind="Details"></textarea></td></tr>
+</table>
+
+@if (Results == null)
+{
+}
+else
+{
+    <h3>@($"{nameof(Results.Visits)} ({Results.Visits.Count})")</h3>
+    @if (Results.Visits.Any())
+    {
+        <table class="RTable">
+            <thead>
+            <tr>
+                <th>Identifier</th>
+                <th>Start</th>
+                <th>End</th>
+                <th>Party</th>
+                <th>Agency</th>
+                <th>Comments</th>
+                <th>Weather</th>
+                <th>Completed Activities</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Results.Visits)
+            {
+                <tr>
+                    <td>@item.FieldVisitIdentifier</td>
+                    <td>@item.StartDate</td>
+                    <td>@item.EndDate</td>
+                    <td>@item.Party</td>
+                    <td>@item.FieldVisitDetails.CollectionAgency</td>
+                    <td>@item.FieldVisitDetails.Comments</td>
+                    <td>@item.FieldVisitDetails.Weather</td>
+                    <td>@CompletedActivities(item.FieldVisitDetails.CompletedVisitActivities)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+
+    <h3>@($"{nameof(Results.ControlConditions)} ({Results.ControlConditions.Count})")</h3>
+    @if (Results.ControlConditions.Any())
+    {
+        <table class="RTable">
+            <thead>
+            <tr>
+                <th>Identifier</th>
+                <th>Condition Type</th>
+                <th>Control Code</th>
+                <th>Control Cleaned</th>
+                <th>Date Cleaned</th>
+                <th>Party</th>
+                <th>Comments</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Results.ControlConditions)
+            {
+                <tr>
+                    <td>@item.VisitIdentifier</td>
+                    <td>@item.Item.ConditionType</td>
+                    <td>@item.Item.ControlCode?.IdOrDisplayName</td>
+                    <td>@item.Item.ControlCleaned</td>
+                    <td>@item.Item.DateCleaned</td>
+                    <td>@item.Item.Party</td>
+                    <td>@item.Item.Comments</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <h3>@($"{nameof(Results.Readings)} ({Results.Readings.Count})")</h3>
+    @if (Results.Readings.Any())
+    {
+        <table class="RTable">
+            <thead>
+            <tr>
+                <th>Identifier</th>
+                <th>Time</th>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Reading Type</th>
+                <th>Method</th>
+                <th>Publish</th>
+                <th>SubLocation</th>
+                <th>Uncertainty</th>
+                <th>Grade</th>
+                <th>Qualifiers</th>
+                <th>Reference Point</th>
+                <th>Use Local Assumed Datum</th>
+                <th>Comments</th>
+                <th>SensorUniqueId</th>
+                <th>Measurement Device</th>
+                <th>Groundwater Details</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Results.Readings)
+            {
+                <tr>
+                    <td>@item.VisitIdentifier</td>
+                    <td>@item.Item.DateTimeOffset</td>
+                    <td>@item.Item.ParameterId</td>
+                    <td>@item.Item.Value (@item.Item.UnitId)</td>
+                    <td>@item.Item.ReadingType</td>
+                    <td>@item.Item.Method</td>
+                    <td>@item.Item.Publish</td>
+                    <td>@item.Item.SubLocation</td>
+                    <td>@item.Item.Uncertainty</td>
+                    <td>@Grade(item.Item.Grade)</td>
+                    <td>@Qualifiers(item.Item.ReadingQualifiers)</td>
+                    <td>@item.Item.ReferencePointName</td>
+                    <td>@item.Item.UseLocationDatumAsReference</td>
+                    <td>@item.Item.Comments</td>
+                    <td>@item.Item.SensorUniqueId</td>
+                    <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
+                    <td>@GroundwaterDetails(item.Item.GroundWaterMeasurementDetails)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <h3>@($"{nameof(Results.Calibrations)} ({Results.Calibrations.Count})")</h3>
+    @if (Results.Calibrations.Any())
+    {
+        <table class="RTable">
+            <thead>
+            <tr>
+                <th>Identifier</th>
+                <th>Time</th>
+                <th>CalibrationType</th>
+                <th>Parameter</th>
+                <th>Value</th>
+                <th>Method</th>
+                <th>Publish</th>
+                <th>SubLocation</th>
+                <th>Party</th>
+                <th>Comments</th>
+                <th>Standard</th>
+                <th>Standard Details</th>
+                <th>SensorUniqueId</th>
+                <th>Measurement Device</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Results.Calibrations)
+            {
+                <tr>
+                    <td>@item.VisitIdentifier</td>
+                    <td>@item.Item.DateTimeOffset</td>
+                    <td>@item.Item.CalibrationType</td>
+                    <td>@item.Item.ParameterId</td>
+                    <td>@item.Item.Value (@item.Item.UnitId)</td>
+                    <td>@item.Item.Method</td>
+                    <td>@item.Item.Publish</td>
+                    <td>@item.Item.SubLocation</td>
+                    <td>@item.Item.Party</td>
+                    <td>@item.Item.Comments</td>
+                    <td>@item.Item.Standard</td>
+                    <td>@StandardDetails(item.Item.StandardDetails)</td>
+                    <td>@item.Item.SensorUniqueId</td>
+                    <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <h3>@($"{nameof(Results.Inspections)} ({Results.Inspections.Count})")</h3>
+    @if (Results.Inspections.Any())
+    {
+        <table class="RTable">
+            <thead>
+            <tr>
+                <th>Identifier</th>
+                <th>Time</th>
+                <th>InspectionType</th>
+                <th>SubLocation</th>
+                <th>Comments</th>
+                <th>Measurement Device</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Results.Inspections)
+            {
+                <tr>
+                    <td>@item.VisitIdentifier</td>
+                    <td>@item.Item.DateTimeOffset</td>
+                    <td>@item.Item.InspectionType</td>
+                    <td>@item.Item.SubLocation</td>
+                    <td>@item.Item.Comments</td>
+                    <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <h3>@($"{nameof(Results.LevelSurveys)} ({Results.LevelSurveys.Count})")</h3>
+    @if (Results.LevelSurveys.Any())
+    {
+        <table class="RTable">
+            <thead>
+            <tr>
+                <th>Identifier</th>
+                <th>OriginReferencePoint</th>
+                <th>Method</th>
+                <th>Party</th>
+                <th>Comments</th>
+                <th>Measurements</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Results.LevelSurveys)
+            {
+                <tr>
+                    <td>@item.VisitIdentifier</td>
+                    <td>@item.Item.OriginReferencePointName</td>
+                    <td>@item.Item.Method</td>
+                    <td>@item.Item.Party</td>
+                    <td>@item.Item.Comments</td>
+                    
+                    @if (item.Item.LevelSurveyMeasurements.Any())
+                    {
+                        <td>
+                            <table class="RTable">
+                                <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Reference Point Name</th>
+                                    <th>Measured Elevation</th>
+                                    <th>Comments</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var m in item.Item.LevelSurveyMeasurements)
+                                {
+                                    <tr>
+                                        <td>@m.MeasurementTime</td>
+                                        <td>@m.ReferencePointName</td>
+                                        <td>@m.MeasuredElevation</td>
+                                        <td>@m.Comments</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </td>
+                    }
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+
+    <h3>@($"{nameof(Results.Discharges)} ({Results.Discharges.Count})")</h3>
+    @if (Results.Discharges.Any())
+    {
+        <table class="RTable">
+            <thead>
+            <tr>
+                <th>Identifier</th>
+                <th>MeasurementId</th>
+                <th>StartTime</th>
+                <th>EndTime</th>
+                <th>Total Discharge</th>
+                <th>Adjustment</th>
+                <th>Mean Index Velocity</th>
+                <th>Party</th>
+                <th>Comments</th>
+                <th>Grade</th>
+                <th>Quality Assurance</th>
+                <th>Show in DCT?</th>
+                <th>Show in RDT?</th>
+                <th>Prevent Auto Publish?</th>
+                <th>Mean Gage Height Difference During Visit</th>
+                <th>Manually Calculated Mean Gage Height</th>
+                <th>Gage Height Measurements</th>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Results.Discharges)
+            {
+                <tr>
+                    <td>@item.VisitIdentifier</td>
+                    <td>@item.Item.MeasurementId</td>
+                    <td>@item.Item.MeasurementStartTime</td>
+                    <td>@item.Item.MeasurementEndTime</td>
+                    <td>@Measurement(item.Item.Discharge)</td>
+                    <td>@AdjustmentSummary(item.Item)</td>
+                    <td>@Measurement(item.Item.MeanIndexVelocity)</td>
+                    <td>@item.Item.Party</td>
+                    <td>@item.Item.Comments</td>
+                    <td>@Grade(item.Item.MeasurementGrade)</td>
+                    <td>@QualityAssuranceSummary(item.Item)</td>
+                    <td>@item.Item.ShowInDataCorrection</td>
+                    <td>@item.Item.ShowInRatingDevelopment</td>
+                    <td>@item.Item.PreventAutomaticPublishing</td>
+                    <td>@Measurement(item.Item.MeanGageHeightDifferenceDuringVisit)</td>
+                    <td>@Measurement(item.Item.ManuallyCalculatedMeanGageHeight)</td>
+
+                    @if (item.Item.GageHeightMeasurements.Any())
+                    {
+                        <td>
+                            <table class="RTable">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Value</th>
+                                        <th>Include?</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var m in item.Item.GageHeightMeasurements)
+                                    {
+                                        <tr>
+                                            <td>@m.MeasurementTime</td>
+                                            <td>@Measurement(m.GageHeight)</td>
+                                            <td>@m.Include</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+                    }
+
+                    @if (PanelSections(item.Item.ChannelMeasurements).Any())
+                    {
+                        <td>
+                            <table class="RTable">
+                                <thead>
+                                <tr>
+                                    <th>Section Type</th>
+                                    <th>Channel Name</th>
+                                    <th>Section Discharge</th>
+                                    <th>Width</th>
+                                    <th>Area</th>
+                                    <th>Velocity Average</th>
+                                    <th>Discharge Method</th>
+                                    <th>Deployment Method</th>
+                                    <th>Start Point</th>
+                                    <th>Meter Suspension</th>
+                                    <th>Velocity Observation Method</th>
+                                    <th>Meter Calibration</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var panel in PanelSections(item.Item.ChannelMeasurements))
+                                {
+                                    <tr>
+                                        <td>Panel</td>
+                                        <td>@panel.ChannelName</td>
+                                        <td>@Measurement(panel.Discharge)</td>
+                                        <td>@Measurement(panel.Width)</td>
+                                        <td>@Measurement(panel.Area)</td>
+                                        <td>@Measurement(panel.VelocityAverage)</td>
+                                        <td>@panel.DischargeMethod</td>
+                                        <td>@panel.DeploymentMethod</td>
+                                        <td>@panel.StartPoint</td>
+                                        <td>@panel.MeterSuspension</td>
+                                        <td>@panel.VelocityObservationMethod</td>
+                                        <td>@MeterCalibration(panel.MeterCalibration)</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </td>
+                    }
+
+                    @if (AdcpSections(item.Item.ChannelMeasurements).Any())
+                    {
+                        <td>
+                            <table class="RTable">
+                                <thead>
+                                    <tr>
+                                        <th>Section Type</th>
+                                        <th>Channel Name</th>
+                                        <th>Section Discharge</th>
+                                        <th>Width</th>
+                                        <th>Area</th>
+                                        <th>Velocity Average</th>
+                                        <th>Device Type</th>
+                                        <th>Deployment Method</th>
+                                        <th>Number Of Transects</th>
+                                        <th>Magnetic Variation</th>
+                                        <th>Discharge Coefficient Variation</th>
+                                        <th>Percent Of Discharge Measured</th>
+                                        <th>Transducer Depth</th>
+                                        <th>Top Estimate Exponent</th>
+                                        <th>Top Estimate Method</th>
+                                        <th>Bottom Estimate Exponent</th>
+                                        <th>Bottom Estimate Method</th>
+                                        <th>Navigation Method</th>
+                                        <th>Depth Reference</th>
+                                        <th>Meter Suspension</th>
+                                        <th>Software Version</th>
+                                        <th>Firmware Version</th>
+                                        <th>Measurement Device</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var adcp in AdcpSections(item.Item.ChannelMeasurements))
+                                {
+                                    <tr>
+                                        <td>ADCP</td>
+                                        <td>@adcp.ChannelName</td>
+                                        <td>@Measurement(adcp.Discharge)</td>
+                                        <td>@Measurement(adcp.Width)</td>
+                                        <td>@Measurement(adcp.Area)</td>
+                                        <td>@Measurement(adcp.VelocityAverage)</td>
+                                        <td>@adcp.AdcpDeviceType</td>
+                                        <td>@adcp.DeploymentMethod</td>
+                                        <td>@adcp.NumberOfTransects</td>
+                                        <td>@adcp.MagneticVariation</td>
+                                        <td>@adcp.DischargeCoefficientVariation</td>
+                                        <td>@adcp.PercentOfDischargeMeasured</td>
+                                        <td>@adcp.TransducerDepth</td>
+                                        <td>@adcp.TopEstimateExponent</td>
+                                        <td>@adcp.TopEstimateMethod?.IdOrDisplayName</td>
+                                        <td>@adcp.BottomEstimateExponent</td>
+                                        <td>@adcp.BottomEstimateMethod?.IdOrDisplayName</td>
+                                        <td>@adcp.NavigationMethod?.IdOrDisplayName</td>
+                                        <td>@adcp.DepthReference</td>
+                                        <td>@adcp.MeterSuspension</td>
+                                        <td>@adcp.SoftwareVersion</td>
+                                        <td>@adcp.FirmwareVersion</td>
+                                        <td>@MeasurementDevice(adcp.MeasurementDevice)</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </td>
+                    }
+                </tr>
+            }
+            </tbody>
+        </table>
+    }
+}
+
+@code
+{
+    public string Config { get; set; } = @"Location = '@The Location'
+Time = '@The Time'
+
+[Reading]
+Value = '@The Temperature'
+ParameterId = 'TA'
+UnitId = 'degC'";
+
+    public string Csv { get; set; } = @"The Location, The Time, The Temperature
+LOC1, 2020-Jun-12 12:35, 20.5
+LOC2, 1988-Feb-8 15:10, -3.5";
+    public string Output { get; set; }
+    public string Details { get; set; }
+
+    public Results Results { get; set; }
+
+    private void Parse(MouseEventArgs e)
+    {
+        var parser = new Parser();
+
+        try
+        {
+            var (output, details, results) = parser
+                .Parse(Config, Csv);
+
+            Output = output;
+            Details = details;
+            Results = results;
+        }
+        catch (Exception exception)
+        {
+            var context = "";
+            var stackTrace = exception.StackTrace;
+
+            while (exception != null)
+            {
+                parser.Logger.Error($"{context}{exception.Message}");
+
+                context = "(Inner): ";
+                exception = exception.InnerException;
+            }
+
+            parser.Logger.Error(stackTrace);
+
+            Output = "Nope!";
+            Details = parser.Logger.Builder.ToString();
+        }
+    }
+
+    private string CompletedActivities(CompletedVisitActivities activities)
+    {
+        if (activities == null)
+            return null;
+
+        var list = new List<string>();
+
+        if (activities.ConductedLevelSurvey)
+            list.Add("Level Surveys");
+
+        if (activities.GroundWaterLevels)
+            list.Add("Ground water levels");
+
+        if (activities.SafetyInspectionPerformed)
+            list.Add("Safety Inspection");
+
+        if (activities.RecorderDataCollected)
+            list.Add("Recorder data collected");
+
+        if (activities.WaterQualitySample)
+            list.Add("Water quality samples");
+
+        if (activities.SedimentSample)
+            list.Add("Sediment samples");
+
+        if (activities.BiologicalSample)
+            list.Add("Biological samples");
+
+        if (activities.OtherSample)
+            list.Add("Other samples");
+
+        if (!list.Any())
+            list.Add("None");
+
+        return string.Join(", ", list);
+    }
+
+    private string Measurement(Measurement measurement)
+    {
+        if (measurement == null)
+            return null;
+
+        return $"{measurement.Value} ({measurement.UnitId})";
+    }
+
+    private string MeasurementDevice(MeasurementDevice device)
+    {
+        if (device == null)
+            return null;
+
+        var list = new List<string>();
+
+        if (!string.IsNullOrEmpty(device.Manufacturer))
+            list.Add($"Manufacturer: {device.Manufacturer}");
+
+        if (!string.IsNullOrEmpty(device.Model))
+            list.Add($"Model: {device.Model}");
+
+        if (!string.IsNullOrEmpty(device.SerialNumber))
+            list.Add($"Serial Number: {device.SerialNumber}");
+
+        return string.Join(", ", list);
+    }
+
+    private string StandardDetails(StandardDetails details)
+    {
+        if (details == null)
+            return null;
+
+        var list = new List<string>();
+
+        if (!string.IsNullOrEmpty(details.LotNumber))
+            list.Add($"Lot Number: {details.LotNumber}");
+
+        if (!string.IsNullOrEmpty(details.StandardCode))
+            list.Add($"Standard Code: {details.StandardCode}");
+
+        if (details.ExpirationDate.HasValue)
+            list.Add($"Expiration Date: {details.ExpirationDate:O}");
+
+        if (details.Temperature.HasValue)
+            list.Add($"Temperature: {details.Temperature}");
+
+        return string.Join(", ", list);
+    }
+
+    private string Grade(Grade grade)
+    {
+        if (grade == null)
+            return null;
+
+        return grade.Code.HasValue
+            ? $"{grade.Code}"
+            : grade.DisplayName;
+    }
+
+    private string Qualifiers(List<ReadingQualifierPickList> qualifiers)
+    {
+        if (qualifiers == null)
+            return null;
+
+        return string.Join(", ", qualifiers.Select(q => q.IdOrDisplayName));
+    }
+
+    private string GroundwaterDetails(GroundWaterMeasurementDetails details)
+    {
+        if (details == null)
+            return null;
+
+        var list = new List<string>();
+
+        if (details.Cut.HasValue)
+            list.Add($"Cut: {details.Cut}");
+
+        if (details.Hold.HasValue)
+            list.Add($"Hold: {details.Hold}");
+
+        if (details.TapeCorrection.HasValue)
+            list.Add($"Tape Correction: {details.TapeCorrection}");
+
+        if (details.WaterLevel.HasValue)
+            list.Add($"Water Level: {details.WaterLevel}");
+
+        return string.Join(", ", list);
+    }
+
+    private string AdjustmentSummary(DischargeActivity discharge)
+    {
+        if (discharge?.AdjustmentAmount == null)
+            return null;
+
+        return $"Adjusted by {discharge.AdjustmentAmount} ({discharge.AdjustmentType}) Reason={discharge.ReasonForAdjustment})";
+    }
+
+    private string QualityAssuranceSummary(DischargeActivity discharge)
+    {
+        if (discharge == null)
+            return null;
+
+        var builder = new StringBuilder();
+
+        if (discharge.ActiveUncertaintyType != UncertaintyType.None)
+        {
+            builder.Append($"Active Uncertainty Type: {discharge.ActiveUncertaintyType} ");
+
+            if (discharge.QualitativeUncertainty.HasValue)
+                builder.Append($"{discharge.QualitativeUncertainty} ");
+
+            if (discharge.QuantitativeUncertainty.HasValue)
+                builder.Append($"{discharge.QuantitativeUncertainty} ");
+        }
+
+        if (!string.IsNullOrWhiteSpace(discharge.QualityAssuranceComments))
+            builder.Append($"{discharge.QualityAssuranceComments}");
+
+        return builder.ToString();
+    }
+
+    private List<AdcpDischargeSection> AdcpSections(IEnumerable<ChannelMeasurementBase> channelMeasurements)
+    {
+        return channelMeasurements
+            .Select(m => m as AdcpDischargeSection)
+            .Where(section => section != null)
+            .ToList();
+    }
+
+    private List<ManualGaugingDischargeSection> PanelSections(IEnumerable<ChannelMeasurementBase> channelMeasurements)
+    {
+        return channelMeasurements
+            .Select(m => m as ManualGaugingDischargeSection)
+            .Where(section => section != null)
+            .ToList();
+    }
+
+    private string MeterCalibration(MeterCalibration calibration)
+    {
+        if (calibration == null)
+            return null;
+
+        var list = new List<string>();
+
+        list.Add($"Meter Type: {calibration.MeterType}");
+
+        if (!string.IsNullOrWhiteSpace(calibration.Configuration))
+            list.Add($"Configuration: {calibration.Configuration}");
+
+        if (!string.IsNullOrWhiteSpace(calibration.Manufacturer))
+            list.Add($"Manufacturer: {calibration.Manufacturer}");
+
+        if (!string.IsNullOrWhiteSpace(calibration.Model))
+            list.Add($"Model: {calibration.Model}");
+
+        if (!string.IsNullOrWhiteSpace(calibration.SerialNumber))
+            list.Add($"SerialNumber: {calibration.SerialNumber}");
+
+        if (!string.IsNullOrWhiteSpace(calibration.SoftwareVersion))
+            list.Add($"SoftwareVersion: {calibration.SoftwareVersion}");
+
+        if (!string.IsNullOrWhiteSpace(calibration.FirmwareVersion))
+            list.Add($"FirmwareVersion: {calibration.FirmwareVersion}");
+
+        if (calibration.Equations.Any())
+        {
+            list.Add($"Equations: [{string.Join(", ", calibration.Equations.Select(MeterCalibrationEquation))}]");
+        }
+
+        return string.Join(", ", list);
+    }
+
+    private string MeterCalibrationEquation(MeterCalibrationEquation equation)
+    {
+        var builder = new StringBuilder();
+
+        builder.Append($"Slope={equation.Slope} Intercept={equation.Intercept} ({equation.InterceptUnitId})");
+
+        if (equation.RangeStart.HasValue)
+            builder.Append($" RangeStart={equation.RangeStart}");
+
+        if (equation.RangeEnd.HasValue)
+            builder.Append($" RangeEnd={equation.RangeEnd}");
+
+        return builder.ToString();
+    }
+}
