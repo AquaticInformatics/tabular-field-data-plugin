@@ -13,6 +13,8 @@ An AQTS field data plugin for AQTS 2019.4-or-newer systems, which can read many 
 
 See the [plugin wiki](../../wiki) for CSV format and configuration information.
 
+[Test drive the plugin here](https://aquaticinformatics.github.io/tabular-field-data-plugin/test-drive/), from the comfort of your browser!
+
 ## What does 'tabular' mean?
 
 In this context, 'tabular' means data shaped like a database table. A sequence of rows with a common number of columns per row. This is also referred to as a 'flat file'.
