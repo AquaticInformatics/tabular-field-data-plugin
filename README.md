@@ -62,6 +62,13 @@ The plugin can support many different configurations at once, with each configur
 
 The plugin will quickly try each configuration until it finds one that matches your data, and then it will parse the CSV file according to the configuration tules.
 
+
+| System | TOML storage location | Configuration filenames |
+|---|---|---|
+| AQTS 2020.1<br/>AQTS 2019.4 | `%ProgramData%\Aquatic Informatics\AQUARIUS Server\Configuration\TabularCSV` <br/><br/> You may need to create this folder on the AQTS app server. | Configuration files can have any name, but must use the `.toml` file extension. |
+| Field Visit Hot Folder Service | `%ProgramData%\Aquatic Informatics\AQUARIUS Server\Configuration\TabularCSV` <br/><br/> You may need to create this folder on the computer running the Field Visit Hot Folder Service. | Configuration files can have any name, but must use the `.toml` file extension. |
+| AQTS 2020.2-or-newer | Stored in the DB as Global Settings, editable from the System Config page. <br/><br/> Hooray! You don't need direct access to the AQTS app server file system! | **Group**: `FieldDataPluginConfig-TabularCsv`<br/>**Key**: _A name you choose_ (alphanumeric, underscore, or dashes. No whitespace or periods)<br/>**Value**: _Paste your multi-line TOML configuration text here_ |
+
 ### AQTS 2019.4 and 2020.1
 
 An AQTS server configuration directory is needed to store all the active configuration files.

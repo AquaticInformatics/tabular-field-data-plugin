@@ -1222,7 +1222,9 @@ namespace TabularCsv
                 }
             }
 
-            return value;
+            return !string.IsNullOrWhiteSpace(value)
+                ? value
+                : null;
         }
 
         private string GetColumnValue(ColumnDefinition column)
