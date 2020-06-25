@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using FieldDataPluginFramework;
@@ -16,14 +15,11 @@ namespace TabularCsv
 
         private string TomlText { get; set; }
 
-        public Configuration Load(string path)
+        public Configuration Load(string name, string tomlText)
         {
-            if (!File.Exists(path))
-                throw new Exception($"'{path}' does not exist.");
+            TomlText = tomlText;
 
-            TomlText = File.ReadAllText(path);
-
-            var configuration = LoadFromToml(path);
+            var configuration = LoadFromToml(name);
 
             if (configuration == null || IsEmpty(configuration))
                 return null;

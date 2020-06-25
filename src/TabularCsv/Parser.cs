@@ -244,11 +244,14 @@ namespace TabularCsv
 
         private List<Configuration> LoadConfigurations()
         {
-            var configurationDirectory = GetConfigurationDirectory();
+            var pluginConfigurations = ResultsAppender
+                .GetPluginConfigurations(
+                    GetConfigurationDirectory().FullName,
+                    "*.toml");
 
-            if (!configurationDirectory.Exists)
+            if (!pluginConfigurations.Any())
             {
-                Log.Error($"'{configurationDirectory.FullName}' does not exist. No configurations loaded.");
+                Log.Error($"No configurations loaded.");
                 return new List<Configuration>();
             }
 
@@ -257,9 +260,8 @@ namespace TabularCsv
                 Log = Log
             };
 
-            var allConfigurations = configurationDirectory
-                .GetFiles("*.toml")
-                .Select(fileInfo => configurationLoader.Load(fileInfo.FullName))
+            var allConfigurations = pluginConfigurations
+                .Select(kvp => configurationLoader.Load(kvp.Key, kvp.Value))
                 .ToList();
 
             var configurations = allConfigurations
@@ -269,7 +271,7 @@ namespace TabularCsv
 
             if (!configurations.Any())
             {
-                Log.Error($"No configurations found at '{configurationDirectory.FullName}\\*.toml'");
+                Log.Error($"No enabled configurations found. ({pluginConfigurations.Count} were disabled or invalid).");
                 return new List<Configuration>();
             }
 
