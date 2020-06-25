@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Text.Json;
 using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
@@ -23,22 +22,25 @@ namespace BlazorTestDrive
     {
         public FakeLogger Logger { get; } = new FakeLogger();
 
-        public (string Output, string Details, Results Results) Parse(string config, string csv)
+        public (string Details, Results Results) Parse(string config, string csv,
+            string locationIdentifier, string timeZone)
         {
             var plugin = LoadTabularPlugin();
 
             var appender = new FakeAppender();
 
+            if (TryParseTimeSpan(timeZone, out var utcOffset))
+                appender.UtcOffset = utcOffset;
+
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv)))
             {
                 WriteTemporaryConfigFile(config);
 
-                var result = plugin.ParseFile(stream, appender, Logger);
+                locationIdentifier = locationIdentifier?.Trim();
 
-                var options = new JsonSerializerOptions
-                {
-                    WriteIndented = true
-                };
+                var result = string.IsNullOrEmpty(locationIdentifier)
+                    ? plugin.ParseFile(stream, appender, Logger)
+                    : plugin.ParseFile(stream, appender.GetLocationByIdentifier(locationIdentifier), appender, Logger);
 
                 if (result.Status == ParseFileStatus.SuccessfullyParsedAndDataValid)
                 {
@@ -53,8 +55,7 @@ namespace BlazorTestDrive
 
                 var results = Results.CreateResults(appender.AppendedResults);
 
-                var json = JsonSerializer.Serialize(appender.AppendedResults, options);
-                return (json, Logger.Builder.ToString(), results);
+                return (Logger.Builder.ToString(), results);
             }
         }
 
@@ -76,6 +77,25 @@ namespace BlazorTestDrive
         private IFieldDataPlugin LoadTabularPlugin()
         {
             return new TabularCsv.Plugin();
+        }
+
+        private bool TryParseTimeSpan(string text, out TimeSpan timeSpan)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                timeSpan = TimeSpan.Zero;
+                return false;
+            }
+
+            const string prefix = "UTC";
+
+            if (text.StartsWith(prefix, StringComparison.InvariantCultureIgnoreCase))
+                text = text.Substring(prefix.Length);
+
+            if (text.StartsWith("+"))
+                text = text.Substring(1);
+
+            return TimeSpan.TryParse(text, out timeSpan);
         }
     }
 
