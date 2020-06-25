@@ -409,7 +409,7 @@ namespace TabularCsv
 
         private static readonly Regex PropertyWithAliasRegex = new Regex(
             $@"^{InternalPropertyRegex}$",
-            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
+            RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
         private static readonly Regex ExcelColumnShorthandRegex = new Regex(
             @"^\s*(?<columnName>[A-Z]+)\s*$",
