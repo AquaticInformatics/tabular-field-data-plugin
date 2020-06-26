@@ -6,8 +6,16 @@ An AQTS field data plugin for AQTS 2019.4-or-newer systems, which can read many 
 
 ## Want to install this plugin?
 
-- Download the latest release of the plugin [here](../../releases/latest)
-- Install it using the System Config page on your AQTS app server.
+- Install the plugin using the System Config page on your AQTS app server.
+
+### Plugin Compatibility Matrix
+
+Choose the appropriate version of the plugin for your AQTS app server.
+
+| AQTS Version | Latest compatible plugin Version |
+| --- | --- |
+| AQTS 2020.2 | _Not yet released_ |
+| AQTS 2020.1<br/>AQTS 2019.4 Update 1| [v19.4.83](https://github.com/AquaticInformatics/tabular-field-data-plugin/releases/download/v19.4.83/TabularCsv.plugin) |
 
 ## CSV file format
 

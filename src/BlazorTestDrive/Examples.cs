@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace BlazorTestDrive
 {
@@ -82,7 +81,7 @@ Location = '@LocationIdentifier'
 Party = '@Party'
 
 [Reading]
-Time = '@MeasurementStartDateTime'
+Time = '@MeasurementStartDateTime | DateTimeOffset'
 Comment = '@Comments'
 ParameterId = '@ReadingParameter'
 UnitId = '@ReadingUnits'
@@ -99,8 +98,8 @@ SubLocation = '@ReadingSublocation'
 [PanelDischargeSummary]
 Party = '@Party'
 Comment = '@Comments'
-StartTime = '@MeasurementStartDateTime'
-EndTime = '@MeasurementEndDateTime'
+StartTime = '@MeasurementStartDateTime | DateTimeOffset'
+EndTime = '@MeasurementEndDateTime | DateTimeOffset'
 MeasurementId = '@MeasurementId'
 DistanceUnitId = '@WidthUnits'
 TotalDischarge = '@Discharge'
@@ -135,6 +134,31 @@ LocationA         , 46792        , 2016-04-02T03:00:00.0000000Z,      2016-04-02
 
 LocationA         , 46793        , 2016-04-03T04:00:00.0000000Z,      2016-04-03T05:00:00.0000000Z,      ,             ,           ,          143.3,      ft^3/s,         Main,        23.4,         ft,         125.63,      ft^2,       85.2,           ft/s,          ,      A discharge without a stage measurement
 "
+            },
+            new Example
+            {
+                Name = "Use {Aliases} to transform your data",
+                ConfigText = @"
+# Append the {aliasName} pattern to the end of a short form string
+Location = '@Location{Locations}'
+Time = '@Time'
+
+[Reading]
+Value = '@Value'
+ParameterId = 'TA'
+UnitId = '@Unit{Units}' 
+
+[Aliases.Units]
+'°C' = 'degC'
+'°F' = 'degF'
+
+[Aliases.Locations]
+'Loc1' = 'LOCATION1'
+'Loc2' = 'GWX0005J'",
+                CsvText = @"
+Location, Time, Value, Unit
+Loc1, 2020-Apr-1, 0, °C
+Loc2, 2020-Apr-1, 32, °F",
             },
         };
     }
