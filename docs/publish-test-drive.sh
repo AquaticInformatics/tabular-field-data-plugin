@@ -16,4 +16,7 @@ pushd test-drive/framework
 # There are two Javascript files which contain the leading underscore as well.
 # Use sed to correct those.
 sed -e "s/_framework/framework/g" -i blazor.server.js blazor.webassembly.js
+cd ..
+# Also correct the link in the main page
+sed -e "s/_framework/framework/g" -i index.html
 popd

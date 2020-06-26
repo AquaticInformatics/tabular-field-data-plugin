@@ -52,7 +52,7 @@ ParameterId = 'TA'
 UnitId = 'degC'
 ```
 
-The format of the configuration description looks a bit like older Windows INI files, but is actually the [TOML format](https://github.com/toml-lang/toml/blob/master/README.md#example), but you don't really need to understand the inner workings of TOML. Instead you'll just need to read through the wiki examples and find something similar to your data and modify it from there.
+The format of the configuration description looks a bit like older Windows INI files, but is actually the [TOML format](https://toml.io/en/), but you don't really need to understand the inner workings of TOML. Instead you'll just need to read through the wiki examples and find something similar to your data and modify it from there.
 
 The TOML syntax is quite forgiving and yet still concise. It is much easier for non-programmers to edit vs. more widely used formats like JSON or XML, which can both be quite finicky for humans.
 
@@ -61,7 +61,6 @@ The TOML syntax is quite forgiving and yet still concise. It is much easier for 
 The plugin can support many different configurations at once, with each configuration stored in a separate file.
 
 The plugin will quickly try each configuration until it finds one that matches your data, and then it will parse the CSV file according to the configuration tules.
-
 
 | System | TOML storage location | Configuration filenames |
 |---|---|---|
