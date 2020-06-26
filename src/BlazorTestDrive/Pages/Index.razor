@@ -8,50 +8,78 @@
 @using System.Text
 @using FieldDataPluginFramework.DataModel.ChannelMeasurements
 @using FieldDataPluginFramework.DataModel.Meters
+@using System.IO
 
 <h1>Let's test drive your tabular field data!</h1>
 
 <table style="width: 100%;">
+    <colgroup>
+        <col style="width: 10%;" />
+        <col style="width: 90%;" />
+    </colgroup>
     <tbody>
-        <tr><td>Your config:</td><td><textarea rows="8" cols="80" @bind="Config"></textarea></td></tr>
-        <tr><td>Your CSV:</td><td><textarea rows="4" cols="80" @bind="Csv"></textarea></td></tr>
-    <tr><td></td><td>
-    <input id="Button1" type="button" value="Go" @onclick="Parse" />
-    <label for="location">Optional Location:</label>
-    <input id="location" type="text" @bind="Location" />
-    <label for="timezone">Timezone</label>
-    <select id="timezone" @bind="TimeZone">
-        <option value="UTC-14:00">UTC-14:00</option>
-        <option value="UTC-13:00">UTC-13:00</option>
-        <option value="UTC-12:00">UTC-12:00</option>
-        <option value="UTC-11:00">UTC-11:00</option>
-        <option value="UTC-10:00">UTC-10:00</option>
-        <option value="UTC-09:00">UTC-09:00</option>
-        <option value="UTC-08:00">UTC-08:00</option>
-        <option value="UTC-07:00">UTC-07:00</option>
-        <option value="UTC-06:00">UTC-06:00</option>
-        <option value="UTC-05:00">UTC-05:00</option>
-        <option value="UTC-04:00">UTC-04:00</option>
-        <option value="UTC-03:00">UTC-03:00</option>
-        <option value="UTC-02:00">UTC-02:00</option>
-        <option value="UTC-01:00">UTC-01:00</option>
-        <option value="" selected />
-        <option value="UTC+00:00">UTC+00:00</option>
-        <option value="UTC+01:00">UTC+01:00</option>
-        <option value="UTC+02:00">UTC+02:00</option>
-        <option value="UTC+03:00">UTC+03:00</option>
-        <option value="UTC+04:00">UTC+04:00</option>
-        <option value="UTC+05:00">UTC+05:00</option>
-        <option value="UTC+06:00">UTC+06:00</option>
-        <option value="UTC+07:00">UTC+07:00</option>
-        <option value="UTC+08:00">UTC+08:00</option>
-        <option value="UTC+09:00">UTC+09:00</option>
-        <option value="UTC+10:00">UTC+10:00</option>
-        <option value="UTC+11:00">UTC+11:00</option>
-        <option value="UTC+12:00">UTC+12:00</option>
-    </select>
-</td></tr>
-        <tr><td>Details:</td><td><textarea rows="2" cols="80" @bind="Details"></textarea></td></tr>
+    <tr>
+        <td>Pick an example:</td>
+        <td>
+            <label for="example">Examples</label>
+            <select id="example" @bind="@SelectedExampleName">
+                @foreach (var example in Examples)
+                {
+                    <option value="@example.Name">@example.Name</option>
+                }
+            </select>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Your config:
+            <br/>
+            <br/>
+            <InputFile id="configFile" OnChange="OnConfigFileSelected"/>
+            @if (ConfigFile != null)
+            {
+                <br/>
+                <br/>
+                <button @onclick="LoadConfigFile">Load config file</button>
+            }
+        </td>
+        <td>
+            <textarea rows="8" cols="100" wrap="off" style="font-family: monospace;" @bind="Config"></textarea>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Your CSV:
+            <br/>
+            <br/>
+            <InputFile id="csvFile" OnChange="OnCsvFileSelected"/>
+            @if (CsvFile != null)
+            {
+                <br/>
+                <br/>
+                <button @onclick="LoadCsvFile">Load CSV file</button>
+            }
+        </td>
+        <td>
+            <textarea rows="4" cols="100" wrap="off" style="font-family: monospace;" @bind="Csv"></textarea>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td>
+            <input id="Button1" type="button" value="Go" @onclick="Parse"/>&nbsp;&nbsp;
+            <label for="location">Optional Location:</label>
+            <input id="location" type="text" @bind="Location"/>
+            <label for="timezone">Timezone</label>
+            <select id="timezone" @bind="TimeZone">
+                @foreach (var timeZone in TimeZones)
+                {
+                    <option value="@timeZone" selected="@string.IsNullOrWhiteSpace(timeZone)">@timeZone</option>
+                }
+            </select>
+        </td>
+    </tr>
+    <tr><td>Details:</td><td><textarea rows="2" cols="100" wrap="off" @bind="Details" readonly></textarea></td></tr>
     </tbody>
 </table>
 
@@ -498,22 +526,74 @@ else
 
 @code
 {
-    public string Config { get; set; } = @"Location = '@The Location'
-Time = '@The Time'
+    private List<string> TimeZones { get; } = BlazorTestDrive.TimeZones.AllTimeZones;
 
-[Reading]
-Value = '@The Temperature'
-ParameterId = 'TA'
-UnitId = 'degC'";
+    private List<Example> Examples { get; } = BlazorTestDrive.Examples.AllExamples;
 
-    public string Csv { get; set; } = @"The Location, The Time, The Temperature
-LOC1, 2020-Jun-12 12:35, 20.5
-LOC2, 1988-Feb-8 15:10, -3.5";
-    public string Details { get; set; }
-    public string Location { get; set; }
-    public string TimeZone { get; set; }
+    private string Config { get; set; } = BlazorTestDrive.Examples.AllExamples.First().ConfigText.Trim();
+    private string Csv { get; set; } = BlazorTestDrive.Examples.AllExamples.First().CsvText.Trim();
 
-    public Results Results { get; set; }
+    private string Details { get; set; }
+    private string Location { get; set; }
+    private string TimeZone { get; set; }
+
+    private Results Results { get; set; }
+
+    private IFileListEntry ConfigFile { get; set; }
+    private IFileListEntry CsvFile { get; set; }
+
+    private void OnConfigFileSelected(IFileListEntry[] files)
+    {
+        ConfigFile = files.FirstOrDefault();
+    }
+
+    private void OnCsvFileSelected(IFileListEntry[] files)
+    {
+        CsvFile = files.FirstOrDefault();
+    }
+
+    private async Task LoadConfigFile()
+    {
+        var file = ConfigFile;
+        ConfigFile = null;
+        
+        Config = await LoadFileAsText(file);
+    }
+
+    private async Task LoadCsvFile()
+    {
+        var file = CsvFile;
+        CsvFile = null;
+        
+        Csv = await LoadFileAsText(file);
+    }
+
+    private async Task<string> LoadFileAsText(IFileListEntry file)
+    {
+        using (var reader = new StreamReader(file.Data))
+        {
+            return await reader.ReadToEndAsync();
+        }
+    }
+
+    private string _selectedExampleName;
+
+    private string SelectedExampleName
+    {
+        get => _selectedExampleName;
+        set
+        {
+            _selectedExampleName = value;
+
+            var example = Examples.First(e => e.Name == _selectedExampleName);
+
+            if (example != null)
+            {
+                Config = example.ConfigText.Trim();
+                Csv = example.CsvText.Trim();
+            }
+        }
+    }
 
     private void Parse(MouseEventArgs e)
     {
