@@ -36,12 +36,6 @@
             <br/>
             <br/>
             <InputFile id="configFile" OnChange="OnConfigFileSelected"/>
-            @if (ConfigFile != null)
-            {
-                <br/>
-                <br/>
-                <button @onclick="LoadConfigFile">Load config file</button>
-            }
         </td>
         <td>
             <textarea rows="8" cols="100" wrap="off" style="font-family: monospace;" @bind="Config"></textarea>
@@ -53,12 +47,6 @@
             <br/>
             <br/>
             <InputFile id="csvFile" OnChange="OnCsvFileSelected"/>
-            @if (CsvFile != null)
-            {
-                <br/>
-                <br/>
-                <button @onclick="LoadCsvFile">Load CSV file</button>
-            }
         </td>
         <td>
             <textarea rows="4" cols="100" wrap="off" style="font-family: monospace;" @bind="Csv"></textarea>
@@ -67,7 +55,7 @@
     <tr>
         <td></td>
         <td>
-            <input id="Button1" type="button" value="Go" @onclick="Parse"/>&nbsp;&nbsp;
+            <input id="Button1" type="button" value="Try it!" @onclick="Parse"/>&nbsp;&nbsp;
             <label for="location">Optional Location:</label>
             <input id="location" type="text" @bind="Location"/>
             <label for="timezone">Timezone</label>
@@ -542,14 +530,18 @@ else
     private IFileListEntry ConfigFile { get; set; }
     private IFileListEntry CsvFile { get; set; }
 
-    private void OnConfigFileSelected(IFileListEntry[] files)
+    private async Task OnConfigFileSelected(IFileListEntry[] files)
     {
         ConfigFile = files.FirstOrDefault();
+
+        await LoadConfigFile();
     }
 
-    private void OnCsvFileSelected(IFileListEntry[] files)
+    private async Task OnCsvFileSelected(IFileListEntry[] files)
     {
         CsvFile = files.FirstOrDefault();
+
+        await LoadCsvFile();
     }
 
     private async Task LoadConfigFile()
