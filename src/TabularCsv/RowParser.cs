@@ -103,7 +103,7 @@ namespace TabularCsv
         public bool IsPrefaceValid()
         {
             if (!string.IsNullOrEmpty(Configuration.PrefaceMustContain) &&
-                MultilinePreface.IndexOf(Configuration.PrefaceMustContain, StringComparison.InvariantCultureIgnoreCase) < 0)
+                MultilinePreface.IndexOf(Configuration.PrefaceMustContain, StringComparison.CurrentCultureIgnoreCase) < 0)
                 return false;
 
             if (Configuration.PrefaceMustMatchRegex != null &&
@@ -354,7 +354,7 @@ namespace TabularCsv
 
                 if (string.IsNullOrWhiteSpace(value)) continue;
 
-                if (lines.Any(l => l.IndexOf(value, StringComparison.InvariantCultureIgnoreCase) >= 0)) continue;
+                if (lines.Any(l => l.IndexOf(value, StringComparison.CurrentCultureIgnoreCase) >= 0)) continue;
 
                 lines.Add(value);
             }
@@ -523,14 +523,15 @@ namespace TabularCsv
 
         private Reading ParseReading(FieldVisitInfo visitInfo, ReadingDefinition definition)
         {
-            var readingValue = GetNullableDouble(definition.Value);
+            var parameterId = GetString(definition.ParameterId);
 
-            if (!readingValue.HasValue)
+            if (string.IsNullOrEmpty(parameterId))
                 return null;
 
             var reading = new Reading(
                 GetString(definition.ParameterId),
-                new Measurement(readingValue.Value, GetString(definition.UnitId)))
+                GetString(definition.UnitId),
+                GetNullableDouble(definition.Value))
             {
                 DateTimeOffset = ParseActivityTime(visitInfo, definition),
                 Comments = MergeCommentText(definition),
@@ -955,8 +956,7 @@ namespace TabularCsv
 
         private MeterCalibrationEquation ParseMeterCalibrationEquation(MeterCalibrationEquationDefinition definition)
         {
-            var slope = GetNullableDouble(definition.Slope)
-                        ?? GetNullableDouble(definition);
+            var slope = GetNullableDouble(definition.Slope);
 
             if (!slope.HasValue)
                 return null;

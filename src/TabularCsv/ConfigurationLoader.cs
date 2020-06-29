@@ -43,12 +43,32 @@ namespace TabularCsv
                     configuration.Visit = new VisitDefinition();
                 }
 
+                configuration.Aliases = CreateCaseInsensitiveAliases(configuration.Aliases);
+
                 return configuration;
             }
             catch (ParseException exception)
             {
                 throw new ConfigurationException($"Invalid configuration: {configurationName}: {exception.Message}");
             }
+        }
+
+        private Dictionary<string, Dictionary<string, string>> CreateCaseInsensitiveAliases(
+            Dictionary<string, Dictionary<string, string>> aliases)
+        {
+            if (aliases == null)
+                return new Dictionary<string, Dictionary<string, string>>(StringComparer.CurrentCultureIgnoreCase);
+
+            return aliases
+                .ToDictionary(
+                    kvp => kvp.Key,
+                    kvp => kvp
+                        .Value
+                        .ToDictionary(
+                            inner => inner.Key,
+                            inner => inner.Value,
+                            StringComparer.CurrentCultureIgnoreCase),
+                    StringComparer.CurrentCultureIgnoreCase);
         }
 
         private TomlSettings CreateTomlSettings()
