@@ -100,7 +100,7 @@ namespace TabularCsv
                     .Select(field =>
                     {
                         var indexes = headerFields
-                            .Select((headerField,index) => headerField.Equals(field, StringComparison.InvariantCultureIgnoreCase) ? index + 1 : 0)
+                            .Select((headerField,index) => headerField.Equals(field, StringComparison.CurrentCultureIgnoreCase) ? index + 1 : 0)
                             .Where(index => index > 0)
                             .ToList();
 
@@ -128,7 +128,7 @@ namespace TabularCsv
                 .ToDictionary(
                     tuple => tuple.HeaderValue,
                     tuple => tuple.HeaderIndex,
-                    StringComparer.InvariantCultureIgnoreCase);
+                    StringComparer.CurrentCultureIgnoreCase);
         }
 
         private static bool FieldMatchesColumn(string field, ColumnDefinition column)
@@ -136,7 +136,7 @@ namespace TabularCsv
             if (field == null || column?.ColumnHeader == null)
                 return false;
 
-            return field.Equals(column.ColumnHeader, StringComparison.InvariantCultureIgnoreCase);
+            return field.Equals(column.ColumnHeader, StringComparison.CurrentCultureIgnoreCase);
         }
     }
 }

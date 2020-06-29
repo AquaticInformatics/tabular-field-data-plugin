@@ -32,7 +32,7 @@ namespace TabularCsv
             if (string.IsNullOrWhiteSpace(line))
                 return false;
 
-            if (!string.IsNullOrEmpty(Configuration.PrefaceEndsBefore) && line.StartsWith(Configuration.PrefaceEndsBefore, StringComparison.InvariantCultureIgnoreCase))
+            if (!string.IsNullOrEmpty(Configuration.PrefaceEndsBefore) && line.StartsWith(Configuration.PrefaceEndsBefore, StringComparison.CurrentCultureIgnoreCase))
                 return true;
 
             if (ExpectedColumnHeaders.Any())
@@ -49,7 +49,7 @@ namespace TabularCsv
 
         public bool IsLastPrefaceLine(string line)
         {
-            return !string.IsNullOrEmpty(Configuration.PrefaceEndsWith) && line.StartsWith(Configuration.PrefaceEndsWith, StringComparison.InvariantCultureIgnoreCase);
+            return !string.IsNullOrEmpty(Configuration.PrefaceEndsWith) && line.StartsWith(Configuration.PrefaceEndsWith, StringComparison.CurrentCultureIgnoreCase);
         }
     }
 }
