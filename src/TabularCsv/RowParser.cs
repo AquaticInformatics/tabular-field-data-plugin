@@ -528,22 +528,28 @@ namespace TabularCsv
             if (string.IsNullOrEmpty(parameterId))
                 return null;
 
-            var reading = new Reading(
-                GetString(definition.ParameterId),
-                GetString(definition.UnitId),
-                GetNullableDouble(definition.Value))
-            {
-                DateTimeOffset = ParseActivityTime(visitInfo, definition),
-                Comments = MergeCommentText(definition),
-                ReferencePointName = GetString(definition.ReferencePointName),
-                SubLocation = GetString(definition.SubLocation),
-                SensorUniqueId = GetNullableGuid(definition.SensorUniqueId),
-                Uncertainty = GetNullableDouble(definition.Uncertainty),
-                MeasurementDevice = ParseMeasurementDevice(
-                    definition.MeasurementDeviceManufacturer,
-                    definition.MeasurementDeviceModel,
-                    definition.MeasurementDeviceSerialNumber)
-            };
+            var readingValue = GetNullableDouble(definition.Value);
+            var readingUnitId = GetString(definition.UnitId);
+
+            var reading = readingValue.HasValue
+                ? new Reading(
+                    GetString(definition.ParameterId),
+                    new Measurement(readingValue.Value, readingUnitId))
+                : new Reading(
+                    GetString(definition.ParameterId),
+                    readingUnitId,
+                    null);
+
+            reading.DateTimeOffset = ParseActivityTime(visitInfo, definition);
+            reading.Comments = MergeCommentText(definition);
+            reading.ReferencePointName = GetString(definition.ReferencePointName);
+            reading.SubLocation = GetString(definition.SubLocation);
+            reading.SensorUniqueId = GetNullableGuid(definition.SensorUniqueId);
+            reading.Uncertainty = GetNullableDouble(definition.Uncertainty);
+            reading.MeasurementDevice = ParseMeasurementDevice(
+                definition.MeasurementDeviceManufacturer,
+                definition.MeasurementDeviceModel,
+                definition.MeasurementDeviceSerialNumber);
 
             var readingType = GetNullableEnum<ReadingType>(definition.ReadingType);
 
