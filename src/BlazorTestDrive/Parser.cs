@@ -27,15 +27,19 @@ namespace BlazorTestDrive
         {
             var plugin = LoadTabularPlugin();
 
-            var appender = new FakeAppender();
+            var appender = new FakeAppender
+            {
+                Settings = new Dictionary<string, string>(StringComparer.InvariantCultureIgnoreCase)
+                {
+                    {"TestDriveTomlConfig", config},
+                }
+            };
 
             if (TryParseTimeSpan(timeZone, out var utcOffset))
                 appender.UtcOffset = utcOffset;
 
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv)))
             {
-                WriteTemporaryConfigFile(config);
-
                 locationIdentifier = locationIdentifier?.Trim();
 
                 var result = string.IsNullOrEmpty(locationIdentifier)
@@ -57,21 +61,6 @@ namespace BlazorTestDrive
 
                 return (Logger.Builder.ToString(), results);
             }
-        }
-
-        private void WriteTemporaryConfigFile(string configToml)
-        {
-            var path = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                @"Aquatic Informatics\AQUARIUS Server\Configuration\TabularCSV",
-                "config.toml");
-
-            var fileInfo = new FileInfo(path);
-
-            // ReSharper disable once AssignNullToNotNullAttribute
-            Directory.CreateDirectory(fileInfo.DirectoryName);
-
-            File.WriteAllText(path, configToml);
         }
 
         private IFieldDataPlugin LoadTabularPlugin()
@@ -164,6 +153,7 @@ namespace BlazorTestDrive
 
         public LocationInfo ForcedLocationInfo { get; set; }
         public TimeSpan UtcOffset { get; set; }
+        public Dictionary<string, string> Settings { get; set; }
 
         public AppendedResults AppendedResults { get; } = new AppendedResults
         {
@@ -193,6 +183,11 @@ namespace BlazorTestDrive
             var locationInfo = KnownLocations.SingleOrDefault(l => Guid.Parse(l.UniqueId) == uniqueId);
 
             return locationInfo ?? CreateDummyLocationInfoByUniqueId(uniqueId);
+        }
+
+        public Dictionary<string, string> GetPluginConfigurations()
+        {
+            return Settings;
         }
 
         public FieldVisitInfo AddFieldVisit(LocationInfo location, FieldVisitDetails fieldVisitDetails)
