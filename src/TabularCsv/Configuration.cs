@@ -293,6 +293,7 @@ namespace TabularCsv
         public PropertyDefinition VelocityAverageValue { get; set; }
         public PropertyDefinition VelocityObservationMethod { get; set; }
         public PropertyDefinition DeploymentMethod { get; set; }
+        public PropertyDefinition NumberOfVerticals { get; set; }
         public PropertyDefinition MeterSuspension { get; set; }
         public PropertyDefinition MeterCalibrationManufacturer { get; set; }
         public PropertyDefinition MeterCalibrationModel { get; set; }
