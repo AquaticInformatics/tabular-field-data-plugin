@@ -274,23 +274,9 @@ namespace TabularCsv
             fieldVisit.Calibrations.Add(calibration);
         }
 
-        public Dictionary<string, string> GetPluginConfigurations(
-            string fallbackDirectory,
-            string fallbackFilePattern)
+        public Dictionary<string, string> GetPluginConfigurations()
         {
-            var appenderMethod = ActualAppender
-                .GetType()
-                .GetMethod("GetPluginConfigurations", BindingFlags.Instance | BindingFlags.Public);
-
-            if (appenderMethod != null && appenderMethod.Invoke(ActualAppender, new object[0]) is Dictionary<string, string> configurations)
-                return configurations;
-
-            return Directory.Exists(fallbackDirectory)
-                ? Directory
-                    .GetFiles(fallbackDirectory, fallbackFilePattern)
-                    .ToDictionary(Path.GetFileNameWithoutExtension, File.ReadAllText)
-                : new Dictionary<string, string>();
+            return ActualAppender.GetPluginConfigurations();
         }
-
     }
 }

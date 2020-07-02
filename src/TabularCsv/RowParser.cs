@@ -876,6 +876,7 @@ namespace TabularCsv
                 AreaValue = GetNullableDouble(definition.AreaValue),
                 VelocityAverageValue = GetNullableDouble(definition.VelocityAverageValue),
                 MeterCalibration = ParseMeterCalibration(definition),
+                NumberOfVerticals = GetNullableInteger(definition.NumberOfVerticals),
             };
 
             var dischargeMethod = GetNullableEnum<DischargeMethodType>(definition.DischargeMethod);
@@ -979,6 +980,7 @@ namespace TabularCsv
 
             var dischargeActivity = new DischargeActivity(dischargeInterval, discharge)
             {
+                MeasurementTime = ParseNullableDateTimeOffset(visitInfo.LocationInfo, definition.AllTimes),
                 MeasurementId = GetString(definition.MeasurementId),
                 Comments = MergeCommentText(definition),
                 Party = GetString(definition.Party),

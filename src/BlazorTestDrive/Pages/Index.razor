@@ -332,25 +332,26 @@ else
     {
         <table class="RTable">
             <thead>
-            <tr>
-                <th>Identifier</th>
-                <th>MeasurementId</th>
-                <th>StartTime</th>
-                <th>EndTime</th>
-                <th>Total Discharge</th>
-                <th>Adjustment</th>
-                <th>Mean Index Velocity</th>
-                <th>Party</th>
-                <th>Comments</th>
-                <th>Grade</th>
-                <th>Quality Assurance</th>
-                <th>Show in DCT?</th>
-                <th>Show in RDT?</th>
-                <th>Prevent Auto Publish?</th>
-                <th>Mean Gage Height Difference During Visit</th>
-                <th>Manually Calculated Mean Gage Height</th>
-                <th>Gage Height Measurements</th>
-            </tr>
+                <tr>
+                    <th>Identifier</th>
+                    <th>MeasurementId</th>
+                    <th>StartTime</th>
+                    <th>EndTime</th>
+                    <th>MeasurementTime</th>
+                    <th>Total Discharge</th>
+                    <th>Adjustment</th>
+                    <th>Mean Index Velocity</th>
+                    <th>Party</th>
+                    <th>Comments</th>
+                    <th>Grade</th>
+                    <th>Quality Assurance</th>
+                    <th>Show in DCT?</th>
+                    <th>Show in RDT?</th>
+                    <th>Prevent Auto Publish?</th>
+                    <th>Mean Gage Height Difference During Visit</th>
+                    <th>Manually Calculated Mean Gage Height</th>
+                    <th>Gage Height Measurements</th>
+                </tr>
             </thead>
             <tbody>
             @foreach (var item in Results.Discharges)
@@ -360,6 +361,7 @@ else
                     <td>@item.Item.MeasurementId</td>
                     <td>@item.Item.MeasurementStartTime</td>
                     <td>@item.Item.MeasurementEndTime</td>
+                    <td>@item.Item.MeasurementTime</td>
                     <td>@Measurement(item.Item.Discharge)</td>
                     <td>@AdjustmentSummary(item.Item)</td>
                     <td>@Measurement(item.Item.MeanIndexVelocity)</td>
@@ -403,24 +405,25 @@ else
                         <td>
                             <table class="RTable">
                                 <thead>
-                                <tr>
-                                    <th>Section Type</th>
-                                    <th>Channel Name</th>
-                                    <th>Section Discharge</th>
-                                    <th>Width</th>
-                                    <th>Area</th>
-                                    <th>Velocity Average</th>
-                                    <th>Discharge Method</th>
-                                    <th>Deployment Method</th>
-                                    <th>Start Point</th>
-                                    <th>Meter Suspension</th>
-                                    <th>Velocity Observation Method</th>
-                                    <th>Meter Calibration</th>
-                                </tr>
+                                    <tr>
+                                        <th>Section Type</th>
+                                        <th>Channel Name</th>
+                                        <th>Section Discharge</th>
+                                        <th>Width</th>
+                                        <th>Area</th>
+                                        <th>Velocity Average</th>
+                                        <th>Discharge Method</th>
+                                        <th>Deployment Method</th>
+                                        <th>Start Point</th>
+                                        <th>Meter Suspension</th>
+                                        <th>Velocity Observation Method</th>
+                                        <th>Number of Verticals</th>
+                                        <th>Meter Calibration</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                @foreach (var panel in PanelSections(item.Item.ChannelMeasurements))
-                                {
+                                    @foreach (var panel in PanelSections(item.Item.ChannelMeasurements))
+                                    {
                                     <tr>
                                         <td>Panel</td>
                                         <td>@panel.ChannelName</td>
@@ -433,9 +436,10 @@ else
                                         <td>@panel.StartPoint</td>
                                         <td>@panel.MeterSuspension</td>
                                         <td>@panel.VelocityObservationMethod</td>
+                                        <td>@panel.NumberOfVerticals</td>
                                         <td>@MeterCalibration(panel.MeterCalibration)</td>
                                     </tr>
-                                }
+                                    }
                                 </tbody>
                             </table>
                         </td>
@@ -473,34 +477,34 @@ else
                                     </tr>
                                 </thead>
                                 <tbody>
-                                @foreach (var adcp in AdcpSections(item.Item.ChannelMeasurements))
-                                {
-                                    <tr>
-                                        <td>ADCP</td>
-                                        <td>@adcp.ChannelName</td>
-                                        <td>@Measurement(adcp.Discharge)</td>
-                                        <td>@Measurement(adcp.Width)</td>
-                                        <td>@Measurement(adcp.Area)</td>
-                                        <td>@Measurement(adcp.VelocityAverage)</td>
-                                        <td>@adcp.AdcpDeviceType</td>
-                                        <td>@adcp.DeploymentMethod</td>
-                                        <td>@adcp.NumberOfTransects</td>
-                                        <td>@adcp.MagneticVariation</td>
-                                        <td>@adcp.DischargeCoefficientVariation</td>
-                                        <td>@adcp.PercentOfDischargeMeasured</td>
-                                        <td>@adcp.TransducerDepth</td>
-                                        <td>@adcp.TopEstimateExponent</td>
-                                        <td>@adcp.TopEstimateMethod?.IdOrDisplayName</td>
-                                        <td>@adcp.BottomEstimateExponent</td>
-                                        <td>@adcp.BottomEstimateMethod?.IdOrDisplayName</td>
-                                        <td>@adcp.NavigationMethod?.IdOrDisplayName</td>
-                                        <td>@adcp.DepthReference</td>
-                                        <td>@adcp.MeterSuspension</td>
-                                        <td>@adcp.SoftwareVersion</td>
-                                        <td>@adcp.FirmwareVersion</td>
-                                        <td>@MeasurementDevice(adcp.MeasurementDevice)</td>
-                                    </tr>
-                                }
+                                    @foreach (var adcp in AdcpSections(item.Item.ChannelMeasurements))
+                                    {
+                                        <tr>
+                                            <td>ADCP</td>
+                                            <td>@adcp.ChannelName</td>
+                                            <td>@Measurement(adcp.Discharge)</td>
+                                            <td>@Measurement(adcp.Width)</td>
+                                            <td>@Measurement(adcp.Area)</td>
+                                            <td>@Measurement(adcp.VelocityAverage)</td>
+                                            <td>@adcp.AdcpDeviceType</td>
+                                            <td>@adcp.DeploymentMethod</td>
+                                            <td>@adcp.NumberOfTransects</td>
+                                            <td>@adcp.MagneticVariation</td>
+                                            <td>@adcp.DischargeCoefficientVariation</td>
+                                            <td>@adcp.PercentOfDischargeMeasured</td>
+                                            <td>@adcp.TransducerDepth</td>
+                                            <td>@adcp.TopEstimateExponent</td>
+                                            <td>@adcp.TopEstimateMethod?.IdOrDisplayName</td>
+                                            <td>@adcp.BottomEstimateExponent</td>
+                                            <td>@adcp.BottomEstimateMethod?.IdOrDisplayName</td>
+                                            <td>@adcp.NavigationMethod?.IdOrDisplayName</td>
+                                            <td>@adcp.DepthReference</td>
+                                            <td>@adcp.MeterSuspension</td>
+                                            <td>@adcp.SoftwareVersion</td>
+                                            <td>@adcp.FirmwareVersion</td>
+                                            <td>@MeasurementDevice(adcp.MeasurementDevice)</td>
+                                        </tr>
+                                    }
                                 </tbody>
                             </table>
                         </td>
