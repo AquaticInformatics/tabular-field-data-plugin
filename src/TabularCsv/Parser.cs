@@ -244,10 +244,7 @@ namespace TabularCsv
 
         private List<Configuration> LoadConfigurations()
         {
-            var pluginConfigurations = ResultsAppender
-                .GetPluginConfigurations(
-                    GetConfigurationDirectory().FullName,
-                    "*.toml");
+            var pluginConfigurations = ResultsAppender.GetPluginConfigurations();
 
             if (!pluginConfigurations.Any())
             {
@@ -290,13 +287,6 @@ namespace TabularCsv
             }
 
             return configurations;
-        }
-
-        private DirectoryInfo GetConfigurationDirectory()
-        {
-            return new DirectoryInfo(Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                @"Aquatic Informatics\AQUARIUS Server\Configuration\TabularCSV"));
         }
     }
 }
