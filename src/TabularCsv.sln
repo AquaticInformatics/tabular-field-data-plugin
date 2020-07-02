@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabularCsv", "TabularCsv\Ta
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RepoRoot", "RepoRoot", "{0F6C334C-A230-4E2B-B4AD-45CE725D6B16}"
 	ProjectSection(SolutionItems) = preProject
-		..\appveyor.yml = ..\appveyor.yml
+		..\appveyor_release194.yml = ..\appveyor_release194.yml
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
