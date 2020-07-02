@@ -1,6 +1,6 @@
 # Tabular CSV Field Data Plugin
 
-[![Build status](https://ci.appveyor.com/api/projects/status/rkpwslh6kmrt9pyr/branch/master?svg=true)](https://ci.appveyor.com/project/SystemsAdministrator/tabular-field-data-plugin/branch/master)
+[![Build status](https://ci.appveyor.com/api/projects/status/42akj6f65usc4khl/branch/release/2019.4?svg=true)](https://ci.appveyor.com/project/SystemsAdministrator/tabular-field-data-plugin-v194/branch/release/2019.4)
 
 An AQTS field data plugin for AQTS 2019.4-or-newer systems, which can read many CSV files of different shapes.
 
