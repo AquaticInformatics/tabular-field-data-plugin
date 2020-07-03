@@ -6,6 +6,7 @@
     <LangVersion>7.3</LangVersion>
     <RazorLangVersion>3.0</RazorLangVersion>
     <BlazorLinkOnBuild>false</BlazorLinkOnBuild>
+    <BlazorWebAssemblyI18NAssemblies>west</BlazorWebAssemblyI18NAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
