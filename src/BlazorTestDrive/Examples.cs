@@ -19,8 +19,43 @@ ParameterId = 'TA'
 UnitId = 'degC'",
                 CsvText = @"
 The Location, The Time, The Temperature
-LOC1, 2020-Jun-12 12:35, 20.5
-LOC2, 1988-Feb-8 15:10, -3.5"
+LOC1, 2020-Jan-12 12:35, 20.5
+LOC2, 1988-Aug-8 15:10, -3.5"
+            },
+            new Example
+            {
+                Name = "Parse French dates",
+                ConfigText = @"
+LocaleName = 'fr-FR' # Use the French locale
+Location = '@Le Site'
+Time = '@La Date'
+
+[Reading]
+Value = '@La Température'
+ParameterId = 'TA'
+UnitId = 'degC'",
+                CsvText = @"
+Le Site, La Date, La Température
+LOC1, 2020-Janvier-12 12:35, 20.5
+LOC2, 1988-Août-8 15:10, -3.5",
+            },
+            new Example
+            {
+                Name = "Parse Spanish dates and numbers",
+                ConfigText = @"
+LocaleName = 'es-ES' # Use the Spanish locale to parse dates and numbers
+Location = '@Sitio'
+Time = '@Fecha'
+Separator =';' # Since the comma is used a decimal point
+
+[Reading]
+Value = '@Temperatura'
+ParameterId = 'TA'
+UnitId = 'degC'",
+                CsvText = @"
+Sitio; Fecha; Temperatura
+LOC1; 2020-Ene.-12 12:35; 20,5
+LOC2; 1988-Ago.-8 15:10; -3,5",
             },
             new Example
             {
