@@ -8,6 +8,7 @@ namespace BlazorTestDrive
         {
             new Example
             {
+                Id = "AirTemperature",
                 Name = "Air Temperature readings",
                 ConfigText = @"
 Location = '@The Location'
@@ -24,6 +25,7 @@ LOC2, 1988-Aug-8 15:10, -3.5"
             },
             new Example
             {
+                Id = "French",
                 Name = "Parse French dates and numbers",
                 ConfigText = @"
 LocaleName = 'fr-FR' # Use the French locale
@@ -42,6 +44,7 @@ LOC2; 1988-Août-9 15:10; -4,5",
             },
             new Example
             {
+                Id = "Spanish",
                 Name = "Parse Spanish dates and numbers",
                 ConfigText = @"
 LocaleName = 'es-ES' # Use the Spanish locale to parse dates and numbers
@@ -60,6 +63,7 @@ LOC2; 1988-Ago.-8 15:10; -3,5",
             },
             new Example
             {
+                Id = "ReadingsWithGrades",
                 Name = "Readings with grades and qualifiers",
                 ConfigText = @"
 Location = '@Location'
@@ -85,6 +89,7 @@ LOC3, 2020-04-01 23:42, DepthToWater, 0.5, m, Routine, Pipe 1, GOOD"
             },
             new Example
             {
+                Id = "ReadingsWithDatumConversion",
                 Name = "Readings with datum conversion",
                 ConfigText = @"
 Location = '@Location'
@@ -107,6 +112,7 @@ LOC3, 2020-04-01 23:42, DepthToWater, 0.5, m, Routine, Pipe 1, From ground surfa
             },
             new Example
             {
+                Id = "StageDischargeReadingsFormat",
                 Name = "The StageDischargeReadings plugin format",
                 ConfigText = @"
 # A Tabular CSV configuration that exactly matches the older StageDischargeReadings format
@@ -173,6 +179,7 @@ LocationA         , 46793        , 2016-04-03T04:00:00.0000000Z,      2016-04-03
             },
             new Example
             {
+                Id = "Aliases",
                 Name = "Use {Aliases} to transform your data",
                 ConfigText = @"
 # Append the {aliasName} pattern to the end of a short form string
@@ -198,6 +205,7 @@ Loc2, 2020-Apr-1, 32, °F",
             },
             new Example
             {
+                Id = "Survey123Example",
                 Name = "Read exports from a Survey123 form",
                 ConfigText = @"
 Location = '@Please type in the site name:{Locations}'
@@ -259,6 +267,7 @@ ObjectID,GlobalID,ESPA Monitoring Survey for:,Please type in the site name:,Visi
 
     public class Example
     {
+        public string Id { get; set; }
         public string Name { get; set; }
         public string ConfigText { get; set; }
         public string CsvText { get; set; }

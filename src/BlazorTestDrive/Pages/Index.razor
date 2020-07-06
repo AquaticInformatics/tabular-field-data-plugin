@@ -1,4 +1,5 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
 
 @using FieldDataPluginFramework.DataModel
 @using FieldDataPluginFramework.DataModel.Calibrations
@@ -22,10 +23,10 @@
         <td>Pick an example:</td>
         <td>
             <label for="example">Examples</label>
-            <select id="example" @bind="@SelectedExampleName">
+            <select id="example" @bind="@SelectedExampleId">
                 @foreach (var example in Examples)
                 {
-                    <option value="@example.Name">@example.Name</option>
+                    <option value="@example.Id">@example.Name</option>
                 }
             </select>
         </td>
@@ -552,7 +553,7 @@ else
     {
         var file = ConfigFile;
         ConfigFile = null;
-        
+
         Config = await LoadFileAsText(file);
     }
 
@@ -560,7 +561,7 @@ else
     {
         var file = CsvFile;
         CsvFile = null;
-        
+
         Csv = await LoadFileAsText(file);
     }
 
@@ -572,16 +573,16 @@ else
         }
     }
 
-    private string _selectedExampleName;
+    private string _selectedExampleId;
 
-    private string SelectedExampleName
+    private string SelectedExampleId
     {
-        get => _selectedExampleName;
+        get => _selectedExampleId;
         set
         {
-            _selectedExampleName = value;
+            _selectedExampleId = value;
 
-            var example = Examples.First(e => e.Name == _selectedExampleName);
+            var example = FindExampleById(_selectedExampleId);
 
             if (example != null)
             {
@@ -589,6 +590,35 @@ else
                 Csv = example.CsvText.Trim();
             }
         }
+    }
+
+    private Example FindExampleById(string id)
+    {
+        return Examples
+            .FirstOrDefault(e => e.Id.Equals(id, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var parameters = QueryHelpers.ParseQuery(uri.Query);
+
+        if (parameters.TryGetValue("example", out var values))
+        {
+            var value = values.LastOrDefault();
+
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                var example = FindExampleById(value);
+
+                if (example != null && example.Id != SelectedExampleId)
+                {
+                    SelectedExampleId = example.Id;
+                }
+            }
+        }
+
+        base.OnInitialized();
     }
 
     private void Parse(MouseEventArgs e)
