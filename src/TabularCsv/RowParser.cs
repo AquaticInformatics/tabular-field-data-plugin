@@ -398,6 +398,8 @@ namespace TabularCsv
             return dateTimeOffset.Value;
         }
 
+        private const IFormatProvider CurrentThreadCulture = null;
+
         private DateTimeOffset? ParseNullableDateTimeOffset(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns)
         {
             if (!timestampColumns.Any())
@@ -409,7 +411,6 @@ namespace TabularCsv
             {
                 var timeText = GetString(timestampColumn);
 
-                const IFormatProvider currentThreadCulture = null;
                 const DateTimeStyles styles = DateTimeStyles.AllowWhiteSpaces;
 
                 var formats = timestampColumn.Formats;
@@ -417,12 +418,12 @@ namespace TabularCsv
 
                 if (formats == null || !formats.Any())
                 {
-                    if (!DateTimeOffset.TryParse(timeText, currentThreadCulture, styles, out value))
+                    if (!DateTimeOffset.TryParse(timeText, CurrentThreadCulture, styles, out value))
                         throw new Exception($"Line {LineNumber}: '{timeText}' can't be parsed as a timestamp using the default format.");
                 }
                 else
                 {
-                    if (!DateTimeOffset.TryParseExact(timeText, timestampColumn.Formats, currentThreadCulture, styles, out value))
+                    if (!DateTimeOffset.TryParseExact(timeText, timestampColumn.Formats, CurrentThreadCulture, styles, out value))
                         throw new Exception($"Line {LineNumber}: '{timeText}' can't be parsed as a timestamp using the '{string.Join(", ", formats)}' {"format".ToQuantity(formats.Length, ShowQuantityAs.None)}.");
                 }
 
@@ -1173,7 +1174,7 @@ namespace TabularCsv
             if (string.IsNullOrWhiteSpace(valueText))
                 return null;
 
-            if (int.TryParse(valueText, out var value))
+            if (int.TryParse(valueText, NumberStyles.Any, CurrentThreadCulture, out var value))
                 return value;
 
             throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{valueText}' is an invalid integer.");
@@ -1186,7 +1187,7 @@ namespace TabularCsv
             if (string.IsNullOrWhiteSpace(valueText))
                 return null;
 
-            if (double.TryParse(valueText, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+            if (double.TryParse(valueText, NumberStyles.Any, CurrentThreadCulture, out var value))
                 return value;
 
             throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{valueText}' is an invalid number.");
