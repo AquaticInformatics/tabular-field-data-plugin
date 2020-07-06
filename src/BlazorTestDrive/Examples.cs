@@ -195,6 +195,64 @@ Location, Time, Value, Unit
 Loc1, 2020-Apr-1, 0, °C
 Loc2, 2020-Apr-1, 32, °F",
             },
+            new Example
+            {
+                Name = "Read exports from a Survey123 form",
+                ConfigText = @"
+Location = '@Please type in the site name:{Locations}'
+
+[Visit]
+Comment = '@Comments:'
+Time = '@Visit Time: | Time Only | H:m'
+MergeWithComment = '@Maintenance Issues:'
+
+[[Visit.Times]]
+ColumnHeader = 'Visit Date:'
+Type = 'DateAndSurvey123Offset'
+Format = 'M/d/yyyy h:m:s tt'
+
+[[Readings]]
+ParameterId = 'HG'
+UnitId = 'ft'
+Value = '@Staff Gage Reading 1 (ft):'
+MergeWithComment = '#1 Staff Gage'
+
+[[Readings]]
+ParameterId = 'HG'
+UnitId = 'ft'
+Value = '@Staff Gage Reading 2 (ft):'
+MergeWithComment = '#2 Staff Gage'
+
+[[Readings]]
+ParameterId = 'QR'
+UnitId = 'ft^3/s'
+Value = '@Flow Meter Reading 1 (cfs):'
+MergeWithComment = '#1 Flow Meter'
+
+[[Readings]]
+ParameterId = 'QR'
+UnitId = 'ft^3/s'
+Value = '@Flow Meter Reading 2 (cfs):'
+MergeWithComment = '#2 Flow Meter'
+
+[[Readings]]
+ParameterId = 'QR'
+UnitId = 'ft^3/s'
+Value = '@Discharge Measured in CFS'
+MergeWithComment = 'Measured discharge'
+
+[Aliases.Locations]
+'Aberdeen_Waste' = 'Aberdeen Waste'
+'SNK_RVR_ID' = 'SNK RVR ID'
+'Sterling_Waste' = 'Sterling Waste'
+",
+                CsvText = @"
+ObjectID,GlobalID,ESPA Monitoring Survey for:,Please type in the site name:,Visit Date:,Examiner:,Visit Time:,Station Date:,Station Time:,FIELD OBSERVATIONS,Type of Measurement:,Staff Gage Reading 1 (ft):,Logger Staff Reading 1 (ft):,Staff Gage Reading 2 (ft):,Logger Staff Reading 2 (ft):,Flow Meter Reading 1 (cfs):,Logger Meter Reading 1 (cfs):,Flow Meter Reading 2 (cfs):,Logger Meter Reading 2 (cfs):,Battery Voltage (V):,Internal Battery Voltage (V):,Discharge Measured?,Discharge Measured in CFS,Comments:,Maintenance Issues:,Do you need to follow up?,CreationDate,Creator,EditDate,Editor,x,y
+1,881135cc-bc16-4f24-b2e3-5684b9e5952b,Pristine Springs,City of Twin,4/11/2019 6:00:00 AM,Michelle_Richman,07:17,4/11/2019 6:00:00 AM,07:17,,FlowMeter,,,,,0,0,0,0,13.3,3.36,No,,pumps were on the off cycle,,no,4/11/2019 1:22:44 PM,tsanabria_IDWR,4/11/2019 1:22:44 PM,tsanabria_IDWR,-114.477417,42.6029380003
+2,44b2c672-eaa3-4d79-8226-5bbceaec19b1,Pristine Springs,Blue Lakes Weir,4/11/2019 6:00:00 AM,Michelle_Richman,07:41,4/11/2019 6:00:00 AM,07:41,,StaffGage,1.21,1.1898,,,,,,,12.67,3.29,No,,set gage to 1.21,,no,4/11/2019 1:47:33 PM,tsanabria_IDWR,4/11/2019 1:47:33 PM,tsanabria_IDWR,-114.468996999,42.6148190004
+3,922dd702-7e68-43e9-9d57-62df2ff3c25b,Pristine,Blue Lakes Weir,6/12/2018 6:00:00 AM,Michelle_Richman,18:04,6/20/2018 6:00:00 AM,18:04,,StaffGage,1.14,1.175,,,,,,,13.43,3.51,No,,WL reset,,no,4/26/2019 7:35:12 PM,mrichman_IDWR,4/26/2019 7:35:12 PM,mrichman_IDWR,-114.468996999,42.6148190004
+4,7860b540-702d-48b1-90d1-655a95cc5661,Pristine,City of Twin,6/21/2018 6:00:00 AM,Tito_Sanabria,07:23,6/21/2018 6:00:00 AM,07:23,,FlowMeter,,,,,15.24,19.29,15.53,19.78,13.23,3.38,No,,,,no,4/26/2019 7:38:42 PM,mrichman_IDWR,4/26/2019 7:38:42 PM,mrichman_IDWR,-114.477417,42.6029380003"
+            },
         };
     }
 
