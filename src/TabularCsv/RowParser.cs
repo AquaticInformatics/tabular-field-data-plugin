@@ -346,11 +346,15 @@ namespace TabularCsv
 
         private string MergeCommentText(CoreDefinition definition)
         {
-            var lines = new List<string>();
+            var lines = new[] {definition.Comment}
+                .Where(d => d != null)
+                .Select(GetString)
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToList();
 
-            foreach (var column in definition.AllComments)
+            foreach (var mergeWithComment in definition.AllMergeWithComments)
             {
-                var value = GetString(column);
+                var value = GetString(mergeWithComment);
 
                 if (string.IsNullOrWhiteSpace(value)) continue;
 

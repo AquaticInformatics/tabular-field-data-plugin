@@ -93,7 +93,7 @@ namespace TabularCsv
         public PropertyDefinition Comment { get; set; }
         public PropertyDefinition MergeWithComment { get; set; }
         public List<PropertyDefinition> MergeWithComments { get; set; } = new List<PropertyDefinition>();
-        public List<PropertyDefinition> AllComments => AllDefinitions(Comment, MergeWithComment, MergeWithComments);
+        public List<PropertyDefinition> AllMergeWithComments => AllDefinitions(MergeWithComment, MergeWithComments);
 
         protected List<TDefinition> AllDefinitions<TDefinition>(TDefinition item, IEnumerable<TDefinition> items)
             where TDefinition : class
@@ -101,19 +101,6 @@ namespace TabularCsv
             return new List<TDefinition>
                 {
                     item
-                }
-                .Concat(items)
-                .Where(i => i != null)
-                .ToList();
-        }
-
-        protected List<TDefinition> AllDefinitions<TDefinition>(TDefinition item1, TDefinition item2, IEnumerable<TDefinition> items)
-            where TDefinition : class
-        {
-            return new List<TDefinition>
-                {
-                    item1,
-                    item2,
                 }
                 .Concat(items)
                 .Where(i => i != null)
