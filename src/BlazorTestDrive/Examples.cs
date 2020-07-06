@@ -24,20 +24,21 @@ LOC2, 1988-Aug-8 15:10, -3.5"
             },
             new Example
             {
-                Name = "Parse French dates",
+                Name = "Parse French dates and numbers",
                 ConfigText = @"
 LocaleName = 'fr-FR' # Use the French locale
 Location = '@Le Site'
 Time = '@La Date'
+Separator =';' # Since the comma is used a decimal point
 
 [Reading]
 Value = '@La Température'
 ParameterId = 'TA'
 UnitId = 'degC'",
                 CsvText = @"
-Le Site, La Date, La Température
-LOC1, 2020-Janvier-12 12:35, 20.5
-LOC2, 1988-Août-8 15:10, -3.5",
+Le Site; La Date; La Température
+LOC1; 2020-Janvier-11 12:35; 18,5
+LOC2; 1988-Août-9 15:10; -4,5",
             },
             new Example
             {
