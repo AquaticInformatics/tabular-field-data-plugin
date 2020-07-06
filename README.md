@@ -14,8 +14,8 @@ Choose the appropriate version of the plugin for your AQTS app server.
 
 | AQTS Version | Latest compatible plugin Version |
 | --- | --- |
-| AQTS 2020.2 | [v20.2.1](https://github.com/AquaticInformatics/tabular-field-data-plugin/releases/download/v20.2.1/TabularCsv.plugin) |
-| AQTS 2020.1<br/>AQTS 2019.4 Update 1| [v19.4.90](https://github.com/AquaticInformatics/tabular-field-data-plugin/releases/download/v19.4.90/TabularCsv.plugin) |
+| AQTS 2020.2 | [v20.2.3](https://github.com/AquaticInformatics/tabular-field-data-plugin/releases/download/v20.2.3/TabularCsv.plugin) |
+| AQTS 2020.1<br/>AQTS 2019.4 Update 1| [v19.4.92](https://github.com/AquaticInformatics/tabular-field-data-plugin/releases/download/v19.4.92/TabularCsv.plugin) |
 
 ## CSV file format
 
