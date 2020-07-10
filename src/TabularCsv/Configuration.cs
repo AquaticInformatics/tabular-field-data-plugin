@@ -143,6 +143,7 @@ namespace TabularCsv
 
     public class ReadingDefinition : ActivityDefinition
     {
+        public PropertyDefinition AllowEmptyValues { get; set; }
         public PropertyDefinition Value { get; set; }
         public PropertyDefinition ParameterId { get; set; }
         public PropertyDefinition UnitId { get; set; }
