@@ -69,6 +69,10 @@ namespace TabularCsv
 
         public Dictionary<string,int> BuildColumnHeaderMap(string[] headerFields)
         {
+            headerFields = headerFields
+                .Where(s => !string.IsNullOrWhiteSpace(s))
+                .ToArray();
+
             var columnDefinitions = Configuration.GetColumnDefinitions();
 
             var headerColumns = columnDefinitions
