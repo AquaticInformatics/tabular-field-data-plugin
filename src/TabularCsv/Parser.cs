@@ -39,11 +39,13 @@ namespace TabularCsv
 
                 using (ResultsAppender)
                 {
+                    var result = ParseFileResult.CannotParse();
+
                     foreach (var configuration in configurations)
                     {
                         using (LocaleScope.WithLocale(configuration.LocaleName))
                         {
-                            var result = ParseDataFile(configuration, csvText);
+                            result = ParseDataFile(configuration, csvText);
 
                             if (result.Status == ParseFileStatus.CannotParse) continue;
 
@@ -51,7 +53,7 @@ namespace TabularCsv
                         }
                     }
 
-                    return ParseFileResult.CannotParse();
+                    return result;
                 }
             }
             catch (Exception exception)
@@ -158,10 +160,21 @@ namespace TabularCsv
                     ++dataRowCount;
                 }
 
-                if (dataRowCount == 0 && configuration.NoDataRowsExpected)
+                if (dataRowCount == 0)
                 {
-                    // When all the data comes from the preface, then this will parse the preface context
-                    rowParser.Parse(new string[0]);
+                    if (configuration.NoDataRowsExpected)
+                    {
+                        // When all the data comes from the preface, then this will parse the preface context
+                        rowParser.Parse(new string[0]);
+                    }
+                    else
+                    {
+                        // No rows were parsed.
+                        if (rowParser.RemainingHeaderLines > 0)
+                            return ParseFileResult.CannotParse("No matching header row was detected.");
+
+                        return ParseFileResult.CannotParse();
+                    }
                 }
 
                 return ParseFileResult.SuccessfullyParsedAndDataValid();
