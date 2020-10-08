@@ -198,6 +198,9 @@ namespace TabularCsv
                 .Concat(Configuration
                     .AllVolumetricDischarges
                     .Select(volumetric => ParseVolumetricDischarge(fieldVisitInfo, volumetric)))
+                .Concat(Configuration
+                    .AllEngineeredStructureDischarges
+                    .Select(engineeredStructure => ParseEngineeredStructureDischarge(fieldVisitInfo, engineeredStructure)))
                 .Where(discharge => discharge != null)
                 .ToList();
 
@@ -1131,6 +1134,62 @@ namespace TabularCsv
                 StartingVolume = GetNullableDouble(definition.StartingVolume),
                 EndingVolume = GetNullableDouble(definition.EndingVolume),
                 VolumeChange = GetNullableDouble(definition.VolumeChange),
+            };
+        }
+
+        private DischargeActivity ParseEngineeredStructureDischarge(FieldVisitInfo visitInfo, EngineeredStructureDischargeDefinition definition)
+        {
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge);
+
+            if (!totalDischarge.HasValue)
+                return null;
+
+            var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
+
+            var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
+            var distanceUnitId = GetString(definition.DistanceUnitId);
+
+            var sectionDischarge = GetNullableDouble(definition.SectionDischarge)
+                                   ?? dischargeActivity.Discharge.Value;
+
+            var engineeredStructure = new EngineeredStructureDischarge(
+                dischargeActivity.MeasurementPeriod,
+                channelName,
+                new Measurement(sectionDischarge, dischargeActivity.Discharge.UnitId),
+                distanceUnitId,
+                distanceUnitId)
+            {
+                MeanHeadValue = GetNullableDouble(definition.MeanHead),
+                StructureEquation = GetString(definition.StructureEquation),
+                EngineeredStructureType = GetNullableEnum<EngineeredStructureType>(definition.StructureType) ?? EngineeredStructureType.Unknown
+            };
+
+            engineeredStructure
+                .HeadReadings
+                .AddRange(definition
+                    .AllReadings
+                    .Select(reading => ParseEngineeredStructureReading(visitInfo, reading))
+                    .Where(reading => reading != null));
+
+            dischargeActivity.ChannelMeasurements.Add(engineeredStructure);
+
+            return dischargeActivity;
+        }
+
+        private EngineeredStructureHeadReading ParseEngineeredStructureReading(FieldVisitInfo visitInfo, EngineeredStructureHeadReadingDefinition definition)
+        {
+            var readingTime = ParseActivityTime(visitInfo, definition);
+            
+            var head = GetNullableDouble(definition.Head);
+
+            if (!head.HasValue)
+                return null;
+
+            return new EngineeredStructureHeadReading
+            {
+                Head = head.Value,
+                IsUsedInMean = GetNullableBoolean(definition.IsUsed) ?? true,
+                ReadingTime = readingTime,
             };
         }
 

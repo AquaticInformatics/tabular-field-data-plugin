@@ -57,6 +57,10 @@ namespace TabularCsv
         public List<VolumetricDischargeDefinition> VolumetricDischarges { get; set; } = new List<VolumetricDischargeDefinition>();
         public List<VolumetricDischargeDefinition> AllVolumetricDischarges => AllDefinitions(VolumetricDischarge, VolumetricDischarges);
 
+        public EngineeredStructureDischargeDefinition EngineeredStructureDischarge { get; set; }
+        public List<EngineeredStructureDischargeDefinition> EngineeredStructureDischarges { get; set; } = new List<EngineeredStructureDischargeDefinition>();
+        public List<EngineeredStructureDischargeDefinition> AllEngineeredStructureDischarges => AllDefinitions(EngineeredStructureDischarge, EngineeredStructureDischarges);
+
         public LevelSurveyDefinition LevelSurvey { get; set; }
         public List<LevelSurveyDefinition> LevelSurveys { get; set; } = new List<LevelSurveyDefinition>();
         public List<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(LevelSurvey, LevelSurveys);
@@ -318,7 +322,7 @@ namespace TabularCsv
         public List<MeterCalibrationEquationDefinition> AllMeterCalibrationEquations => AllDefinitions(MeterCalibrationEquation, MeterCalibrationEquations);
     }
 
-    public class MeterCalibrationEquationDefinition : ColumnDefinition
+    public class MeterCalibrationEquationDefinition
     {
         public PropertyDefinition Slope { get; set; }
         public PropertyDefinition RangeStart { get; set; }
@@ -336,24 +340,43 @@ namespace TabularCsv
     public class VolumetricDischargeDefinition : DischargeActivityDefinition
     {
         public PropertyDefinition SectionDischarge { get; set; }
-        public PropertyDefinition MeasurementContainerVolume { get; set; }
-        public PropertyDefinition MeasurementContainerUnit { get; set; }
+        public PropertyDefinition ContainerVolume { get; set; }
+        public PropertyDefinition ContainerUnitId { get; set; }
         public PropertyDefinition IsObserved { get; set; }
 
-        public VolumetricReadingDefinition VolumetricReading { get; set; }
-        public List<VolumetricReadingDefinition> VolumetricReadings { get; set; } = new List<VolumetricReadingDefinition>();
-        public List<VolumetricReadingDefinition> AllVolumetricReadings => AllDefinitions(VolumetricReading, VolumetricReadings);
+        public VolumetricReadingDefinition Reading { get; set; }
+        public List<VolumetricReadingDefinition> Readings { get; set; } = new List<VolumetricReadingDefinition>();
+        public List<VolumetricReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
     }
 
-    public class VolumetricReadingDefinition : ColumnDefinition
+    public class VolumetricReadingDefinition
     {
         public PropertyDefinition IsUsed { get; set; }
-        public PropertyDefinition ReadingName { get; set; }
+        public PropertyDefinition Name { get; set; }
         public PropertyDefinition Discharge { get; set; }
         public PropertyDefinition DurationSeconds { get; set; }
         public PropertyDefinition StartingVolume { get; set; }
         public PropertyDefinition EndingVolume { get; set; }
         public PropertyDefinition VolumeChange { get; set; }
+    }
+
+    public class EngineeredStructureDischargeDefinition : DischargeActivityDefinition
+    {
+        public PropertyDefinition SectionDischarge { get; set; }
+        public PropertyDefinition StructureType { get; set; }
+        public PropertyDefinition StructureEquation { get; set; }
+        public PropertyDefinition MeanHead { get; set; }
+
+        public EngineeredStructureHeadReadingDefinition Reading { get; set; }
+        public List<EngineeredStructureHeadReadingDefinition> Readings { get; set; } = new List<EngineeredStructureHeadReadingDefinition>();
+        public List<EngineeredStructureHeadReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+    }
+
+    public class EngineeredStructureHeadReadingDefinition : ActivityDefinition
+    {
+        public PropertyDefinition IsUsed { get; set; }
+        public PropertyDefinition Name { get; set; }
+        public PropertyDefinition Head { get; set; }
     }
 
     public class LevelSurveyDefinition : CoreDefinition
