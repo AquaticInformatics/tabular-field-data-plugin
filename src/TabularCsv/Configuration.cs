@@ -53,6 +53,10 @@ namespace TabularCsv
         public List<OtherDischargeDefinition> OtherDischarges { get; set; } = new List<OtherDischargeDefinition>();
         public List<OtherDischargeDefinition> AllOtherDischarges => AllDefinitions(OtherDischarge, OtherDischarges);
 
+        public VolumetricDischargeDefinition VolumetricDischarge { get; set; }
+        public List<VolumetricDischargeDefinition> VolumetricDischarges { get; set; } = new List<VolumetricDischargeDefinition>();
+        public List<VolumetricDischargeDefinition> AllVolumetricDischarges => AllDefinitions(VolumetricDischarge, VolumetricDischarges);
+
         public LevelSurveyDefinition LevelSurvey { get; set; }
         public List<LevelSurveyDefinition> LevelSurveys { get; set; } = new List<LevelSurveyDefinition>();
         public List<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(LevelSurvey, LevelSurveys);
@@ -327,6 +331,29 @@ namespace TabularCsv
     {
         public PropertyDefinition SectionDischarge { get; set; }
         public PropertyDefinition MonitoringMethod { get; set; }
+    }
+
+    public class VolumetricDischargeDefinition : DischargeActivityDefinition
+    {
+        public PropertyDefinition SectionDischarge { get; set; }
+        public PropertyDefinition MeasurementContainerVolume { get; set; }
+        public PropertyDefinition MeasurementContainerUnit { get; set; }
+        public PropertyDefinition IsObserved { get; set; }
+
+        public VolumetricReadingDefinition VolumetricReading { get; set; }
+        public List<VolumetricReadingDefinition> VolumetricReadings { get; set; } = new List<VolumetricReadingDefinition>();
+        public List<VolumetricReadingDefinition> AllVolumetricReadings => AllDefinitions(VolumetricReading, VolumetricReadings);
+    }
+
+    public class VolumetricReadingDefinition : ColumnDefinition
+    {
+        public PropertyDefinition IsUsed { get; set; }
+        public PropertyDefinition ReadingName { get; set; }
+        public PropertyDefinition Discharge { get; set; }
+        public PropertyDefinition DurationSeconds { get; set; }
+        public PropertyDefinition StartingVolume { get; set; }
+        public PropertyDefinition EndingVolume { get; set; }
+        public PropertyDefinition VolumeChange { get; set; }
     }
 
     public class LevelSurveyDefinition : CoreDefinition

@@ -195,6 +195,9 @@ namespace TabularCsv
                 .Concat(Configuration
                     .AllOtherDischarges
                     .Select(other => ParseOtherDischarge(fieldVisitInfo, other)))
+                .Concat(Configuration
+                    .AllVolumetricDischarges
+                    .Select(volumetric => ParseVolumetricDischarge(fieldVisitInfo, volumetric)))
                 .Where(discharge => discharge != null)
                 .ToList();
 
@@ -1069,6 +1072,66 @@ namespace TabularCsv
             dischargeActivity.ChannelMeasurements.Add(otherDischarge);
 
             return dischargeActivity;
+        }
+
+        private DischargeActivity ParseVolumetricDischarge(FieldVisitInfo visitInfo, VolumetricDischargeDefinition definition)
+        {
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge);
+            var measurementContainerUnitId = GetString(definition.ContainerUnitId);
+
+            if (!totalDischarge.HasValue || string.IsNullOrEmpty(measurementContainerUnitId))
+                return null;
+
+            var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
+
+            var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
+            var distanceUnitId = GetString(definition.DistanceUnitId);
+
+            var sectionDischarge = GetNullableDouble(definition.SectionDischarge)
+                                   ?? dischargeActivity.Discharge.Value;
+
+            var volumetricDischarge = new VolumetricDischarge(
+                dischargeActivity.MeasurementPeriod,
+                channelName,
+                new Measurement(sectionDischarge, dischargeActivity.Discharge.UnitId),
+                distanceUnitId,
+                measurementContainerUnitId)
+            {
+                MeasurementContainerVolume = GetNullableDouble(definition.ContainerVolume),
+            };
+
+            volumetricDischarge
+                .Readings
+                .AddRange(definition
+                    .AllReadings
+                    .Select(ParseVolumetricReading)
+                    .Where(reading => reading != null));
+
+            volumetricDischarge.IsObserved =
+                GetNullableBoolean(definition.IsObserved) ?? !volumetricDischarge.Readings.Any();
+
+            dischargeActivity.ChannelMeasurements.Add(volumetricDischarge);
+
+            return dischargeActivity;
+        }
+
+        private VolumetricDischargeReading ParseVolumetricReading(VolumetricReadingDefinition definition)
+        {
+            var readingName = GetString(definition.Name);
+
+            if (string.IsNullOrEmpty(readingName))
+                return null;
+
+            return new VolumetricDischargeReading
+            {
+                Name = readingName,
+                IsUsed = GetNullableBoolean(definition.IsUsed) ?? true,
+                DurationSeconds = GetNullableDouble(definition.DurationSeconds),
+                Discharge = GetNullableDouble(definition.Discharge),
+                StartingVolume = GetNullableDouble(definition.StartingVolume),
+                EndingVolume = GetNullableDouble(definition.EndingVolume),
+                VolumeChange = GetNullableDouble(definition.VolumeChange),
+            };
         }
 
         private DischargeActivity ParseDischargeActivity(FieldVisitInfo visitInfo, DischargeActivityDefinition definition, double totalDischarge)
