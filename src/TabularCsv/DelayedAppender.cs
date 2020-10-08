@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using FieldDataPluginFramework.Context;
@@ -9,6 +8,7 @@ using FieldDataPluginFramework.DataModel.Calibrations;
 using FieldDataPluginFramework.DataModel.ChannelMeasurements;
 using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
+using FieldDataPluginFramework.DataModel.GageZeroFlow;
 using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.LevelSurveys;
 using FieldDataPluginFramework.DataModel.Readings;
@@ -96,6 +96,7 @@ namespace TabularCsv
                 .Concat(visit.Calibrations.SelectMany(GetTimes))
                 .Concat(visit.LevelSurveys.SelectMany(GetTimes))
                 .Concat(visit.DischargeActivities.SelectMany(GetTimes))
+                .Concat(visit.GageZeroFlowActivities.SelectMany(GetTimes))
                 .Where(dt => dt.HasValue)
                 .Select(dt => dt.Value);
         }
@@ -151,6 +152,14 @@ namespace TabularCsv
             };
         }
 
+        private IEnumerable<DateTimeOffset?> GetTimes(GageZeroFlowActivity item)
+        {
+            return new DateTimeOffset?[]
+            {
+                item.ObservationDate,
+            };
+        }
+
         private void AppendDelayedVisit(FieldVisitInfo delayedVisit)
         {
             var visit = ActualAppender.AddFieldVisit(delayedVisit.LocationInfo, delayedVisit.FieldVisitDetails);
@@ -178,6 +187,11 @@ namespace TabularCsv
             foreach (var controlCondition in delayedVisit.ControlConditions)
             {
                 ActualAppender.AddControlCondition(visit, controlCondition);
+            }
+
+            foreach (var gageZeroFlowActivity in delayedVisit.GageZeroFlowActivities)
+            {
+                ActualAppender.AddGageZeroFlowActivity(visit, gageZeroFlowActivity);
             }
 
             foreach (var levelSurvey in delayedVisit.LevelSurveys)
@@ -272,6 +286,11 @@ namespace TabularCsv
         public void AddCalibration(FieldVisitInfo fieldVisit, Calibration calibration)
         {
             fieldVisit.Calibrations.Add(calibration);
+        }
+
+        public void AddGageZeroFlowActivity(FieldVisitInfo fieldVisit, GageZeroFlowActivity gageZeroFlowActivity)
+        {
+            fieldVisit.GageZeroFlowActivities.Add(gageZeroFlowActivity);
         }
 
         public Dictionary<string, string> GetPluginConfigurations()

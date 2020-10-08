@@ -27,6 +27,7 @@ namespace TabularCsv
 
         public VisitDefinition Visit { get; set; }
         public ControlConditionDefinition ControlCondition { get; set; }
+        public GageAtZeroFlowDefinition GageAtZeroFlow { get; set; }
 
         public ReadingDefinition Reading { get; set; }
         public List<ReadingDefinition> Readings { get; set; } = new List<ReadingDefinition>();
@@ -206,6 +207,19 @@ namespace TabularCsv
         public PropertyDefinition ControlCleanedType { get; set; }
         public PropertyDefinition ControlCode { get; set; }
         public PropertyDefinition DistanceToGage { get; set; }
+    }
+
+    public class GageAtZeroFlowDefinition : ActivityDefinition
+    {
+        public PropertyDefinition UnitId { get; set; }
+        public PropertyDefinition GageHeight { get; set; }
+        public PropertyDefinition Stage { get; set; }
+        public PropertyDefinition WaterDepth { get; set; }
+        public PropertyDefinition Party { get; set; }
+        public PropertyDefinition Certainty { get; set; }
+        public TimestampDefinition ApplicableSinceTime { get; set; }
+        public List<TimestampDefinition> ApplicableSinceTimes { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> AllStartTimes => AllDefinitions(ApplicableSinceTime, ApplicableSinceTimes);
     }
 
     public abstract class DischargeActivityDefinition : TimeRangeActivityDefinition

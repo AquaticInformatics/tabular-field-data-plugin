@@ -10,6 +10,7 @@ using FieldDataPluginFramework.DataModel.Calibrations;
 using FieldDataPluginFramework.DataModel.ChannelMeasurements;
 using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
+using FieldDataPluginFramework.DataModel.GageZeroFlow;
 using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.LevelSurveys;
 using FieldDataPluginFramework.DataModel.Meters;
@@ -178,6 +179,13 @@ namespace TabularCsv
                 .Where(controlCondition => controlCondition != null)
                 .ToList();
 
+            var gageAtZeroFlows = new[]
+                {
+                    ParseGageAtZeroFlow(fieldVisitInfo, Configuration.GageAtZeroFlow)
+                }
+                .Where(zeroFlow => zeroFlow != null)
+                .ToList();
+
             var discharges = Configuration
                 .AllAdcpDischarges
                 .Select(adcp => ParseAdcpDischarge(fieldVisitInfo, adcp))
@@ -200,6 +208,7 @@ namespace TabularCsv
                 inspections,
                 calibrations,
                 controlConditions,
+                gageAtZeroFlows,
                 discharges,
                 levelSurveys);
         }
@@ -211,6 +220,7 @@ namespace TabularCsv
             List<Inspection> inspections,
             List<Calibration> calibrations,
             List<ControlCondition> controlConditions,
+            List<GageZeroFlowActivity> gageZeroFlows,
             List<DischargeActivity> discharges,
             List<LevelSurvey> levelSurveys)
         {
@@ -233,6 +243,11 @@ namespace TabularCsv
             foreach (var controlCondition in controlConditions)
             {
                 fieldVisitInfo.ControlConditions.Add(controlCondition);
+            }
+
+            foreach (var gageAtZeroFlow in gageZeroFlows)
+            {
+                fieldVisitInfo.GageZeroFlowActivities.Add(gageAtZeroFlow);
             }
 
             foreach (var discharge in discharges)
@@ -271,6 +286,11 @@ namespace TabularCsv
             foreach (var controlCondition in controlConditions)
             {
                 ResultsAppender.AddControlCondition(mergedVisit, controlCondition);
+            }
+
+            foreach (var gageZeroFlow in gageZeroFlows)
+            {
+                ResultsAppender.AddGageZeroFlowActivity(mergedVisit, gageZeroFlow);
             }
 
             foreach (var discharge in discharges)
@@ -780,6 +800,40 @@ namespace TabularCsv
             }
 
             return controlCondition;
+        }
+
+        private GageZeroFlowActivity ParseGageAtZeroFlow(FieldVisitInfo visitInfo, GageAtZeroFlowDefinition definition)
+        {
+            if (definition == null)
+                return null;
+
+            var unitId = GetString(definition.UnitId);
+            var gageHeightValue = GetNullableDouble(definition.GageHeight);
+            var stage = GetNullableDouble(definition.Stage);
+            var waterDepth = GetNullableDouble(definition.WaterDepth);
+
+            if (string.IsNullOrEmpty(unitId) || !gageHeightValue.HasValue && !stage.HasValue && !waterDepth.HasValue)
+                return null;
+
+            var gageHeight = new Measurement(gageHeightValue ?? 0, unitId);
+
+            var applicableSinceDate = (definition.ApplicableSinceTimes?.Any() ?? false)
+                ? (DateTimeOffset?)ParseDateTimeOffset(visitInfo.LocationInfo, definition.ApplicableSinceTimes)
+                : null;
+
+            var observationDate = ParseActivityTime(visitInfo, definition);
+
+            var gageZeroFlow = new GageZeroFlowActivity(observationDate, gageHeight)
+            {
+                Stage = stage,
+                WaterDepth = waterDepth,
+                Certainty = GetNullableDouble(definition.Certainty),
+                ApplicableSinceDate = applicableSinceDate,
+                Party = GetString(definition.Party),
+                Comments = MergeCommentText(definition)
+            };
+
+            return gageZeroFlow;
         }
 
         private DischargeActivity ParseAdcpDischarge(FieldVisitInfo visitInfo, AdcpDischargeDefinition definition)
