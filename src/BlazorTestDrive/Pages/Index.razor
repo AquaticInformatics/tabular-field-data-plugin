@@ -10,6 +10,7 @@
 @using FieldDataPluginFramework.DataModel.ChannelMeasurements
 @using FieldDataPluginFramework.DataModel.Meters
 @using System.IO
+@using FieldDataPluginFramework.DataModel.GageZeroFlow
 
 <h1>Let's test drive your tabular field data!</h1>
 
@@ -19,56 +20,59 @@
         <col style="width: 90%;" />
     </colgroup>
     <tbody>
+        <tr>
+            <td>Pick an example:</td>
+            <td>
+                <label for="example">Examples</label>
+                <select id="example" @bind="@SelectedExampleId">
+                    @foreach (var example in Examples)
+                    {
+                        <option value="@example.Id">@example.Name</option>
+                    }
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Your config:
+                <br />
+                <br />
+                <InputFile id="configFile" OnChange="OnConfigFileSelected" />
+            </td>
+            <td>
+                <textarea rows="8" cols="100" wrap="off" style="font-family: monospace;" @bind="Config"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                Your CSV:
+                <br />
+                <br />
+                <InputFile id="csvFile" OnChange="OnCsvFileSelected" />
+            </td>
+            <td>
+                <textarea rows="4" cols="100" wrap="off" style="font-family: monospace;" @bind="Csv"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>
+                <input id="Button1" type="button" value="Try it!" @onclick="Parse" />&nbsp;&nbsp;
+                <label for="location">Optional Location:</label>
+                <input id="location" type="text" @bind="Location" />
+                <label for="timezone">Timezone</label>
+                <select id="timezone" @bind="TimeZone">
+                    @foreach (var timeZone in TimeZones)
+                    {
+                        <option value="@timeZone" selected="@string.IsNullOrWhiteSpace(timeZone)">@timeZone</option>
+                    }
+                </select>
+            </td>
+        </tr>
     <tr>
-        <td>Pick an example:</td>
-        <td>
-            <label for="example">Examples</label>
-            <select id="example" @bind="@SelectedExampleId">
-                @foreach (var example in Examples)
-                {
-                    <option value="@example.Id">@example.Name</option>
-                }
-            </select>
-        </td>
+        <td>Details:<br/><span>@Results?.ResultTime</span></td>
+        <td><textarea rows="2" cols="100" wrap="off" @bind="Details" readonly></textarea></td>
     </tr>
-    <tr>
-        <td>
-            Your config:
-            <br/>
-            <br/>
-            <InputFile id="configFile" OnChange="OnConfigFileSelected"/>
-        </td>
-        <td>
-            <textarea rows="8" cols="100" wrap="off" style="font-family: monospace;" @bind="Config"></textarea>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Your CSV:
-            <br/>
-            <br/>
-            <InputFile id="csvFile" OnChange="OnCsvFileSelected"/>
-        </td>
-        <td>
-            <textarea rows="4" cols="100" wrap="off" style="font-family: monospace;" @bind="Csv"></textarea>
-        </td>
-    </tr>
-    <tr>
-        <td></td>
-        <td>
-            <input id="Button1" type="button" value="Try it!" @onclick="Parse"/>&nbsp;&nbsp;
-            <label for="location">Optional Location:</label>
-            <input id="location" type="text" @bind="Location"/>
-            <label for="timezone">Timezone</label>
-            <select id="timezone" @bind="TimeZone">
-                @foreach (var timeZone in TimeZones)
-                {
-                    <option value="@timeZone" selected="@string.IsNullOrWhiteSpace(timeZone)">@timeZone</option>
-                }
-            </select>
-        </td>
-    </tr>
-    <tr><td>Details:</td><td><textarea rows="2" cols="100" wrap="off" @bind="Details" readonly></textarea></td></tr>
     </tbody>
 </table>
 
@@ -82,64 +86,101 @@ else
     {
         <table class="RTable">
             <thead>
-            <tr>
-                <th>Identifier</th>
-                <th>Start</th>
-                <th>End</th>
-                <th>Party</th>
-                <th>Agency</th>
-                <th>Comments</th>
-                <th>Weather</th>
-                <th>Completed Activities</th>
-            </tr>
+                <tr>
+                    <th>Identifier</th>
+                    <th>Start</th>
+                    <th>End</th>
+                    <th>Party</th>
+                    <th>Agency</th>
+                    <th>Comments</th>
+                    <th>Weather</th>
+                    <th>Completed Activities</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var item in Results.Visits)
-            {
-                <tr>
-                    <td>@item.FieldVisitIdentifier</td>
-                    <td>@item.StartDate</td>
-                    <td>@item.EndDate</td>
-                    <td>@item.Party</td>
-                    <td>@item.FieldVisitDetails.CollectionAgency</td>
-                    <td>@item.FieldVisitDetails.Comments</td>
-                    <td>@item.FieldVisitDetails.Weather</td>
-                    <td>@CompletedActivities(item.FieldVisitDetails.CompletedVisitActivities)</td>
-                </tr>
-            }
+                @foreach (var item in Results.Visits)
+                {
+                    <tr>
+                        <td>@item.FieldVisitIdentifier</td>
+                        <td>@item.StartDate</td>
+                        <td>@item.EndDate</td>
+                        <td>@item.Party</td>
+                        <td>@item.FieldVisitDetails.CollectionAgency</td>
+                        <td>@item.FieldVisitDetails.Comments</td>
+                        <td>@item.FieldVisitDetails.Weather</td>
+                        <td>@CompletedActivities(item.FieldVisitDetails.CompletedVisitActivities)</td>
+                    </tr>
+                }
             </tbody>
         </table>
     }
-
 
     <h3>@($"{nameof(Results.ControlConditions)} ({Results.ControlConditions.Count})")</h3>
     @if (Results.ControlConditions.Any())
     {
         <table class="RTable">
             <thead>
-            <tr>
-                <th>Identifier</th>
-                <th>Condition Type</th>
-                <th>Control Code</th>
-                <th>Control Cleaned</th>
-                <th>Date Cleaned</th>
-                <th>Party</th>
-                <th>Comments</th>
-            </tr>
+                <tr>
+                    <th>Identifier</th>
+                    <th>Condition Type</th>
+                    <th>Control Code</th>
+                    <th>Control Cleaned</th>
+                    <th>Date Cleaned</th>
+                    <th>Party</th>
+                    <th>Comments</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var item in Results.ControlConditions)
-            {
+                @foreach (var item in Results.ControlConditions)
+                {
+                    <tr>
+                        <td>@item.VisitIdentifier</td>
+                        <td>@item.Item.ConditionType</td>
+                        <td>@item.Item.ControlCode?.IdOrDisplayName</td>
+                        <td>@item.Item.ControlCleaned</td>
+                        <td>@item.Item.DateCleaned</td>
+                        <td>@item.Item.Party</td>
+                        <td>@item.Item.Comments</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <h3>@($"{nameof(Results.GageZeroFlows)} ({Results.GageZeroFlows.Count})")</h3>
+    @if (Results.GageZeroFlows.Any())
+    {
+        <table class="RTable">
+            <thead>
+                <tr>
+                    <th>Identifier</th>
+                    <th>Observation Date</th>
+                    <th>Applicable Since Date</th>
+                    <th>Observed Gage Height</th>
+                    <th>Calculated Gage Height</th>
+                    <th>Stage</th>
+                    <th>Water Depth</th>
+                    <th>Certainty</th>
+                    <th>Party</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Results.GageZeroFlows)
+                {
                 <tr>
                     <td>@item.VisitIdentifier</td>
-                    <td>@item.Item.ConditionType</td>
-                    <td>@item.Item.ControlCode?.IdOrDisplayName</td>
-                    <td>@item.Item.ControlCleaned</td>
-                    <td>@item.Item.DateCleaned</td>
+                    <td>@item.Item.ObservationDate</td>
+                    <td>@item.Item.ApplicableSinceDate</td>
+                    <td>@GageZeroFlowObservedGageHeight(item.Item)</td>
+                    <td>@GageZeroFlowCalculatedGageHeight(item.Item)</td>
+                    <td>@GageZeroFlowStage(item.Item)</td>
+                    <td>@GageZeroWaterDepth(item.Item)</td>
+                    <td>@item.Item.Certainty</td>
                     <td>@item.Item.Party</td>
                     <td>@item.Item.Comments</td>
                 </tr>
-            }
+                }
             </tbody>
         </table>
     }
@@ -149,49 +190,49 @@ else
     {
         <table class="RTable">
             <thead>
-            <tr>
-                <th>Identifier</th>
-                <th>Time</th>
-                <th>Parameter</th>
-                <th>Value</th>
-                <th>Reading Type</th>
-                <th>Method</th>
-                <th>Publish</th>
-                <th>SubLocation</th>
-                <th>Uncertainty</th>
-                <th>Grade</th>
-                <th>Qualifiers</th>
-                <th>Reference Point</th>
-                <th>Use Local Assumed Datum</th>
-                <th>Comments</th>
-                <th>SensorUniqueId</th>
-                <th>Measurement Device</th>
-                <th>Groundwater Details</th>
-            </tr>
+                <tr>
+                    <th>Identifier</th>
+                    <th>Time</th>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                    <th>Reading Type</th>
+                    <th>Method</th>
+                    <th>Publish</th>
+                    <th>SubLocation</th>
+                    <th>Uncertainty</th>
+                    <th>Grade</th>
+                    <th>Qualifiers</th>
+                    <th>Reference Point</th>
+                    <th>Use Local Assumed Datum</th>
+                    <th>Comments</th>
+                    <th>SensorUniqueId</th>
+                    <th>Measurement Device</th>
+                    <th>Groundwater Details</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var item in Results.Readings)
-            {
-                <tr>
-                    <td>@item.VisitIdentifier</td>
-                    <td>@item.Item.DateTimeOffset</td>
-                    <td>@item.Item.ParameterId</td>
-                    <td>@item.Item.Value (@item.Item.UnitId)</td>
-                    <td>@item.Item.ReadingType</td>
-                    <td>@item.Item.Method</td>
-                    <td>@item.Item.Publish</td>
-                    <td>@item.Item.SubLocation</td>
-                    <td>@item.Item.Uncertainty</td>
-                    <td>@Grade(item.Item.Grade)</td>
-                    <td>@Qualifiers(item.Item.ReadingQualifiers)</td>
-                    <td>@item.Item.ReferencePointName</td>
-                    <td>@item.Item.UseLocationDatumAsReference</td>
-                    <td>@item.Item.Comments</td>
-                    <td>@item.Item.SensorUniqueId</td>
-                    <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
-                    <td>@GroundwaterDetails(item.Item.GroundWaterMeasurementDetails)</td>
-                </tr>
-            }
+                @foreach (var item in Results.Readings)
+                {
+                    <tr>
+                        <td>@item.VisitIdentifier</td>
+                        <td>@item.Item.DateTimeOffset</td>
+                        <td>@item.Item.ParameterId</td>
+                        <td>@item.Item.Value (@item.Item.UnitId)</td>
+                        <td>@item.Item.ReadingType</td>
+                        <td>@item.Item.Method</td>
+                        <td>@item.Item.Publish</td>
+                        <td>@item.Item.SubLocation</td>
+                        <td>@item.Item.Uncertainty</td>
+                        <td>@Grade(item.Item.Grade)</td>
+                        <td>@Qualifiers(item.Item.ReadingQualifiers)</td>
+                        <td>@item.Item.ReferencePointName</td>
+                        <td>@item.Item.UseLocationDatumAsReference</td>
+                        <td>@item.Item.Comments</td>
+                        <td>@item.Item.SensorUniqueId</td>
+                        <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
+                        <td>@GroundwaterDetails(item.Item.GroundWaterMeasurementDetails)</td>
+                    </tr>
+                }
             </tbody>
         </table>
     }
@@ -201,43 +242,43 @@ else
     {
         <table class="RTable">
             <thead>
-            <tr>
-                <th>Identifier</th>
-                <th>Time</th>
-                <th>CalibrationType</th>
-                <th>Parameter</th>
-                <th>Value</th>
-                <th>Method</th>
-                <th>Publish</th>
-                <th>SubLocation</th>
-                <th>Party</th>
-                <th>Comments</th>
-                <th>Standard</th>
-                <th>Standard Details</th>
-                <th>SensorUniqueId</th>
-                <th>Measurement Device</th>
-            </tr>
+                <tr>
+                    <th>Identifier</th>
+                    <th>Time</th>
+                    <th>CalibrationType</th>
+                    <th>Parameter</th>
+                    <th>Value</th>
+                    <th>Method</th>
+                    <th>Publish</th>
+                    <th>SubLocation</th>
+                    <th>Party</th>
+                    <th>Comments</th>
+                    <th>Standard</th>
+                    <th>Standard Details</th>
+                    <th>SensorUniqueId</th>
+                    <th>Measurement Device</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var item in Results.Calibrations)
-            {
-                <tr>
-                    <td>@item.VisitIdentifier</td>
-                    <td>@item.Item.DateTimeOffset</td>
-                    <td>@item.Item.CalibrationType</td>
-                    <td>@item.Item.ParameterId</td>
-                    <td>@item.Item.Value (@item.Item.UnitId)</td>
-                    <td>@item.Item.Method</td>
-                    <td>@item.Item.Publish</td>
-                    <td>@item.Item.SubLocation</td>
-                    <td>@item.Item.Party</td>
-                    <td>@item.Item.Comments</td>
-                    <td>@item.Item.Standard</td>
-                    <td>@StandardDetails(item.Item.StandardDetails)</td>
-                    <td>@item.Item.SensorUniqueId</td>
-                    <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
-                </tr>
-            }
+                @foreach (var item in Results.Calibrations)
+                {
+                    <tr>
+                        <td>@item.VisitIdentifier</td>
+                        <td>@item.Item.DateTimeOffset</td>
+                        <td>@item.Item.CalibrationType</td>
+                        <td>@item.Item.ParameterId</td>
+                        <td>@item.Item.Value (@item.Item.UnitId)</td>
+                        <td>@item.Item.Method</td>
+                        <td>@item.Item.Publish</td>
+                        <td>@item.Item.SubLocation</td>
+                        <td>@item.Item.Party</td>
+                        <td>@item.Item.Comments</td>
+                        <td>@item.Item.Standard</td>
+                        <td>@StandardDetails(item.Item.StandardDetails)</td>
+                        <td>@item.Item.SensorUniqueId</td>
+                        <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
+                    </tr>
+                }
             </tbody>
         </table>
     }
@@ -247,27 +288,27 @@ else
     {
         <table class="RTable">
             <thead>
-            <tr>
-                <th>Identifier</th>
-                <th>Time</th>
-                <th>InspectionType</th>
-                <th>SubLocation</th>
-                <th>Comments</th>
-                <th>Measurement Device</th>
-            </tr>
+                <tr>
+                    <th>Identifier</th>
+                    <th>Time</th>
+                    <th>InspectionType</th>
+                    <th>SubLocation</th>
+                    <th>Comments</th>
+                    <th>Measurement Device</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var item in Results.Inspections)
-            {
-                <tr>
-                    <td>@item.VisitIdentifier</td>
-                    <td>@item.Item.DateTimeOffset</td>
-                    <td>@item.Item.InspectionType</td>
-                    <td>@item.Item.SubLocation</td>
-                    <td>@item.Item.Comments</td>
-                    <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
-                </tr>
-            }
+                @foreach (var item in Results.Inspections)
+                {
+                    <tr>
+                        <td>@item.VisitIdentifier</td>
+                        <td>@item.Item.DateTimeOffset</td>
+                        <td>@item.Item.InspectionType</td>
+                        <td>@item.Item.SubLocation</td>
+                        <td>@item.Item.Comments</td>
+                        <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
+                    </tr>
+                }
             </tbody>
         </table>
     }
@@ -277,53 +318,53 @@ else
     {
         <table class="RTable">
             <thead>
-            <tr>
-                <th>Identifier</th>
-                <th>OriginReferencePoint</th>
-                <th>Method</th>
-                <th>Party</th>
-                <th>Comments</th>
-                <th>Measurements</th>
-            </tr>
+                <tr>
+                    <th>Identifier</th>
+                    <th>OriginReferencePoint</th>
+                    <th>Method</th>
+                    <th>Party</th>
+                    <th>Comments</th>
+                    <th>Measurements</th>
+                </tr>
             </thead>
             <tbody>
-            @foreach (var item in Results.LevelSurveys)
-            {
-                <tr>
-                    <td>@item.VisitIdentifier</td>
-                    <td>@item.Item.OriginReferencePointName</td>
-                    <td>@item.Item.Method</td>
-                    <td>@item.Item.Party</td>
-                    <td>@item.Item.Comments</td>
-                    
-                    @if (item.Item.LevelSurveyMeasurements.Any())
-                    {
-                        <td>
-                            <table class="RTable">
-                                <thead>
-                                <tr>
-                                    <th>Time</th>
-                                    <th>Reference Point Name</th>
-                                    <th>Measured Elevation</th>
-                                    <th>Comments</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                @foreach (var m in item.Item.LevelSurveyMeasurements)
-                                {
-                                    <tr>
-                                        <td>@m.MeasurementTime</td>
-                                        <td>@m.ReferencePointName</td>
-                                        <td>@m.MeasuredElevation</td>
-                                        <td>@m.Comments</td>
-                                    </tr>
-                                }
-                                </tbody>
-                            </table>
-                        </td>
-                    }
-                </tr>
-            }
+                @foreach (var item in Results.LevelSurveys)
+                {
+                    <tr>
+                        <td>@item.VisitIdentifier</td>
+                        <td>@item.Item.OriginReferencePointName</td>
+                        <td>@item.Item.Method</td>
+                        <td>@item.Item.Party</td>
+                        <td>@item.Item.Comments</td>
+
+                        @if (item.Item.LevelSurveyMeasurements.Any())
+                        {
+                            <td>
+                                <table class="RTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Time</th>
+                                            <th>Reference Point Name</th>
+                                            <th>Measured Elevation</th>
+                                            <th>Comments</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var m in item.Item.LevelSurveyMeasurements)
+                                        {
+                                            <tr>
+                                                <td>@m.MeasurementTime</td>
+                                                <td>@m.ReferencePointName</td>
+                                                <td>@m.MeasuredElevation</td>
+                                                <td>@m.Comments</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </td>
+                        }
+                    </tr>
+                }
             </tbody>
         </table>
     }
@@ -355,8 +396,8 @@ else
                 </tr>
             </thead>
             <tbody>
-            @foreach (var item in Results.Discharges)
-            {
+                @foreach (var item in Results.Discharges)
+                {
                 <tr>
                     <td>@item.VisitIdentifier</td>
                     <td>@item.Item.MeasurementId</td>
@@ -401,13 +442,15 @@ else
                         </td>
                     }
 
-                    @if (PanelSections(item.Item.ChannelMeasurements).Any())
+                    @if (PanelDischarges(item.Item.ChannelMeasurements).Any())
                     {
                         <td>
                             <table class="RTable">
                                 <thead>
                                     <tr>
                                         <th>Section Type</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
                                         <th>Channel Name</th>
                                         <th>Section Discharge</th>
                                         <th>Width</th>
@@ -420,13 +463,17 @@ else
                                         <th>Velocity Observation Method</th>
                                         <th>Number of Verticals</th>
                                         <th>Meter Calibration</th>
+                                        <th>Party</th>
+                                        <th>Comments</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var panel in PanelSections(item.Item.ChannelMeasurements))
+                                    @foreach (var panel in PanelDischarges(item.Item.ChannelMeasurements))
                                     {
                                     <tr>
                                         <td>Panel</td>
+                                        <td>@panel.MeasurementStartTime</td>
+                                        <td>@panel.MeasurementEndTime</td>
                                         <td>@panel.ChannelName</td>
                                         <td>@Measurement(panel.Discharge)</td>
                                         <td>@Measurement(panel.Width)</td>
@@ -439,6 +486,8 @@ else
                                         <td>@panel.VelocityObservationMethod</td>
                                         <td>@panel.NumberOfVerticals</td>
                                         <td>@MeterCalibration(panel.MeterCalibration)</td>
+                                        <td>@panel.Party</td>
+                                        <td>@panel.Comments</td>
                                     </tr>
                                     }
                                 </tbody>
@@ -446,13 +495,15 @@ else
                         </td>
                     }
 
-                    @if (AdcpSections(item.Item.ChannelMeasurements).Any())
+                    @if (AdcpDischarges(item.Item.ChannelMeasurements).Any())
                     {
                         <td>
                             <table class="RTable">
                                 <thead>
                                     <tr>
                                         <th>Section Type</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
                                         <th>Channel Name</th>
                                         <th>Section Discharge</th>
                                         <th>Width</th>
@@ -475,13 +526,17 @@ else
                                         <th>Software Version</th>
                                         <th>Firmware Version</th>
                                         <th>Measurement Device</th>
+                                        <th>Party</th>
+                                        <th>Comments</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var adcp in AdcpSections(item.Item.ChannelMeasurements))
+                                    @foreach (var adcp in AdcpDischarges(item.Item.ChannelMeasurements))
                                     {
                                         <tr>
                                             <td>ADCP</td>
+                                            <td>@adcp.MeasurementStartTime</td>
+                                            <td>@adcp.MeasurementEndTime</td>
                                             <td>@adcp.ChannelName</td>
                                             <td>@Measurement(adcp.Discharge)</td>
                                             <td>@Measurement(adcp.Width)</td>
@@ -504,14 +559,186 @@ else
                                             <td>@adcp.SoftwareVersion</td>
                                             <td>@adcp.FirmwareVersion</td>
                                             <td>@MeasurementDevice(adcp.MeasurementDevice)</td>
+                                            <td>@adcp.Party</td>
+                                            <td>@adcp.Comments</td>
                                         </tr>
                                     }
                                 </tbody>
                             </table>
                         </td>
                     }
+
+                    @if (OtherDischarges(item.Item.ChannelMeasurements).Any())
+                    {
+                        <td>
+                            <table class="RTable">
+                                <thead>
+                                    <tr>
+                                        <th>Section Type</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Channel Name</th>
+                                        <th>Section Discharge</th>
+                                        <th>Monitoring Method</th>
+                                        <th>Party</th>
+                                        <th>Comments</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var other in OtherDischarges(item.Item.ChannelMeasurements))
+                                    {
+                                    <tr>
+                                        <td>Other</td>
+                                        <td>@other.MeasurementStartTime</td>
+                                        <td>@other.MeasurementEndTime</td>
+                                        <td>@other.ChannelName</td>
+                                        <td>@Measurement(other.Discharge)</td>
+                                        <td>@other.MonitoringMethodCode</td>
+                                        <td>@other.Party</td>
+                                        <td>@other.Comments</td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+                    }
+
+                @if (VolumetricDischarges(item.Item.ChannelMeasurements).Any())
+                {
+                    <td>
+                        <table class="RTable">
+                            <thead>
+                                <tr>
+                                    <th>Section Type</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Channel Name</th>
+                                    <th>Section Discharge</th>
+                                    <th>Measurement Container</th>
+                                    <th>IsObserved</th>
+                                    <th>Party</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var volumetric in VolumetricDischarges(item.Item.ChannelMeasurements))
+                            {
+                                <tr>
+                                    <td>Volumetric</td>
+                                    <td>@volumetric.MeasurementStartTime</td>
+                                    <td>@volumetric.MeasurementEndTime</td>
+                                    <td>@volumetric.ChannelName</td>
+                                    <td>@Measurement(volumetric.Discharge)</td>
+                                    <td>@Measurement(volumetric.MeasurementContainer)</td>
+                                    <td>@volumetric.IsObserved</td>
+                                    <td>@volumetric.Party</td>
+                                    <td>@volumetric.Comments</td>
+
+                                    @if (volumetric.Readings.Any())
+                                    {
+                                        <td>
+                                            <table class="RTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Include?</th>
+                                                        <th>Name</th>
+                                                        <th>Duration</th>
+                                                        <th>Discharge</th>
+                                                        <th>Starting Volume</th>
+                                                        <th>Ending Volume</th>
+                                                        <th>Volume Change</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var r in volumetric.Readings)
+                                                    {
+                                                        <tr>
+                                                            <td>@r.IsUsed</td>
+                                                            <td>@r.Name</td>
+                                                            <td>@Measurement(r.DurationSeconds, "secs")</td>
+                                                            <td>@Measurement(r.Discharge, volumetric.Discharge.UnitId)</td>
+                                                            <td>@Measurement(r.StartingVolume, volumetric.MeasurementContainerUnit)</td>
+                                                            <td>@Measurement(r.EndingVolume, volumetric.MeasurementContainerUnit)</td>
+                                                            <td>@Measurement(r.VolumeChange, volumetric.MeasurementContainerUnit)</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </td>
+                }
+
+                @if (EngineeredStructureDischarges(item.Item.ChannelMeasurements).Any())
+                {
+                    <td>
+                        <table class="RTable">
+                            <thead>
+                                <tr>
+                                    <th>Section Type</th>
+                                    <th>Start Time</th>
+                                    <th>End Time</th>
+                                    <th>Channel Name</th>
+                                    <th>Section Discharge</th>
+                                    <th>Structure Type</th>
+                                    <th>Mean Head</th>
+                                    <th>Structure Equation</th>
+                                    <th>Party</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            @foreach (var flume in EngineeredStructureDischarges(item.Item.ChannelMeasurements))
+                            {
+                                <tr>
+                                    <td>EngineeredStructure</td>
+                                    <td>@flume.MeasurementStartTime</td>
+                                    <td>@flume.MeasurementEndTime</td>
+                                    <td>@flume.ChannelName</td>
+                                    <td>@Measurement(flume.Discharge)</td>
+                                    <td>@flume.EngineeredStructureType</td>
+                                    <td>@Measurement(flume.MeanHead)</td>
+                                    <td>@flume.StructureEquation</td>
+                                    <td>@flume.Party</td>
+                                    <td>@flume.Comments</td>
+
+                                    @if (flume.HeadReadings.Any())
+                                    {
+                                        <td>
+                                            <table class="RTable">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Include?</th>
+                                                        <th>Time</th>
+                                                        <th>Head</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var r in flume.HeadReadings)
+                                                    {
+                                                        <tr>
+                                                            <td>@r.IsUsedInMean</td>
+                                                            <td>@r.ReadingTime</td>
+                                                            <td>@Measurement(r.Head, flume.MeanHeadUnitId)</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </td>
+                                    }
+
+                                </tr>
+                            }
+                            </tbody>
+                        </table>
+                    </td>
+                }
                 </tr>
-            }
+                }
             </tbody>
         </table>
     }
@@ -697,7 +924,15 @@ else
         if (measurement == null)
             return null;
 
-        return $"{measurement.Value} ({measurement.UnitId})";
+        return Measurement(measurement.Value, measurement.UnitId);
+    }
+
+    private string Measurement(double? value, string unitId)
+    {
+        if (!value.HasValue)
+            return null;
+
+        return $"{value} ({unitId})";
     }
 
     private string MeasurementDevice(MeasurementDevice device)
@@ -813,7 +1048,7 @@ else
         return builder.ToString();
     }
 
-    private List<AdcpDischargeSection> AdcpSections(IEnumerable<ChannelMeasurementBase> channelMeasurements)
+    private List<AdcpDischargeSection> AdcpDischarges(IEnumerable<ChannelMeasurementBase> channelMeasurements)
     {
         return channelMeasurements
             .Select(m => m as AdcpDischargeSection)
@@ -821,10 +1056,34 @@ else
             .ToList();
     }
 
-    private List<ManualGaugingDischargeSection> PanelSections(IEnumerable<ChannelMeasurementBase> channelMeasurements)
+    private List<ManualGaugingDischargeSection> PanelDischarges(IEnumerable<ChannelMeasurementBase> channelMeasurements)
     {
         return channelMeasurements
             .Select(m => m as ManualGaugingDischargeSection)
+            .Where(section => section != null)
+            .ToList();
+    }
+
+    private List<OtherDischargeSection> OtherDischarges(IEnumerable<ChannelMeasurementBase> channelMeasurements)
+    {
+        return channelMeasurements
+            .Select(m => m as OtherDischargeSection)
+            .Where(section => section != null)
+            .ToList();
+    }
+
+    private List<VolumetricDischarge> VolumetricDischarges(IEnumerable<ChannelMeasurementBase> channelMeasurements)
+    {
+        return channelMeasurements
+            .Select(m => m as VolumetricDischarge)
+            .Where(section => section != null)
+            .ToList();
+    }
+
+    private List<EngineeredStructureDischarge> EngineeredStructureDischarges(IEnumerable<ChannelMeasurementBase> channelMeasurements)
+    {
+        return channelMeasurements
+            .Select(m => m as EngineeredStructureDischarge)
             .Where(section => section != null)
             .ToList();
     }
@@ -877,5 +1136,33 @@ else
             builder.Append($" RangeEnd={equation.RangeEnd}");
 
         return builder.ToString();
+    }
+
+    private string GageZeroFlowObservedGageHeight(GageZeroFlowActivity zeroFlow)
+    {
+        return !zeroFlow.Stage.HasValue
+            ? $"{zeroFlow.GageHeight.Value} ({zeroFlow.GageHeight.UnitId})"
+            : null;
+    }
+
+    private string GageZeroFlowCalculatedGageHeight(GageZeroFlowActivity zeroFlow)
+    {
+        return zeroFlow.Stage.HasValue && zeroFlow.WaterDepth.HasValue
+            ? $"{zeroFlow.Stage - zeroFlow.WaterDepth} ({zeroFlow.GageHeight.UnitId})"
+            : null;
+    }
+
+    private string GageZeroFlowStage(GageZeroFlowActivity zeroFlow)
+    {
+        return zeroFlow.Stage.HasValue
+            ? $"{zeroFlow.Stage} ({zeroFlow.GageHeight.UnitId})"
+            : null;
+    }
+
+    private string GageZeroWaterDepth(GageZeroFlowActivity zeroFlow)
+    {
+        return zeroFlow.Stage.HasValue
+            ? $"{zeroFlow.WaterDepth} ({zeroFlow.GageHeight.UnitId})"
+            : null;
     }
 }
