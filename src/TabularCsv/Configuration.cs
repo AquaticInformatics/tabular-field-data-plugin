@@ -49,6 +49,10 @@ namespace TabularCsv
         public List<ManualGaugingDischargeDefinition> PanelDischargeSummaries { get; set; } = new List<ManualGaugingDischargeDefinition>();
         public List<ManualGaugingDischargeDefinition> AllPanelDischargeSummaries => AllDefinitions(PanelDischargeSummary, PanelDischargeSummaries);
 
+        public OtherDischargeDefinition OtherDischarge { get; set; }
+        public List<OtherDischargeDefinition> OtherDischarges { get; set; } = new List<OtherDischargeDefinition>();
+        public List<OtherDischargeDefinition> AllOtherDischarges => AllDefinitions(OtherDischarge, OtherDischarges);
+
         public LevelSurveyDefinition LevelSurvey { get; set; }
         public List<LevelSurveyDefinition> LevelSurveys { get; set; } = new List<LevelSurveyDefinition>();
         public List<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(LevelSurvey, LevelSurveys);
@@ -317,6 +321,12 @@ namespace TabularCsv
         public PropertyDefinition RangeEnd { get; set; }
         public PropertyDefinition Intercept { get; set; }
         public PropertyDefinition InterceptUnitId { get; set; }
+    }
+
+    public class OtherDischargeDefinition : DischargeActivityDefinition
+    {
+        public PropertyDefinition SectionDischarge { get; set; }
+        public PropertyDefinition MonitoringMethod { get; set; }
     }
 
     public class LevelSurveyDefinition : CoreDefinition

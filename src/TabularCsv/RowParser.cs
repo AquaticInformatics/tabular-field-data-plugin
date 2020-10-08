@@ -192,6 +192,9 @@ namespace TabularCsv
                 .Concat(Configuration
                     .AllPanelDischargeSummaries
                     .Select(panel => ParsePanelSectionDischarge(fieldVisitInfo, panel)))
+                .Concat(Configuration
+                    .AllOtherDischarges
+                    .Select(other => ParseOtherDischarge(fieldVisitInfo, other)))
                 .Where(discharge => discharge != null)
                 .ToList();
 
@@ -1038,6 +1041,34 @@ namespace TabularCsv
                 RangeStart = GetNullableDouble(definition.RangeStart),
                 RangeEnd = GetNullableDouble(definition.RangeEnd),
             };
+        }
+
+        private DischargeActivity ParseOtherDischarge(FieldVisitInfo visitInfo, OtherDischargeDefinition definition)
+        {
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge);
+            var monitoringMethod = GetString(definition.MonitoringMethod);
+
+            if (!totalDischarge.HasValue || string.IsNullOrEmpty(monitoringMethod))
+                return null;
+
+            var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
+
+            var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
+            var distanceUnitId = GetString(definition.DistanceUnitId);
+
+            var sectionDischarge = GetNullableDouble(definition.SectionDischarge)
+                                   ?? dischargeActivity.Discharge.Value;
+
+            var otherDischarge = new OtherDischargeSection(
+                dischargeActivity.MeasurementPeriod,
+                channelName,
+                new Measurement(sectionDischarge, dischargeActivity.Discharge.UnitId),
+                distanceUnitId,
+                monitoringMethod);
+
+            dischargeActivity.ChannelMeasurements.Add(otherDischarge);
+
+            return dischargeActivity;
         }
 
         private DischargeActivity ParseDischargeActivity(FieldVisitInfo visitInfo, DischargeActivityDefinition definition, double totalDischarge)
