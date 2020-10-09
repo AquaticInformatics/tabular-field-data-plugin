@@ -76,6 +76,12 @@ namespace TabularCsv
             var settings = TomlSettings.Create(s => s
                 .ConfigurePropertyMapping(m => m
                     .UseTargetPropertySelector(standardSelectors => standardSelectors.IgnoreCase))
+                .ConfigureType<DateOnlyDefinition>(type => type
+                    .WithConversionFor<TomlString>(convert => convert
+                        .FromToml(ConvertShorthandDateOnlySyntax)))
+                .ConfigureType<TimeOnlyDefinition>(type => type
+                    .WithConversionFor<TomlString>(convert => convert
+                        .FromToml(ConvertShorthandTimeOnlySyntax)))
                 .ConfigureType<TimestampDefinition>(type => type
                     .WithConversionFor<TomlString>(convert => convert
                         .FromToml(ConvertShorthandTimestampSyntax)))
@@ -247,6 +253,45 @@ namespace TabularCsv
 
         private TimestampDefinition ConvertShorthandTimestampSyntax(ITomlRoot root, TomlString tomlString)
         {
+            return ParseTimestampDefinitionFromShorthand(tomlString, TimestampType.DateTimeOnly);
+        }
+
+        private TimeOnlyDefinition ConvertShorthandTimeOnlySyntax(ITomlRoot root, TomlString tomlString)
+        {
+            var definition = ParseTimestampDefinitionFromShorthand(tomlString, TimestampType.TimeOnly);
+
+            return new TimeOnlyDefinition
+            {
+                FixedValue = definition.FixedValue,
+                ColumnHeader = definition.ColumnHeader,
+                ColumnIndex = definition.ColumnIndex,
+                PrefaceRegex = definition.PrefaceRegex,
+                Alias = definition.Alias,
+                Formats = definition.Formats,
+                UtcOffset = definition.UtcOffset,
+                Type = definition.Type,
+            };
+        }
+
+        private DateOnlyDefinition ConvertShorthandDateOnlySyntax(ITomlRoot root, TomlString tomlString)
+        {
+            var definition = ParseTimestampDefinitionFromShorthand(tomlString, TimestampType.DateOnly);
+
+            return new DateOnlyDefinition
+            {
+                FixedValue = definition.FixedValue,
+                ColumnHeader = definition.ColumnHeader,
+                ColumnIndex = definition.ColumnIndex,
+                PrefaceRegex = definition.PrefaceRegex,
+                Alias = definition.Alias,
+                Formats = definition.Formats,
+                UtcOffset = definition.UtcOffset,
+                Type = definition.Type,
+            };
+        }
+
+        private TimestampDefinition ParseTimestampDefinitionFromShorthand(TomlString tomlString, TimestampType defaultTimestampType)
+        {
             var text = tomlString.Value;
 
             var match = TimestampPropertyRegex.Match(text);
@@ -298,7 +343,7 @@ namespace TabularCsv
             }
 
             if (!timestamp.Type.HasValue)
-                timestamp.Type = TimestampType.DateTimeOnly;
+                timestamp.Type = defaultTimestampType;
 
             return timestamp;
         }
