@@ -101,6 +101,22 @@ namespace TabularCsv
         public PropertyDefinition UtcOffset { get; set; }
     }
 
+    public class TimeOnlyDefinition : TimestampDefinition
+    {
+        public TimeOnlyDefinition()
+        {
+            Type = TimestampType.TimeOnly;
+        }
+    }
+
+    public class DateOnlyDefinition : TimestampDefinition
+    {
+        public DateOnlyDefinition()
+        {
+            Type = TimestampType.DateOnly;
+        }
+    }
+
     public abstract class CoreDefinition
     {
         public PropertyDefinition Comment { get; set; }
@@ -108,34 +124,42 @@ namespace TabularCsv
         public List<PropertyDefinition> MergeWithComments { get; set; } = new List<PropertyDefinition>();
         public IEnumerable<PropertyDefinition> AllMergeWithComments => AllDefinitions(MergeWithComment, MergeWithComments);
 
-        protected IEnumerable<TDefinition> AllDefinitions<TDefinition>(TDefinition item, IEnumerable<TDefinition> items)
+        protected IEnumerable<TDefinition> AllDefinitions<TDefinition>(TDefinition item, IEnumerable<TDefinition> items, TDefinition item2 = null, TDefinition item3 = null)
             where TDefinition : class
         {
             return new List<TDefinition>
                 {
-                    item
+                    item,
+                    item2,
+                    item3,
                 }
                 .Concat(items)
-                .Where(i => i != null);
+                .Where(definition => definition != null);
         }
     }
 
     public abstract class ActivityDefinition : CoreDefinition
     {
         public TimestampDefinition Time { get; set; }
+        public TimeOnlyDefinition TimeOnly { get; set; }
+        public DateOnlyDefinition DateOnly { get; set; }
         public List<TimestampDefinition> Times { get; set; } = new List<TimestampDefinition>();
-        public IEnumerable<TimestampDefinition> AllTimes => AllDefinitions(Time, Times);
+        public IEnumerable<TimestampDefinition> AllTimes => AllDefinitions(Time, Times, TimeOnly, DateOnly);
     }
 
     public abstract class TimeRangeActivityDefinition : ActivityDefinition
     {
         public TimestampDefinition StartTime { get; set; }
+        public TimeOnlyDefinition StartTimeOnly { get; set; }
+        public DateOnlyDefinition StartDateOnly { get; set; }
         public List<TimestampDefinition> StartTimes { get; set; } = new List<TimestampDefinition>();
-        public IEnumerable<TimestampDefinition> AllStartTimes => AllDefinitions(StartTime, StartTimes);
+        public IEnumerable<TimestampDefinition> AllStartTimes => AllDefinitions(StartTime, StartTimes, StartTimeOnly, StartDateOnly);
 
         public TimestampDefinition EndTime { get; set; }
+        public TimeOnlyDefinition EndTimeOnly { get; set; }
+        public DateOnlyDefinition EndDateOnly { get; set; }
         public List<TimestampDefinition> EndTimes { get; set; } = new List<TimestampDefinition>();
-        public IEnumerable<TimestampDefinition> AllEndTimes => AllDefinitions(EndTime, EndTimes);
+        public IEnumerable<TimestampDefinition> AllEndTimes => AllDefinitions(EndTime, EndTimes, EndTimeOnly, EndDateOnly);
     }
 
     public class VisitDefinition : TimeRangeActivityDefinition
