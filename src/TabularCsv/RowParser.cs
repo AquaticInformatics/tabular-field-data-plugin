@@ -395,7 +395,11 @@ namespace TabularCsv
             return string.Join("\n", lines);
         }
 
-        private DateTimeInterval ParseInterval(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns, List<TimestampDefinition> startColumns, List<TimestampDefinition> endColumns)
+        private DateTimeInterval ParseInterval(
+            LocationInfo locationInfo,
+            IEnumerable<TimestampDefinition> timestampColumns,
+            IEnumerable<TimestampDefinition> startColumns,
+            IEnumerable<TimestampDefinition> endColumns)
         {
             var time = ParseNullableDateTimeOffset(locationInfo, timestampColumns);
             var startTime = ParseNullableDateTimeOffset(locationInfo, startColumns);
@@ -415,7 +419,7 @@ namespace TabularCsv
             return new DateTimeInterval(start, end);
         }
 
-        private DateTimeOffset ParseDateTimeOffset(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns)
+        private DateTimeOffset ParseDateTimeOffset(LocationInfo locationInfo, IEnumerable<TimestampDefinition> timestampColumns)
         {
             var dateTimeOffset = ParseNullableDateTimeOffset(locationInfo, timestampColumns);
 
@@ -429,12 +433,9 @@ namespace TabularCsv
 
         private const IFormatProvider CurrentThreadCulture = null;
 
-        private DateTimeOffset? ParseNullableDateTimeOffset(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns)
+        private DateTimeOffset? ParseNullableDateTimeOffset(LocationInfo locationInfo, IEnumerable<TimestampDefinition> timestampColumns)
         {
-            if (!timestampColumns.Any())
-                return null;
-
-            var timestamp = new DateTimeOffset(new DateTime(1900, 1, 1), LocationInfo?.UtcOffset ?? locationInfo.UtcOffset);
+            var timestamp = (DateTimeOffset?) null;
 
             foreach (var timestampColumn in timestampColumns)
             {
@@ -464,7 +465,10 @@ namespace TabularCsv
 
                 var utcOffset = GetNullableTimeSpan(timestampColumn.UtcOffset);
 
-                timestamp = timeParser(utcOffset ?? LocationInfo?.UtcOffset, timestamp, value);
+                if (!timestamp.HasValue)
+                    timestamp = new DateTimeOffset(new DateTime(1900, 1, 1), LocationInfo?.UtcOffset ?? locationInfo.UtcOffset);
+
+                timestamp = timeParser(utcOffset ?? LocationInfo?.UtcOffset, timestamp.Value, value);
             }
 
             return timestamp;
@@ -524,7 +528,9 @@ namespace TabularCsv
             if (time != DateTimeOffset.MinValue)
                 return time;
 
-            var allTimeColumns = activity.AllTimes;
+            var allTimeColumns = activity
+                .AllTimes
+                .ToList();
 
             if (!allTimeColumns.Any())
                 throw new ArgumentException($"Line {LineNumber}: '{visitInfo.LocationInfo.LocationIdentifier}': Can't infer activity time because no timestamp columns are configured.");
@@ -826,9 +832,7 @@ namespace TabularCsv
 
             var gageHeight = new Measurement(gageHeightValue ?? 0, unitId);
 
-            var applicableSinceDate = (definition.ApplicableSinceTimes?.Any() ?? false)
-                ? (DateTimeOffset?)ParseDateTimeOffset(visitInfo.LocationInfo, definition.ApplicableSinceTimes)
-                : null;
+            var applicableSinceDate = ParseNullableDateTimeOffset(visitInfo.LocationInfo, definition.AllApplicableSinceTimes);
 
             var observationDate = ParseActivityTime(visitInfo, definition);
 

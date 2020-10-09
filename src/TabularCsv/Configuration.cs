@@ -31,39 +31,39 @@ namespace TabularCsv
 
         public ReadingDefinition Reading { get; set; }
         public List<ReadingDefinition> Readings { get; set; } = new List<ReadingDefinition>();
-        public List<ReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+        public IEnumerable<ReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
 
         public InspectionDefinition Inspection { get; set; }
         public List<InspectionDefinition> Inspections { get; set; } = new List<InspectionDefinition>();
-        public List<InspectionDefinition> AllInspections => AllDefinitions(Inspection, Inspections);
+        public IEnumerable<InspectionDefinition> AllInspections => AllDefinitions(Inspection, Inspections);
 
         public CalibrationDefinition Calibration { get; set; }
         public List<CalibrationDefinition> Calibrations { get; set; } = new List<CalibrationDefinition>();
-        public List<CalibrationDefinition> AllCalibrations => AllDefinitions(Calibration, Calibrations);
+        public IEnumerable<CalibrationDefinition> AllCalibrations => AllDefinitions(Calibration, Calibrations);
 
         public AdcpDischargeDefinition AdcpDischarge { get; set; }
         public List<AdcpDischargeDefinition> AdcpDischarges { get; set; } = new List<AdcpDischargeDefinition>();
-        public List<AdcpDischargeDefinition> AllAdcpDischarges => AllDefinitions(AdcpDischarge, AdcpDischarges);
+        public IEnumerable<AdcpDischargeDefinition> AllAdcpDischarges => AllDefinitions(AdcpDischarge, AdcpDischarges);
 
         public ManualGaugingDischargeDefinition PanelDischargeSummary { get; set; }
         public List<ManualGaugingDischargeDefinition> PanelDischargeSummaries { get; set; } = new List<ManualGaugingDischargeDefinition>();
-        public List<ManualGaugingDischargeDefinition> AllPanelDischargeSummaries => AllDefinitions(PanelDischargeSummary, PanelDischargeSummaries);
+        public IEnumerable<ManualGaugingDischargeDefinition> AllPanelDischargeSummaries => AllDefinitions(PanelDischargeSummary, PanelDischargeSummaries);
 
         public OtherDischargeDefinition OtherDischarge { get; set; }
         public List<OtherDischargeDefinition> OtherDischarges { get; set; } = new List<OtherDischargeDefinition>();
-        public List<OtherDischargeDefinition> AllOtherDischarges => AllDefinitions(OtherDischarge, OtherDischarges);
+        public IEnumerable<OtherDischargeDefinition> AllOtherDischarges => AllDefinitions(OtherDischarge, OtherDischarges);
 
         public VolumetricDischargeDefinition VolumetricDischarge { get; set; }
         public List<VolumetricDischargeDefinition> VolumetricDischarges { get; set; } = new List<VolumetricDischargeDefinition>();
-        public List<VolumetricDischargeDefinition> AllVolumetricDischarges => AllDefinitions(VolumetricDischarge, VolumetricDischarges);
+        public IEnumerable<VolumetricDischargeDefinition> AllVolumetricDischarges => AllDefinitions(VolumetricDischarge, VolumetricDischarges);
 
         public EngineeredStructureDischargeDefinition EngineeredStructureDischarge { get; set; }
         public List<EngineeredStructureDischargeDefinition> EngineeredStructureDischarges { get; set; } = new List<EngineeredStructureDischargeDefinition>();
-        public List<EngineeredStructureDischargeDefinition> AllEngineeredStructureDischarges => AllDefinitions(EngineeredStructureDischarge, EngineeredStructureDischarges);
+        public IEnumerable<EngineeredStructureDischargeDefinition> AllEngineeredStructureDischarges => AllDefinitions(EngineeredStructureDischarge, EngineeredStructureDischarges);
 
         public LevelSurveyDefinition LevelSurvey { get; set; }
         public List<LevelSurveyDefinition> LevelSurveys { get; set; } = new List<LevelSurveyDefinition>();
-        public List<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(LevelSurvey, LevelSurveys);
+        public IEnumerable<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(LevelSurvey, LevelSurveys);
 
         public bool IsDisabled => Priority <= 0;
 
@@ -106,9 +106,9 @@ namespace TabularCsv
         public PropertyDefinition Comment { get; set; }
         public PropertyDefinition MergeWithComment { get; set; }
         public List<PropertyDefinition> MergeWithComments { get; set; } = new List<PropertyDefinition>();
-        public List<PropertyDefinition> AllMergeWithComments => AllDefinitions(MergeWithComment, MergeWithComments);
+        public IEnumerable<PropertyDefinition> AllMergeWithComments => AllDefinitions(MergeWithComment, MergeWithComments);
 
-        protected List<TDefinition> AllDefinitions<TDefinition>(TDefinition item, IEnumerable<TDefinition> items)
+        protected IEnumerable<TDefinition> AllDefinitions<TDefinition>(TDefinition item, IEnumerable<TDefinition> items)
             where TDefinition : class
         {
             return new List<TDefinition>
@@ -116,8 +116,7 @@ namespace TabularCsv
                     item
                 }
                 .Concat(items)
-                .Where(i => i != null)
-                .ToList();
+                .Where(i => i != null);
         }
     }
 
@@ -125,18 +124,18 @@ namespace TabularCsv
     {
         public TimestampDefinition Time { get; set; }
         public List<TimestampDefinition> Times { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> AllTimes => AllDefinitions(Time, Times);
+        public IEnumerable<TimestampDefinition> AllTimes => AllDefinitions(Time, Times);
     }
 
     public abstract class TimeRangeActivityDefinition : ActivityDefinition
     {
         public TimestampDefinition StartTime { get; set; }
         public List<TimestampDefinition> StartTimes { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> AllStartTimes => AllDefinitions(StartTime, StartTimes);
+        public IEnumerable<TimestampDefinition> AllStartTimes => AllDefinitions(StartTime, StartTimes);
 
         public TimestampDefinition EndTime { get; set; }
         public List<TimestampDefinition> EndTimes { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> AllEndTimes => AllDefinitions(EndTime, EndTimes);
+        public IEnumerable<TimestampDefinition> AllEndTimes => AllDefinitions(EndTime, EndTimes);
     }
 
     public class VisitDefinition : TimeRangeActivityDefinition
@@ -231,7 +230,7 @@ namespace TabularCsv
         public PropertyDefinition Certainty { get; set; }
         public TimestampDefinition ApplicableSinceTime { get; set; }
         public List<TimestampDefinition> ApplicableSinceTimes { get; set; } = new List<TimestampDefinition>();
-        public List<TimestampDefinition> AllStartTimes => AllDefinitions(ApplicableSinceTime, ApplicableSinceTimes);
+        public IEnumerable<TimestampDefinition> AllApplicableSinceTimes => AllDefinitions(ApplicableSinceTime, ApplicableSinceTimes);
     }
 
     public abstract class DischargeActivityDefinition : TimeRangeActivityDefinition
@@ -265,7 +264,7 @@ namespace TabularCsv
 
         public GageHeightMeasurementDefinition GageHeightMeasurement { get; set; }
         public List<GageHeightMeasurementDefinition> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurementDefinition>();
-        public List<GageHeightMeasurementDefinition> AllGageHeightMeasurements => AllDefinitions(GageHeightMeasurement, GageHeightMeasurements);
+        public IEnumerable<GageHeightMeasurementDefinition> AllGageHeightMeasurements => AllDefinitions(GageHeightMeasurement, GageHeightMeasurements);
     }
 
     public class GageHeightMeasurementDefinition : ActivityDefinition
@@ -319,7 +318,7 @@ namespace TabularCsv
 
         public MeterCalibrationEquationDefinition MeterCalibrationEquation { get; set; }
         public List<MeterCalibrationEquationDefinition> MeterCalibrationEquations { get; set; } = new List<MeterCalibrationEquationDefinition>();
-        public List<MeterCalibrationEquationDefinition> AllMeterCalibrationEquations => AllDefinitions(MeterCalibrationEquation, MeterCalibrationEquations);
+        public IEnumerable<MeterCalibrationEquationDefinition> AllMeterCalibrationEquations => AllDefinitions(MeterCalibrationEquation, MeterCalibrationEquations);
     }
 
     public class MeterCalibrationEquationDefinition
@@ -346,7 +345,7 @@ namespace TabularCsv
 
         public VolumetricReadingDefinition Reading { get; set; }
         public List<VolumetricReadingDefinition> Readings { get; set; } = new List<VolumetricReadingDefinition>();
-        public List<VolumetricReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+        public IEnumerable<VolumetricReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
     }
 
     public class VolumetricReadingDefinition
@@ -369,7 +368,7 @@ namespace TabularCsv
 
         public EngineeredStructureHeadReadingDefinition Reading { get; set; }
         public List<EngineeredStructureHeadReadingDefinition> Readings { get; set; } = new List<EngineeredStructureHeadReadingDefinition>();
-        public List<EngineeredStructureHeadReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+        public IEnumerable<EngineeredStructureHeadReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
     }
 
     public class EngineeredStructureHeadReadingDefinition : ActivityDefinition
@@ -387,7 +386,7 @@ namespace TabularCsv
 
         public LevelSurveyMeasurementDefinition LevelSurveyMeasurement { get; set; }
         public List<LevelSurveyMeasurementDefinition> LevelSurveyMeasurements { get; set; } = new List<LevelSurveyMeasurementDefinition>();
-        public List<LevelSurveyMeasurementDefinition> AllLevelSurveyMeasurements => AllDefinitions(LevelSurveyMeasurement, LevelSurveyMeasurements);
+        public IEnumerable<LevelSurveyMeasurementDefinition> AllLevelSurveyMeasurements => AllDefinitions(LevelSurveyMeasurement, LevelSurveyMeasurements);
     }
 
     public class LevelSurveyMeasurementDefinition : ActivityDefinition
