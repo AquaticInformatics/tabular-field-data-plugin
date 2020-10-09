@@ -20,11 +20,11 @@ Use the included `PluginTester.exe` tool from the `Aquarius.FieldDataFramework` 
 
 1. Open the TabularCsv project's **Properties** page
 2. Select the **Debug** tab
-3. Select **Start external program:** as the start action and browse to `"src\packages\Aquarius.FieldDataFramework.19.4.5\tools\PluginTester.exe`
+3. Select **Start external program:** as the start action and browse to `"src\packages\Aquarius.FieldDataFramework.20.3.0\tools\PluginTester.exe`
 4. Enter the **Command line arguments:** to launch your plugin
 
 ```
-/Plugin=TabularCsv.dll /Json=AppendedResults.json /Data=..\..\..\..\data\survey_123_sample.csv
+/Plugin=TabularCsv.dll /Json=AppendedResults.json /Data=..\..\..\..\data\survey_123_sample.csv /Setting=MyConfig=@path\to\MyConfig.toml
 ```
 
 The `/Plugin=` argument can be the filename of your plugin assembly, without any folder. The default working directory for a start action is the bin folder containing your plugin.

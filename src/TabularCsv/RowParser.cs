@@ -10,6 +10,7 @@ using FieldDataPluginFramework.DataModel.Calibrations;
 using FieldDataPluginFramework.DataModel.ChannelMeasurements;
 using FieldDataPluginFramework.DataModel.ControlConditions;
 using FieldDataPluginFramework.DataModel.DischargeActivities;
+using FieldDataPluginFramework.DataModel.GageZeroFlow;
 using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.LevelSurveys;
 using FieldDataPluginFramework.DataModel.Meters;
@@ -178,12 +179,28 @@ namespace TabularCsv
                 .Where(controlCondition => controlCondition != null)
                 .ToList();
 
+            var gageAtZeroFlows = new[]
+                {
+                    ParseGageAtZeroFlow(fieldVisitInfo, Configuration.GageAtZeroFlow)
+                }
+                .Where(zeroFlow => zeroFlow != null)
+                .ToList();
+
             var discharges = Configuration
                 .AllAdcpDischarges
                 .Select(adcp => ParseAdcpDischarge(fieldVisitInfo, adcp))
                 .Concat(Configuration
                     .AllPanelDischargeSummaries
                     .Select(panel => ParsePanelSectionDischarge(fieldVisitInfo, panel)))
+                .Concat(Configuration
+                    .AllOtherDischarges
+                    .Select(other => ParseOtherDischarge(fieldVisitInfo, other)))
+                .Concat(Configuration
+                    .AllVolumetricDischarges
+                    .Select(volumetric => ParseVolumetricDischarge(fieldVisitInfo, volumetric)))
+                .Concat(Configuration
+                    .AllEngineeredStructureDischarges
+                    .Select(engineeredStructure => ParseEngineeredStructureDischarge(fieldVisitInfo, engineeredStructure)))
                 .Where(discharge => discharge != null)
                 .ToList();
 
@@ -200,6 +217,7 @@ namespace TabularCsv
                 inspections,
                 calibrations,
                 controlConditions,
+                gageAtZeroFlows,
                 discharges,
                 levelSurveys);
         }
@@ -211,6 +229,7 @@ namespace TabularCsv
             List<Inspection> inspections,
             List<Calibration> calibrations,
             List<ControlCondition> controlConditions,
+            List<GageZeroFlowActivity> gageZeroFlows,
             List<DischargeActivity> discharges,
             List<LevelSurvey> levelSurveys)
         {
@@ -233,6 +252,11 @@ namespace TabularCsv
             foreach (var controlCondition in controlConditions)
             {
                 fieldVisitInfo.ControlConditions.Add(controlCondition);
+            }
+
+            foreach (var gageAtZeroFlow in gageZeroFlows)
+            {
+                fieldVisitInfo.GageZeroFlowActivities.Add(gageAtZeroFlow);
             }
 
             foreach (var discharge in discharges)
@@ -271,6 +295,11 @@ namespace TabularCsv
             foreach (var controlCondition in controlConditions)
             {
                 ResultsAppender.AddControlCondition(mergedVisit, controlCondition);
+            }
+
+            foreach (var gageZeroFlow in gageZeroFlows)
+            {
+                ResultsAppender.AddGageZeroFlowActivity(mergedVisit, gageZeroFlow);
             }
 
             foreach (var discharge in discharges)
@@ -782,6 +811,40 @@ namespace TabularCsv
             return controlCondition;
         }
 
+        private GageZeroFlowActivity ParseGageAtZeroFlow(FieldVisitInfo visitInfo, GageAtZeroFlowDefinition definition)
+        {
+            if (definition == null)
+                return null;
+
+            var unitId = GetString(definition.UnitId);
+            var gageHeightValue = GetNullableDouble(definition.GageHeight);
+            var stage = GetNullableDouble(definition.Stage);
+            var waterDepth = GetNullableDouble(definition.WaterDepth);
+
+            if (string.IsNullOrEmpty(unitId) || !gageHeightValue.HasValue && !stage.HasValue && !waterDepth.HasValue)
+                return null;
+
+            var gageHeight = new Measurement(gageHeightValue ?? 0, unitId);
+
+            var applicableSinceDate = (definition.ApplicableSinceTimes?.Any() ?? false)
+                ? (DateTimeOffset?)ParseDateTimeOffset(visitInfo.LocationInfo, definition.ApplicableSinceTimes)
+                : null;
+
+            var observationDate = ParseActivityTime(visitInfo, definition);
+
+            var gageZeroFlow = new GageZeroFlowActivity(observationDate, gageHeight)
+            {
+                Stage = stage,
+                WaterDepth = waterDepth,
+                Certainty = GetNullableDouble(definition.Certainty),
+                ApplicableSinceDate = applicableSinceDate,
+                Party = GetString(definition.Party),
+                Comments = MergeCommentText(definition)
+            };
+
+            return gageZeroFlow;
+        }
+
         private DischargeActivity ParseAdcpDischarge(FieldVisitInfo visitInfo, AdcpDischargeDefinition definition)
         {
             var totalDischarge = GetNullableDouble(definition.TotalDischarge);
@@ -983,6 +1046,150 @@ namespace TabularCsv
                 InterceptUnitId = GetString(definition.InterceptUnitId),
                 RangeStart = GetNullableDouble(definition.RangeStart),
                 RangeEnd = GetNullableDouble(definition.RangeEnd),
+            };
+        }
+
+        private DischargeActivity ParseOtherDischarge(FieldVisitInfo visitInfo, OtherDischargeDefinition definition)
+        {
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge);
+            var monitoringMethod = GetString(definition.MonitoringMethod);
+
+            if (!totalDischarge.HasValue || string.IsNullOrEmpty(monitoringMethod))
+                return null;
+
+            var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
+
+            var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
+            var distanceUnitId = GetString(definition.DistanceUnitId);
+
+            var sectionDischarge = GetNullableDouble(definition.SectionDischarge)
+                                   ?? dischargeActivity.Discharge.Value;
+
+            var otherDischarge = new OtherDischargeSection(
+                dischargeActivity.MeasurementPeriod,
+                channelName,
+                new Measurement(sectionDischarge, dischargeActivity.Discharge.UnitId),
+                distanceUnitId,
+                monitoringMethod);
+
+            dischargeActivity.ChannelMeasurements.Add(otherDischarge);
+
+            return dischargeActivity;
+        }
+
+        private DischargeActivity ParseVolumetricDischarge(FieldVisitInfo visitInfo, VolumetricDischargeDefinition definition)
+        {
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge);
+            var measurementContainerUnitId = GetString(definition.ContainerUnitId);
+
+            if (!totalDischarge.HasValue || string.IsNullOrEmpty(measurementContainerUnitId))
+                return null;
+
+            var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
+
+            var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
+            var distanceUnitId = GetString(definition.DistanceUnitId);
+
+            var sectionDischarge = GetNullableDouble(definition.SectionDischarge)
+                                   ?? dischargeActivity.Discharge.Value;
+
+            var volumetricDischarge = new VolumetricDischarge(
+                dischargeActivity.MeasurementPeriod,
+                channelName,
+                new Measurement(sectionDischarge, dischargeActivity.Discharge.UnitId),
+                distanceUnitId,
+                measurementContainerUnitId)
+            {
+                MeasurementContainerVolume = GetNullableDouble(definition.ContainerVolume),
+            };
+
+            volumetricDischarge
+                .Readings
+                .AddRange(definition
+                    .AllReadings
+                    .Select(ParseVolumetricReading)
+                    .Where(reading => reading != null));
+
+            volumetricDischarge.IsObserved =
+                GetNullableBoolean(definition.IsObserved) ?? !volumetricDischarge.Readings.Any();
+
+            dischargeActivity.ChannelMeasurements.Add(volumetricDischarge);
+
+            return dischargeActivity;
+        }
+
+        private VolumetricDischargeReading ParseVolumetricReading(VolumetricReadingDefinition definition)
+        {
+            var readingName = GetString(definition.Name);
+
+            if (string.IsNullOrEmpty(readingName))
+                return null;
+
+            return new VolumetricDischargeReading
+            {
+                Name = readingName,
+                IsUsed = GetNullableBoolean(definition.IsUsed) ?? true,
+                DurationSeconds = GetNullableDouble(definition.DurationSeconds),
+                Discharge = GetNullableDouble(definition.Discharge),
+                StartingVolume = GetNullableDouble(definition.StartingVolume),
+                EndingVolume = GetNullableDouble(definition.EndingVolume),
+                VolumeChange = GetNullableDouble(definition.VolumeChange),
+            };
+        }
+
+        private DischargeActivity ParseEngineeredStructureDischarge(FieldVisitInfo visitInfo, EngineeredStructureDischargeDefinition definition)
+        {
+            var totalDischarge = GetNullableDouble(definition.TotalDischarge);
+
+            if (!totalDischarge.HasValue)
+                return null;
+
+            var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
+
+            var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
+            var distanceUnitId = GetString(definition.DistanceUnitId);
+
+            var sectionDischarge = GetNullableDouble(definition.SectionDischarge)
+                                   ?? dischargeActivity.Discharge.Value;
+
+            var engineeredStructure = new EngineeredStructureDischarge(
+                dischargeActivity.MeasurementPeriod,
+                channelName,
+                new Measurement(sectionDischarge, dischargeActivity.Discharge.UnitId),
+                distanceUnitId,
+                distanceUnitId)
+            {
+                MeanHeadValue = GetNullableDouble(definition.MeanHead),
+                StructureEquation = GetString(definition.StructureEquation),
+                EngineeredStructureType = GetNullableEnum<EngineeredStructureType>(definition.StructureType) ?? EngineeredStructureType.Unknown
+            };
+
+            engineeredStructure
+                .HeadReadings
+                .AddRange(definition
+                    .AllReadings
+                    .Select(reading => ParseEngineeredStructureReading(visitInfo, reading))
+                    .Where(reading => reading != null));
+
+            dischargeActivity.ChannelMeasurements.Add(engineeredStructure);
+
+            return dischargeActivity;
+        }
+
+        private EngineeredStructureHeadReading ParseEngineeredStructureReading(FieldVisitInfo visitInfo, EngineeredStructureHeadReadingDefinition definition)
+        {
+            var readingTime = ParseActivityTime(visitInfo, definition);
+            
+            var head = GetNullableDouble(definition.Head);
+
+            if (!head.HasValue)
+                return null;
+
+            return new EngineeredStructureHeadReading
+            {
+                Head = head.Value,
+                IsUsedInMean = GetNullableBoolean(definition.IsUsed) ?? true,
+                ReadingTime = readingTime,
             };
         }
 

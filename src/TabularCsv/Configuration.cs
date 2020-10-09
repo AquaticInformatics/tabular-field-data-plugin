@@ -27,6 +27,7 @@ namespace TabularCsv
 
         public VisitDefinition Visit { get; set; }
         public ControlConditionDefinition ControlCondition { get; set; }
+        public GageAtZeroFlowDefinition GageAtZeroFlow { get; set; }
 
         public ReadingDefinition Reading { get; set; }
         public List<ReadingDefinition> Readings { get; set; } = new List<ReadingDefinition>();
@@ -47,6 +48,18 @@ namespace TabularCsv
         public ManualGaugingDischargeDefinition PanelDischargeSummary { get; set; }
         public List<ManualGaugingDischargeDefinition> PanelDischargeSummaries { get; set; } = new List<ManualGaugingDischargeDefinition>();
         public List<ManualGaugingDischargeDefinition> AllPanelDischargeSummaries => AllDefinitions(PanelDischargeSummary, PanelDischargeSummaries);
+
+        public OtherDischargeDefinition OtherDischarge { get; set; }
+        public List<OtherDischargeDefinition> OtherDischarges { get; set; } = new List<OtherDischargeDefinition>();
+        public List<OtherDischargeDefinition> AllOtherDischarges => AllDefinitions(OtherDischarge, OtherDischarges);
+
+        public VolumetricDischargeDefinition VolumetricDischarge { get; set; }
+        public List<VolumetricDischargeDefinition> VolumetricDischarges { get; set; } = new List<VolumetricDischargeDefinition>();
+        public List<VolumetricDischargeDefinition> AllVolumetricDischarges => AllDefinitions(VolumetricDischarge, VolumetricDischarges);
+
+        public EngineeredStructureDischargeDefinition EngineeredStructureDischarge { get; set; }
+        public List<EngineeredStructureDischargeDefinition> EngineeredStructureDischarges { get; set; } = new List<EngineeredStructureDischargeDefinition>();
+        public List<EngineeredStructureDischargeDefinition> AllEngineeredStructureDischarges => AllDefinitions(EngineeredStructureDischarge, EngineeredStructureDischarges);
 
         public LevelSurveyDefinition LevelSurvey { get; set; }
         public List<LevelSurveyDefinition> LevelSurveys { get; set; } = new List<LevelSurveyDefinition>();
@@ -208,6 +221,19 @@ namespace TabularCsv
         public PropertyDefinition DistanceToGage { get; set; }
     }
 
+    public class GageAtZeroFlowDefinition : ActivityDefinition
+    {
+        public PropertyDefinition UnitId { get; set; }
+        public PropertyDefinition GageHeight { get; set; }
+        public PropertyDefinition Stage { get; set; }
+        public PropertyDefinition WaterDepth { get; set; }
+        public PropertyDefinition Party { get; set; }
+        public PropertyDefinition Certainty { get; set; }
+        public TimestampDefinition ApplicableSinceTime { get; set; }
+        public List<TimestampDefinition> ApplicableSinceTimes { get; set; } = new List<TimestampDefinition>();
+        public List<TimestampDefinition> AllStartTimes => AllDefinitions(ApplicableSinceTime, ApplicableSinceTimes);
+    }
+
     public abstract class DischargeActivityDefinition : TimeRangeActivityDefinition
     {
         public PropertyDefinition TotalDischarge { get; set; }
@@ -296,13 +322,61 @@ namespace TabularCsv
         public List<MeterCalibrationEquationDefinition> AllMeterCalibrationEquations => AllDefinitions(MeterCalibrationEquation, MeterCalibrationEquations);
     }
 
-    public class MeterCalibrationEquationDefinition : ColumnDefinition
+    public class MeterCalibrationEquationDefinition
     {
         public PropertyDefinition Slope { get; set; }
         public PropertyDefinition RangeStart { get; set; }
         public PropertyDefinition RangeEnd { get; set; }
         public PropertyDefinition Intercept { get; set; }
         public PropertyDefinition InterceptUnitId { get; set; }
+    }
+
+    public class OtherDischargeDefinition : DischargeActivityDefinition
+    {
+        public PropertyDefinition SectionDischarge { get; set; }
+        public PropertyDefinition MonitoringMethod { get; set; }
+    }
+
+    public class VolumetricDischargeDefinition : DischargeActivityDefinition
+    {
+        public PropertyDefinition SectionDischarge { get; set; }
+        public PropertyDefinition ContainerVolume { get; set; }
+        public PropertyDefinition ContainerUnitId { get; set; }
+        public PropertyDefinition IsObserved { get; set; }
+
+        public VolumetricReadingDefinition Reading { get; set; }
+        public List<VolumetricReadingDefinition> Readings { get; set; } = new List<VolumetricReadingDefinition>();
+        public List<VolumetricReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+    }
+
+    public class VolumetricReadingDefinition
+    {
+        public PropertyDefinition IsUsed { get; set; }
+        public PropertyDefinition Name { get; set; }
+        public PropertyDefinition Discharge { get; set; }
+        public PropertyDefinition DurationSeconds { get; set; }
+        public PropertyDefinition StartingVolume { get; set; }
+        public PropertyDefinition EndingVolume { get; set; }
+        public PropertyDefinition VolumeChange { get; set; }
+    }
+
+    public class EngineeredStructureDischargeDefinition : DischargeActivityDefinition
+    {
+        public PropertyDefinition SectionDischarge { get; set; }
+        public PropertyDefinition StructureType { get; set; }
+        public PropertyDefinition StructureEquation { get; set; }
+        public PropertyDefinition MeanHead { get; set; }
+
+        public EngineeredStructureHeadReadingDefinition Reading { get; set; }
+        public List<EngineeredStructureHeadReadingDefinition> Readings { get; set; } = new List<EngineeredStructureHeadReadingDefinition>();
+        public List<EngineeredStructureHeadReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+    }
+
+    public class EngineeredStructureHeadReadingDefinition : ActivityDefinition
+    {
+        public PropertyDefinition IsUsed { get; set; }
+        public PropertyDefinition Name { get; set; }
+        public PropertyDefinition Head { get; set; }
     }
 
     public class LevelSurveyDefinition : CoreDefinition
