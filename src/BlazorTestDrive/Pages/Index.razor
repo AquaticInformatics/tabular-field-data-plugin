@@ -751,8 +751,8 @@ else
 
     private List<Example> Examples { get; } = BlazorTestDrive.Examples.AllExamples;
 
-    private string Config { get; set; } = BlazorTestDrive.Examples.AllExamples.First().ConfigText.Trim();
-    private string Csv { get; set; } = BlazorTestDrive.Examples.AllExamples.First().CsvText.Trim();
+    private string Config { get; set; }
+    private string Csv { get; set; }
 
     private string Details { get; set; }
     private string Location { get; set; }
@@ -816,6 +816,8 @@ else
             {
                 Config = example.ConfigText.Trim();
                 Csv = example.CsvText.Trim();
+
+                SetExampleIdInUrl(example.Id);
             }
         }
     }
@@ -826,29 +828,69 @@ else
             .FirstOrDefault(e => e.Id.Equals(id, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    protected override void OnInitialized()
+    private const string QueryParameterName = "example";
+
+    private string GetExampleIdFromUrl()
     {
         var uri = new Uri(NavigationManager.Uri);
-        LoadState();
         var parameters = QueryHelpers.ParseQuery(uri.Query);
 
-        if (parameters.TryGetValue("example", out var values))
+        return parameters.TryGetValue(QueryParameterName, out var values)
+            ? values.LastOrDefault()
+            : null;
+    }
+
+    private void SetExampleIdInUrl(string exampleId)
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var parameters = QueryHelpers.ParseQuery(uri.Query);
+
+        if (string.IsNullOrWhiteSpace(exampleId))
         {
-            var value = values.LastOrDefault();
-
-            if (!string.IsNullOrWhiteSpace(value))
-            {
-                var example = FindExampleById(value);
-
-                if (example != null && example.Id != SelectedExampleId)
-                {
-                    SelectedExampleId = example.Id;
-                }
-            }
+            parameters.Remove(QueryParameterName);
         }
         else
         {
-            LoadState();
+            if (parameters.TryGetValue(QueryParameterName, out var values) && exampleId == values.LastOrDefault())
+                return;
+
+            parameters[QueryParameterName] = exampleId;
+        }
+
+        var newUri = uri.GetComponents(UriComponents.Scheme | UriComponents.Host | UriComponents.Port | UriComponents.Path, UriFormat.UriEscaped);
+        foreach (var parameter in parameters)
+        {
+            foreach (var value in parameter.Value)
+            {
+                newUri = QueryHelpers.AddQueryString(newUri, parameter.Key, value);
+            }
+        }
+
+        NavigationManager.NavigateTo(newUri);
+    }
+
+    protected override void OnInitialized()
+    {
+        LoadState();
+
+        var exampleId = GetExampleIdFromUrl();
+
+        if (!string.IsNullOrWhiteSpace(exampleId))
+        {
+            var example = FindExampleById(exampleId);
+
+            if (example != null && example.Id != SelectedExampleId)
+            {
+                SelectedExampleId = example.Id;
+            }
+        }
+        else if (string.IsNullOrWhiteSpace(Csv) && string.IsNullOrWhiteSpace(Config))
+        {
+            SelectedExampleId = BlazorTestDrive.Examples.AllExamples.First().Id;
+        }
+        else
+        {
+            SelectedExampleId = string.Empty;
         }
 
         base.OnInitialized();
@@ -882,7 +924,8 @@ else
             {
                 Location = persistedState.Location;
                 TimeZone = persistedState.Timezone;
-
+                Csv = persistedState.Csv;
+                Config = persistedState.Config;
             }
         }
         catch (Exception)
