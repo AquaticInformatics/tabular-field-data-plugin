@@ -1,0 +1,9 @@
+LocaleName = 'es-ES' # Use the Spanish locale to parse dates and numbers
+Location = '@Sitio'
+Time = '@Fecha'
+Separator =';' # Since the comma is used a decimal point
+
+[Reading]
+Value = '@Temperatura'
+ParameterId = 'TA'
+UnitId = 'degC'

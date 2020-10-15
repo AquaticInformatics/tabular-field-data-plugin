@@ -1,0 +1,43 @@
+# This is our hint that it's an MF Pro file.
+PrefaceMustContain = 'Model: MF pro'
+
+Location = '???' # There is no location information in an MF Pro file, so you'll need to provide a location context elsewhere.
+
+# The next two settings tell the plugin that everything comes from the preface.
+MaximumPrefaceLines = 0
+NoDataRowsExpected = true
+
+# The multi-line option must be enabled via the 'm' after the trailing backslash, to match across a newline.
+# This is because the line FOLLOWING the 'Operator Name: xxxx' line is the only line with a timestamp we can parse.
+# Yeah, it's weird. But yay, it works! Regex FTW!!
+Time = '/^Operator Name: [^\n\r]+[\r\n]+(?<value>[^\r\n]+)/m'
+
+[PanelDischargeSummary]
+MeterType = 'Adv'
+MeterCalibrationModel = 'MF Pro'
+MeterCalibrationManufacturer = 'OTT'
+
+# Parse the other measurement values using regular expressions
+TotalDischarge  = '/^Total Discharge: (?<value>\S+) \S+$/'
+DischargeUnitId = '/^Total Discharge: \S+ (?<value>\S+)$/{Units}'
+DistanceUnitId  = '/^Stream Width: \S+ (?<value>\S+)$/{Units}'
+WidthValue = '/^Stream Width: (?<value>\S+) \S+$/'
+AreaValue   = '/^Total Area: (?<value>\S+) \S+$/'
+AreaUnitId  = '/^Total Area: \S+ (?<value>\S+)$/{Units}'
+MeanIndexVelocity = '/^Mean Velocity: (?<value>\S+) \S+$/'
+VelocityUnitId = '/^Mean Velocity: \S+ (?<value>\S+)$/{Units}'
+NumberOfVerticals = '/^# of Stations: (?<value>.+)$/'
+MeterCalibrationSerialNumber = '/^s\/n: (?<value>.+)$/'
+MeterCalibrationFirmwareVersion = '/^Boot: (?<value>.+)$/'
+MeterCalibrationSoftwareVersion = '/^Application: (?<value>.+)$/'
+
+[Aliases.Units]
+'lps' = 'l/s'
+
+[Aliases.StartPoint]
+'Right edge water' = 'RightEdgeOfWater'
+'Left edge water' = 'LeftEdgeOfWater'
+
+[Aliases.DischargeMethod]
+'Mid-section' = 'MidSection'
+'Mean-section' = 'MeanSection'

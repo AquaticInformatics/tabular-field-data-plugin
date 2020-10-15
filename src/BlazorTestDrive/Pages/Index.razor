@@ -24,26 +24,16 @@
         <tr>
             <td>Pick an example:</td>
             <td>
-                <table style="width: 100%;">
-                    <colgroup>
-                        <col style="width: 40%;" />
-                        <col style="width: 60%;" />
-                    </colgroup>
-                    <tbody>
-                    <tr>
-                        <td>
-                            <label for="example">Examples</label>
-                            <select id="example" @bind="@SelectedExampleId">
-                                @foreach (var example in Examples)
-                                {
-                                    <option value="@example.Id">@example.Name</option>
-                                }
-                            </select>
-                        </td>
-                        <td>@((MarkupString) DescriptionHtml)</td>
-                    </tr>
-                    </tbody>
-                </table>
+                <div>
+                    <label for="example">Examples</label>
+                    <select id="example" @bind="@SelectedExampleId">
+                        @foreach (var example in Examples)
+                        {
+                            <option value="@example.Id">@example.Name</option>
+                        }
+                    </select>
+                </div>
+                <div>@((MarkupString) DescriptionHtml)</div>
             </td>
         </tr>
         <tr>
@@ -833,6 +823,10 @@ else
                 Location = string.IsNullOrWhiteSpace(example.DefaultLocation)
                     ? string.Empty
                     : example.DefaultLocation;
+
+                TimeZone = string.IsNullOrWhiteSpace(example.DefaultTimeZone)
+                    ? string.Empty
+                    : example.DefaultTimeZone;
 
                 SetExampleIdInUrl(example.Id);
             }

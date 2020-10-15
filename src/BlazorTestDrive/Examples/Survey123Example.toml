@@ -1,0 +1,46 @@
+Location = '@Please type in the site name:{Locations}'
+
+[Visit]
+Comment = '@Comments:'
+Time = '@Visit Time: | Time Only | H:m'
+MergeWithComment = '@Maintenance Issues:'
+
+[[Visit.Times]]
+ColumnHeader = 'Visit Date:'
+Type = 'DateAndSurvey123Offset'
+Format = 'M/d/yyyy h:m:s tt'
+
+[[Readings]]
+ParameterId = 'HG'
+UnitId = 'ft'
+Value = '@Staff Gage Reading 1 (ft):'
+MergeWithComment = '#1 Staff Gage'
+
+[[Readings]]
+ParameterId = 'HG'
+UnitId = 'ft'
+Value = '@Staff Gage Reading 2 (ft):'
+MergeWithComment = '#2 Staff Gage'
+
+[[Readings]]
+ParameterId = 'QR'
+UnitId = 'ft^3/s'
+Value = '@Flow Meter Reading 1 (cfs):'
+MergeWithComment = '#1 Flow Meter'
+
+[[Readings]]
+ParameterId = 'QR'
+UnitId = 'ft^3/s'
+Value = '@Flow Meter Reading 2 (cfs):'
+MergeWithComment = '#2 Flow Meter'
+
+[[Readings]]
+ParameterId = 'QR'
+UnitId = 'ft^3/s'
+Value = '@Discharge Measured in CFS'
+MergeWithComment = 'Measured discharge'
+
+[Aliases.Locations]
+'Aberdeen_Waste' = 'Aberdeen Waste'
+'SNK_RVR_ID' = 'SNK RVR ID'
+'Sterling_Waste' = 'Sterling Waste'

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -31,39 +32,48 @@ namespace TabularCsv
 
         public ReadingDefinition Reading { get; set; }
         public List<ReadingDefinition> Readings { get; set; } = new List<ReadingDefinition>();
-        public IEnumerable<ReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+        private List<ReadingDefinition> _readingsCache;
+        public IEnumerable<ReadingDefinition> AllReadings => AllDefinitions(ref _readingsCache, Reading, Readings);
 
         public InspectionDefinition Inspection { get; set; }
         public List<InspectionDefinition> Inspections { get; set; } = new List<InspectionDefinition>();
-        public IEnumerable<InspectionDefinition> AllInspections => AllDefinitions(Inspection, Inspections);
+        private List<InspectionDefinition> _inspectionsCache;
+        public IEnumerable<InspectionDefinition> AllInspections => AllDefinitions(ref _inspectionsCache, Inspection, Inspections);
 
         public CalibrationDefinition Calibration { get; set; }
         public List<CalibrationDefinition> Calibrations { get; set; } = new List<CalibrationDefinition>();
-        public IEnumerable<CalibrationDefinition> AllCalibrations => AllDefinitions(Calibration, Calibrations);
+        private List<CalibrationDefinition> _calibrationsCache;
+        public IEnumerable<CalibrationDefinition> AllCalibrations => AllDefinitions(ref _calibrationsCache, Calibration, Calibrations);
 
         public AdcpDischargeDefinition AdcpDischarge { get; set; }
         public List<AdcpDischargeDefinition> AdcpDischarges { get; set; } = new List<AdcpDischargeDefinition>();
-        public IEnumerable<AdcpDischargeDefinition> AllAdcpDischarges => AllDefinitions(AdcpDischarge, AdcpDischarges);
+        private List<AdcpDischargeDefinition> _adcpDischargesCache;
+        public IEnumerable<AdcpDischargeDefinition> AllAdcpDischarges => AllDefinitions(ref _adcpDischargesCache, AdcpDischarge, AdcpDischarges);
 
         public ManualGaugingDischargeDefinition PanelDischargeSummary { get; set; }
         public List<ManualGaugingDischargeDefinition> PanelDischargeSummaries { get; set; } = new List<ManualGaugingDischargeDefinition>();
-        public IEnumerable<ManualGaugingDischargeDefinition> AllPanelDischargeSummaries => AllDefinitions(PanelDischargeSummary, PanelDischargeSummaries);
+        private List<ManualGaugingDischargeDefinition> _panelDischargesCache;
+        public IEnumerable<ManualGaugingDischargeDefinition> AllPanelDischargeSummaries => AllDefinitions(ref _panelDischargesCache, PanelDischargeSummary, PanelDischargeSummaries);
 
         public OtherDischargeDefinition OtherDischarge { get; set; }
         public List<OtherDischargeDefinition> OtherDischarges { get; set; } = new List<OtherDischargeDefinition>();
-        public IEnumerable<OtherDischargeDefinition> AllOtherDischarges => AllDefinitions(OtherDischarge, OtherDischarges);
+        private List<OtherDischargeDefinition> _otherDischargesCache;
+        public IEnumerable<OtherDischargeDefinition> AllOtherDischarges => AllDefinitions(ref _otherDischargesCache, OtherDischarge, OtherDischarges);
 
         public VolumetricDischargeDefinition VolumetricDischarge { get; set; }
         public List<VolumetricDischargeDefinition> VolumetricDischarges { get; set; } = new List<VolumetricDischargeDefinition>();
-        public IEnumerable<VolumetricDischargeDefinition> AllVolumetricDischarges => AllDefinitions(VolumetricDischarge, VolumetricDischarges);
+        private List<VolumetricDischargeDefinition> _volumetricDischargesCache;
+        public IEnumerable<VolumetricDischargeDefinition> AllVolumetricDischarges => AllDefinitions(ref _volumetricDischargesCache, VolumetricDischarge, VolumetricDischarges);
 
         public EngineeredStructureDischargeDefinition EngineeredStructureDischarge { get; set; }
         public List<EngineeredStructureDischargeDefinition> EngineeredStructureDischarges { get; set; } = new List<EngineeredStructureDischargeDefinition>();
-        public IEnumerable<EngineeredStructureDischargeDefinition> AllEngineeredStructureDischarges => AllDefinitions(EngineeredStructureDischarge, EngineeredStructureDischarges);
+        private List<EngineeredStructureDischargeDefinition> _engineeredStructureDischargesCache;
+        public IEnumerable<EngineeredStructureDischargeDefinition> AllEngineeredStructureDischarges => AllDefinitions(ref _engineeredStructureDischargesCache, EngineeredStructureDischarge, EngineeredStructureDischarges);
 
         public LevelSurveyDefinition LevelSurvey { get; set; }
         public List<LevelSurveyDefinition> LevelSurveys { get; set; } = new List<LevelSurveyDefinition>();
-        public IEnumerable<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(LevelSurvey, LevelSurveys);
+        private List<LevelSurveyDefinition> _levelSurveyCache;
+        public IEnumerable<LevelSurveyDefinition> AllLevelSurveys => AllDefinitions(ref _levelSurveyCache, LevelSurvey, LevelSurveys);
 
         public bool IsDisabled => Priority <= 0;
 
@@ -94,14 +104,18 @@ namespace TabularCsv
     {
     }
 
-    public class TimestampDefinition : ColumnDefinition
+    public abstract class TimestampBaseDefinition : ColumnDefinition
     {
         public string[] Formats { get; set; }
         public TimestampType? Type { get; set; }
         public PropertyDefinition UtcOffset { get; set; }
     }
 
-    public class TimeOnlyDefinition : TimestampDefinition
+    public class TimestampDefinition : TimestampBaseDefinition
+    {
+    }
+
+    public class TimeOnlyDefinition : TimestampBaseDefinition
     {
         public TimeOnlyDefinition()
         {
@@ -109,7 +123,7 @@ namespace TabularCsv
         }
     }
 
-    public class DateOnlyDefinition : TimestampDefinition
+    public class DateOnlyDefinition : TimestampBaseDefinition
     {
         public DateOnlyDefinition()
         {
@@ -122,19 +136,34 @@ namespace TabularCsv
         public PropertyDefinition Comment { get; set; }
         public PropertyDefinition MergeWithComment { get; set; }
         public List<PropertyDefinition> MergeWithComments { get; set; } = new List<PropertyDefinition>();
-        public IEnumerable<PropertyDefinition> AllMergeWithComments => AllDefinitions(MergeWithComment, MergeWithComments);
+        private List<PropertyDefinition> _commentsCache;
+        public IEnumerable<PropertyDefinition> AllMergeWithComments => AllDefinitions(ref _commentsCache, MergeWithComment, MergeWithComments);
 
-        protected IEnumerable<TDefinition> AllDefinitions<TDefinition>(TDefinition item, IEnumerable<TDefinition> items, TDefinition item2 = null, TDefinition item3 = null)
+        protected IEnumerable<TDefinition> AllDefinitions<TDefinition>(
+            ref List<TDefinition> itemsCache,
+            TDefinition item,
+            IEnumerable<TDefinition> items,
+            TDefinition item2 = null,
+            TDefinition item3 = null,
+            Action<List<TDefinition>> cacheValidator = null)
             where TDefinition : class
         {
-            return new List<TDefinition>
+            if (itemsCache != null)
+                return itemsCache;
+
+            itemsCache = new List<TDefinition>
                 {
                     item,
                     item2,
                     item3,
                 }
                 .Concat(items)
-                .Where(definition => definition != null);
+                .Where(definition => definition != null)
+                .ToList();
+
+            cacheValidator?.Invoke(itemsCache);
+
+            return itemsCache;
         }
     }
 
@@ -144,7 +173,44 @@ namespace TabularCsv
         public TimeOnlyDefinition TimeOnly { get; set; }
         public DateOnlyDefinition DateOnly { get; set; }
         public List<TimestampDefinition> Times { get; set; } = new List<TimestampDefinition>();
-        public IEnumerable<TimestampDefinition> AllTimes => AllDefinitions(Time, Times, TimeOnly, DateOnly);
+
+        private List<TimestampBaseDefinition> _timesCache;
+
+        protected IEnumerable<TimestampBaseDefinition> AllTimeDefinitions(
+            ref List<TimestampBaseDefinition> itemsCache,
+            TimestampBaseDefinition item,
+            IEnumerable<TimestampBaseDefinition> items,
+            TimestampBaseDefinition item2 = null,
+            TimestampBaseDefinition item3 = null)
+        {
+            return AllDefinitions(ref itemsCache, item, items, item2, item3, ValidateTimestampCache);
+        }
+
+        private void ValidateTimestampCache(List<TimestampBaseDefinition> timestampDefinitions)
+        {
+            var typeCount = new Dictionary<TimestampType, int>();
+
+            foreach (var definition in timestampDefinitions)
+            {
+                if (!definition.Type.HasValue)
+                    throw new ArgumentException($"{definition.Name()} does not have a {nameof(TimestampType)} value.");
+
+                if (!typeCount.TryGetValue(definition.Type.Value, out var count))
+                    count = 0;
+
+                typeCount[definition.Type.Value] = 1 + count;
+            }
+
+            var invalidDefinitions = typeCount
+                .Where(kvp => kvp.Value > 1)
+                .SelectMany(kvp => timestampDefinitions.Where(td => td.Type == kvp.Key))
+                .ToList();
+
+            if (invalidDefinitions.Any())
+                throw new ArgumentException($"{invalidDefinitions.Count} ambiguous {nameof(TimestampType)} definitions: {string.Join(", ", invalidDefinitions.Select(d => $"{d.Name()}={d.Type}"))}");
+        }
+
+        public IEnumerable<TimestampBaseDefinition> AllTimes => AllTimeDefinitions(ref _timesCache, Time, Times, TimeOnly, DateOnly);
     }
 
     public abstract class TimeRangeActivityDefinition : ActivityDefinition
@@ -153,13 +219,19 @@ namespace TabularCsv
         public TimeOnlyDefinition StartTimeOnly { get; set; }
         public DateOnlyDefinition StartDateOnly { get; set; }
         public List<TimestampDefinition> StartTimes { get; set; } = new List<TimestampDefinition>();
-        public IEnumerable<TimestampDefinition> AllStartTimes => AllDefinitions(StartTime, StartTimes, StartTimeOnly, StartDateOnly);
+
+        private List<TimestampBaseDefinition> _startTimesCache;
+
+        public IEnumerable<TimestampBaseDefinition> AllStartTimes => AllTimeDefinitions(ref _startTimesCache, StartTime, StartTimes, StartTimeOnly, StartDateOnly);
 
         public TimestampDefinition EndTime { get; set; }
         public TimeOnlyDefinition EndTimeOnly { get; set; }
         public DateOnlyDefinition EndDateOnly { get; set; }
         public List<TimestampDefinition> EndTimes { get; set; } = new List<TimestampDefinition>();
-        public IEnumerable<TimestampDefinition> AllEndTimes => AllDefinitions(EndTime, EndTimes, EndTimeOnly, EndDateOnly);
+
+        private List<TimestampBaseDefinition> _endTimesCache;
+
+        public IEnumerable<TimestampBaseDefinition> AllEndTimes => AllTimeDefinitions(ref _endTimesCache, EndTime, EndTimes, EndTimeOnly, EndDateOnly);
     }
 
     public class VisitDefinition : TimeRangeActivityDefinition
@@ -254,7 +326,10 @@ namespace TabularCsv
         public PropertyDefinition Certainty { get; set; }
         public TimestampDefinition ApplicableSinceTime { get; set; }
         public List<TimestampDefinition> ApplicableSinceTimes { get; set; } = new List<TimestampDefinition>();
-        public IEnumerable<TimestampDefinition> AllApplicableSinceTimes => AllDefinitions(ApplicableSinceTime, ApplicableSinceTimes);
+
+        private List<TimestampBaseDefinition> _applicableSinceTimesCache;
+
+        public IEnumerable<TimestampBaseDefinition> AllApplicableSinceTimes => AllTimeDefinitions(ref _applicableSinceTimesCache, ApplicableSinceTime, ApplicableSinceTimes);
     }
 
     public abstract class DischargeActivityDefinition : TimeRangeActivityDefinition
@@ -288,7 +363,10 @@ namespace TabularCsv
 
         public GageHeightMeasurementDefinition GageHeightMeasurement { get; set; }
         public List<GageHeightMeasurementDefinition> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurementDefinition>();
-        public IEnumerable<GageHeightMeasurementDefinition> AllGageHeightMeasurements => AllDefinitions(GageHeightMeasurement, GageHeightMeasurements);
+
+        private List<GageHeightMeasurementDefinition> _gageHeightMeasurementCache;
+
+        public IEnumerable<GageHeightMeasurementDefinition> AllGageHeightMeasurements => AllDefinitions(ref _gageHeightMeasurementCache, GageHeightMeasurement, GageHeightMeasurements);
     }
 
     public class GageHeightMeasurementDefinition : ActivityDefinition
@@ -342,7 +420,10 @@ namespace TabularCsv
 
         public MeterCalibrationEquationDefinition MeterCalibrationEquation { get; set; }
         public List<MeterCalibrationEquationDefinition> MeterCalibrationEquations { get; set; } = new List<MeterCalibrationEquationDefinition>();
-        public IEnumerable<MeterCalibrationEquationDefinition> AllMeterCalibrationEquations => AllDefinitions(MeterCalibrationEquation, MeterCalibrationEquations);
+
+        private List<MeterCalibrationEquationDefinition> _meterCalibrationEquationCache;
+
+        public IEnumerable<MeterCalibrationEquationDefinition> AllMeterCalibrationEquations => AllDefinitions(ref _meterCalibrationEquationCache, MeterCalibrationEquation, MeterCalibrationEquations);
     }
 
     public class MeterCalibrationEquationDefinition
@@ -369,7 +450,9 @@ namespace TabularCsv
 
         public VolumetricReadingDefinition Reading { get; set; }
         public List<VolumetricReadingDefinition> Readings { get; set; } = new List<VolumetricReadingDefinition>();
-        public IEnumerable<VolumetricReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+
+        private List<VolumetricReadingDefinition> _readingsCache;
+        public IEnumerable<VolumetricReadingDefinition> AllReadings => AllDefinitions(ref _readingsCache, Reading, Readings);
     }
 
     public class VolumetricReadingDefinition
@@ -392,7 +475,9 @@ namespace TabularCsv
 
         public EngineeredStructureHeadReadingDefinition Reading { get; set; }
         public List<EngineeredStructureHeadReadingDefinition> Readings { get; set; } = new List<EngineeredStructureHeadReadingDefinition>();
-        public IEnumerable<EngineeredStructureHeadReadingDefinition> AllReadings => AllDefinitions(Reading, Readings);
+
+        private List<EngineeredStructureHeadReadingDefinition> _readingsCache;
+        public IEnumerable<EngineeredStructureHeadReadingDefinition> AllReadings => AllDefinitions(ref _readingsCache, Reading, Readings);
     }
 
     public class EngineeredStructureHeadReadingDefinition : ActivityDefinition
@@ -409,7 +494,10 @@ namespace TabularCsv
 
         public LevelSurveyMeasurementDefinition LevelSurveyMeasurement { get; set; }
         public List<LevelSurveyMeasurementDefinition> LevelSurveyMeasurements { get; set; } = new List<LevelSurveyMeasurementDefinition>();
-        public IEnumerable<LevelSurveyMeasurementDefinition> AllLevelSurveyMeasurements => AllDefinitions(LevelSurveyMeasurement, LevelSurveyMeasurements);
+
+        private List<LevelSurveyMeasurementDefinition> _measurementCache;
+
+        public IEnumerable<LevelSurveyMeasurementDefinition> AllLevelSurveyMeasurements => AllDefinitions(ref _measurementCache, LevelSurveyMeasurement, LevelSurveyMeasurements);
     }
 
     public class LevelSurveyMeasurementDefinition : ActivityDefinition

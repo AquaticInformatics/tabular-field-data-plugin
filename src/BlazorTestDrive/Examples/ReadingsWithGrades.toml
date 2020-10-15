@@ -1,0 +1,14 @@
+Location = '@Location'
+Time = '@Time'
+
+[Reading]
+ParameterId = '@Parameter'
+UnitId = '@Unit'
+Value = '@Value'
+ReadingType = '@ReadingType'
+GradeName = '@Grade'
+
+# Note reading qualifiers aren't the same a time-series qualifiers.
+# Use the System Config page to configured the 'Reading Qualifier Type' drop-down list.
+ReadingQualifiers = '@Qualifiers'
+ReadingQualifierSeparators = ';'

@@ -1,0 +1,4 @@
+Location, Time, Parameter, Value, Unit, ReadingType, SubLocation, Comments, ReferencePoint, UseLocalAssumedDatum
+LOC1, 2020-04-01 8:15, TA, 12.5, degC, Routine, , Manual air temp reading
+LOC2, 2020-04-01 12:35, DepthToWater, 0.8, m, Routine, Pipe 1, Top of casing verification, MeasuringPoint
+LOC3, 2020-04-01 23:42, DepthToWater, 0.5, m, Routine, Pipe 1, From ground surface, , true
