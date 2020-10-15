@@ -1,9 +1,9 @@
-LocaleName = 'fr-FR' # Use the French locale
+﻿LocaleName = 'fr-FR' # Use the French locale
 Location = '@Le Site'
 Time = '@La Date'
 Separator =';' # Since the comma is used a decimal point
 
 [Reading]
-Value = '@La Temp�rature'
+Value = '@La Température'
 ParameterId = 'TA'
 UnitId = 'degC'

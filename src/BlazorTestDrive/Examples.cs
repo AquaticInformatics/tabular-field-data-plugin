@@ -56,7 +56,7 @@ Note that it also includes a sparse list of <a href=""https://github.com/Aquatic
             {
                 Id = "Aliases",
                 Name = "Use {Aliases} to transform your data",
-                Description = "Aliases are a power feature for transforming invalid data from your CSV file into a form required by AQUARIUS.",
+                Description = "Aliases are a power feature for transforming invalid data from your CSV file into a form required by AQUARIUS. Note how the Unicode degree symbol in the CSV is transformed to degC or degF.",
             },
             new Example
             {
