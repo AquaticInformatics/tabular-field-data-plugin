@@ -397,9 +397,9 @@ namespace TabularCsv
 
         private DateTimeInterval ParseInterval(
             LocationInfo locationInfo,
-            IEnumerable<TimestampDefinition> timestampColumns,
-            IEnumerable<TimestampDefinition> startColumns,
-            IEnumerable<TimestampDefinition> endColumns)
+            IEnumerable<TimestampBaseDefinition> timestampColumns,
+            IEnumerable<TimestampBaseDefinition> startColumns,
+            IEnumerable<TimestampBaseDefinition> endColumns)
         {
             var time = ParseNullableDateTimeOffset(locationInfo, timestampColumns);
             var startTime = ParseNullableDateTimeOffset(locationInfo, startColumns);
@@ -419,7 +419,7 @@ namespace TabularCsv
             return new DateTimeInterval(start, end);
         }
 
-        private DateTimeOffset ParseDateTimeOffset(LocationInfo locationInfo, IEnumerable<TimestampDefinition> timestampColumns)
+        private DateTimeOffset ParseDateTimeOffset(LocationInfo locationInfo, IEnumerable<TimestampBaseDefinition> timestampColumns)
         {
             var dateTimeOffset = ParseNullableDateTimeOffset(locationInfo, timestampColumns);
 
@@ -433,7 +433,7 @@ namespace TabularCsv
 
         private const IFormatProvider CurrentThreadCulture = null;
 
-        private DateTimeOffset? ParseNullableDateTimeOffset(LocationInfo locationInfo, IEnumerable<TimestampDefinition> timestampColumns)
+        private DateTimeOffset? ParseNullableDateTimeOffset(LocationInfo locationInfo, IEnumerable<TimestampBaseDefinition> timestampColumns)
         {
             var timestamp = (DateTimeOffset?) null;
 

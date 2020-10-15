@@ -258,36 +258,31 @@ namespace TabularCsv
 
         private TimeOnlyDefinition ConvertShorthandTimeOnlySyntax(ITomlRoot root, TomlString tomlString)
         {
-            var definition = ParseTimestampDefinitionFromShorthand(tomlString, TimestampType.TimeOnly);
-
-            return new TimeOnlyDefinition
-            {
-                FixedValue = definition.FixedValue,
-                ColumnHeader = definition.ColumnHeader,
-                ColumnIndex = definition.ColumnIndex,
-                PrefaceRegex = definition.PrefaceRegex,
-                Alias = definition.Alias,
-                Formats = definition.Formats,
-                UtcOffset = definition.UtcOffset,
-                Type = definition.Type,
-            };
+            return ParseTimestampDefinitionFromShorthand(tomlString, TimestampType.TimeOnly, () => new TimeOnlyDefinition());
         }
 
         private DateOnlyDefinition ConvertShorthandDateOnlySyntax(ITomlRoot root, TomlString tomlString)
         {
-            var definition = ParseTimestampDefinitionFromShorthand(tomlString, TimestampType.DateOnly);
+            return ParseTimestampDefinitionFromShorthand(tomlString, TimestampType.DateOnly, () => new DateOnlyDefinition());
+        }
 
-            return new DateOnlyDefinition
-            {
-                FixedValue = definition.FixedValue,
-                ColumnHeader = definition.ColumnHeader,
-                ColumnIndex = definition.ColumnIndex,
-                PrefaceRegex = definition.PrefaceRegex,
-                Alias = definition.Alias,
-                Formats = definition.Formats,
-                UtcOffset = definition.UtcOffset,
-                Type = definition.Type,
-            };
+        private TDefinition ParseTimestampDefinitionFromShorthand<TDefinition>(TomlString tomlString, TimestampType defaultTimestampType, Func<TDefinition> factory)
+            where TDefinition : TimestampBaseDefinition
+        {
+            var temp = ParseTimestampDefinitionFromShorthand(tomlString, defaultTimestampType);
+
+            var definition = factory();
+
+            definition.FixedValue = temp.FixedValue;
+            definition.ColumnHeader = temp.ColumnHeader;
+            definition.ColumnIndex = temp.ColumnIndex;
+            definition.PrefaceRegex = temp.PrefaceRegex;
+            definition.Alias = temp.Alias;
+            definition.Formats = temp.Formats;
+            definition.UtcOffset = temp.UtcOffset;
+            definition.Type = temp.Type;
+
+            return definition;
         }
 
         private TimestampDefinition ParseTimestampDefinitionFromShorthand(TomlString tomlString, TimestampType defaultTimestampType)
