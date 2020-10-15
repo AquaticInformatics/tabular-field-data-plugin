@@ -25,6 +25,25 @@ LOC2, 1988-Aug-8 15:10, -3.5"
             },
             new Example
             {
+                Id = "SeparateTimeAndDateColumns",
+                Name = "Air Temperature readings (separate date and time columns)",
+                Description = "Same as the previous example, but the date and time values are in separate columns",
+                ConfigText = @"
+Location = '@The Location'
+TimeOnly = '@The Time'
+DateOnly = '@The Date'
+
+[Reading]
+Value = '@The Temperature'
+ParameterId = 'TA'
+UnitId = 'degC'",
+                CsvText = @"
+The Location, The Date, The Time, The Temperature
+LOC1, 2020-Jan-12, 12:35, 20.5
+LOC2, 1988-Aug-8, 15:10, -3.5"
+            },
+            new Example
+            {
                 Id = "French",
                 Name = "Parse French dates and numbers",
                 Description = "Uses the .NET French locale to parse dates and numbers.",
