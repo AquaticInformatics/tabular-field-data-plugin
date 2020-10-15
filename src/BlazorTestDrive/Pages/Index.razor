@@ -834,6 +834,10 @@ else
                     ? string.Empty
                     : example.DefaultLocation;
 
+                TimeZone = string.IsNullOrWhiteSpace(example.DefaultTimeZone)
+                    ? string.Empty
+                    : example.DefaultTimeZone;
+
                 SetExampleIdInUrl(example.Id);
             }
         }

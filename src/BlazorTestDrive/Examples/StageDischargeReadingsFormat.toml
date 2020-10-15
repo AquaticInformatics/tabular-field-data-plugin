@@ -1,0 +1,43 @@
+# A Tabular CSV configuration which exactly matches the older StageDischargeReadings format
+CommentLinePrefix = '#'
+Location = '@LocationIdentifier'
+
+[Visit]
+Party = '@Party'
+
+[Reading]
+Time = '@MeasurementStartDateTime | DateTimeOffset'
+Comment = '@Comments'
+ParameterId = '@ReadingParameter'
+UnitId = '@ReadingUnits'
+Value = '@ReadingValue'
+Method = '@ReadingMethod'
+ReadingType = '@ReadingType'
+Publish = '@ReadingPublish'
+Uncertainty = '@ReadingUncertainty'
+MeasurementDeviceManufacturer = '@ReadingDeviceManufacturer'
+MeasurementDeviceModel = '@ReadingDeviceModel'
+MeasurementDeviceSerialNumber = '@ReadingDeviceSerialNumber'
+SubLocation = '@ReadingSublocation'
+
+[PanelDischargeSummary]
+Party = '@Party'
+Comment = '@Comments'
+StartTime = '@MeasurementStartDateTime | DateTimeOffset'
+EndTime = '@MeasurementEndDateTime | DateTimeOffset'
+MeasurementId = '@MeasurementId'
+DistanceUnitId = '@WidthUnits'
+TotalDischarge = '@Discharge'
+DischargeUnitId  = '@DischargeUnits'
+ChannelName = '@ChannelName'
+WidthValue = '@ChannelWidth'
+AreaValue = '@ChannelArea'
+AreaUnitId = '@AreaUnits'
+MeanIndexVelocity = '@ChannelVelocity'
+VelocityUnitId = '@VelocityUnits'
+
+[[PanelDischargeSummary.GageHeightMeasurements]]
+Value = '@StageAtStart'
+
+[[PanelDischargeSummary.GageHeightMeasurements]]
+Value = '@StageAtEnd'

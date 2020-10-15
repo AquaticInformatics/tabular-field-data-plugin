@@ -1,0 +1,8 @@
+Location = '@The Location'
+TimeOnly = '@The Time'
+DateOnly = '@The Date'
+
+[Reading]
+Value = '@The Temperature'
+ParameterId = 'TA'
+UnitId = 'degC'

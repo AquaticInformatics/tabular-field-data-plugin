@@ -1,0 +1,12 @@
+Location = '@Location'
+Time = '@Time'
+
+[Reading]
+ParameterId = '@Parameter'
+UnitId = '@Unit'
+Value = '@Value'
+ReadingType = '@ReadingType'
+SubLocation = '@SubLocation'
+Comment = '@Comments'
+ReferencePointName = '@ReferencePoint'
+UseLocationDatumAsReference = '@UseLocalAssumedDatum'

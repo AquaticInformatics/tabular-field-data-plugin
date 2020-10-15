@@ -1,0 +1,16 @@
+# Append the {aliasName} pattern to the end of a short form string
+Location = '@Location{Locations}'
+Time = '@Time'
+
+[Reading]
+Value = '@Value'
+ParameterId = 'TA'
+UnitId = '@Unit{Units}' 
+
+[Aliases.Units]
+'°C' = 'degC'
+'°F' = 'degF'
+
+[Aliases.Locations]
+'Loc1' = 'LOCATION1'
+'Loc2' = 'GWX0005J'

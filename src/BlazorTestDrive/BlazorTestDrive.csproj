@@ -10,6 +10,52 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Examples\AirTemperature.csv" />
+    <None Remove="Examples\AirTemperature.toml" />
+    <None Remove="Examples\Aliases.csv" />
+    <None Remove="Examples\Aliases.toml" />
+    <None Remove="Examples\French.csv" />
+    <None Remove="Examples\French.toml" />
+    <None Remove="Examples\OttMFPro.csv" />
+    <None Remove="Examples\OttMFPro.toml" />
+    <None Remove="Examples\ReadingsWithDatumConversion.csv" />
+    <None Remove="Examples\ReadingsWithDatumConversion.toml" />
+    <None Remove="Examples\ReadingsWithGrades.csv" />
+    <None Remove="Examples\ReadingsWithGrades.toml" />
+    <None Remove="Examples\SeparateTimeAndDateColumns.csv" />
+    <None Remove="Examples\SeparateTimeAndDateColumns.toml" />
+    <None Remove="Examples\Spanish.csv" />
+    <None Remove="Examples\Spanish.toml" />
+    <None Remove="Examples\StageDischargeReadingsFormat.csv" />
+    <None Remove="Examples\StageDischargeReadingsFormat.toml" />
+    <None Remove="Examples\Survey123Example.csv" />
+    <None Remove="Examples\Survey123Example.toml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Examples\AirTemperature.csv" />
+    <EmbeddedResource Include="Examples\AirTemperature.toml" />
+    <EmbeddedResource Include="Examples\Aliases.csv" />
+    <EmbeddedResource Include="Examples\Aliases.toml" />
+    <EmbeddedResource Include="Examples\French.csv" />
+    <EmbeddedResource Include="Examples\French.toml" />
+    <EmbeddedResource Include="Examples\OttMFPro.csv" />
+    <EmbeddedResource Include="Examples\OttMFPro.toml" />
+    <EmbeddedResource Include="Examples\ReadingsWithDatumConversion.csv" />
+    <EmbeddedResource Include="Examples\ReadingsWithDatumConversion.toml" />
+    <EmbeddedResource Include="Examples\ReadingsWithGrades.csv" />
+    <EmbeddedResource Include="Examples\ReadingsWithGrades.toml" />
+    <EmbeddedResource Include="Examples\SeparateTimeAndDateColumns.csv" />
+    <EmbeddedResource Include="Examples\SeparateTimeAndDateColumns.toml" />
+    <EmbeddedResource Include="Examples\Spanish.csv" />
+    <EmbeddedResource Include="Examples\Spanish.toml" />
+    <EmbeddedResource Include="Examples\StageDischargeReadingsFormat.csv" />
+    <EmbeddedResource Include="Examples\StageDischargeReadingsFormat.toml" />
+    <EmbeddedResource Include="Examples\Survey123Example.csv" />
+    <EmbeddedResource Include="Examples\Survey123Example.toml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Aquarius.FieldDataFramework" Version="20.3.0" />
     <PackageReference Include="Blazored.LocalStorage" Version="3.0.0" />
     <PackageReference Include="BlazorInputFile" Version="0.2.0" />
