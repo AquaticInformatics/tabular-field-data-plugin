@@ -18,19 +18,32 @@
 <table style="width: 100%;">
     <colgroup>
         <col style="width: 10%;" />
-        <col style="width: 90%;" />
+        <col style="width: 80%;" />
     </colgroup>
     <tbody>
         <tr>
             <td>Pick an example:</td>
             <td>
-                <label for="example">Examples</label>
-                <select id="example" @bind="@SelectedExampleId">
-                    @foreach (var example in Examples)
-                    {
-                        <option value="@example.Id">@example.Name</option>
-                    }
-                </select>
+                <table style="width: 100%;">
+                    <colgroup>
+                        <col style="width: 40%;" />
+                        <col style="width: 60%;" />
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <label for="example">Examples</label>
+                            <select id="example" @bind="@SelectedExampleId">
+                                @foreach (var example in Examples)
+                                {
+                                    <option value="@example.Id">@example.Name</option>
+                                }
+                            </select>
+                        </td>
+                        <td>@((MarkupString) DescriptionHtml)</td>
+                    </tr>
+                    </tbody>
+                </table>
             </td>
         </tr>
         <tr>
@@ -817,10 +830,16 @@ else
                 Config = example.ConfigText.Trim();
                 Csv = example.CsvText.Trim();
 
+                Location = string.IsNullOrWhiteSpace(example.DefaultLocation)
+                    ? string.Empty
+                    : example.DefaultLocation;
+
                 SetExampleIdInUrl(example.Id);
             }
         }
     }
+
+    private string DescriptionHtml => FindExampleById(_selectedExampleId)?.Description?.Trim();
 
     private Example FindExampleById(string id)
     {

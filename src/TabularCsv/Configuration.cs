@@ -398,7 +398,6 @@ namespace TabularCsv
     public class EngineeredStructureHeadReadingDefinition : ActivityDefinition
     {
         public PropertyDefinition IsUsed { get; set; }
-        public PropertyDefinition Name { get; set; }
         public PropertyDefinition Head { get; set; }
     }
 
