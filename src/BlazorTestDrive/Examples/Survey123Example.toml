@@ -2,13 +2,9 @@ Location = '@Please type in the site name:{Locations}'
 
 [Visit]
 Comment = '@Comments:'
-Time = '@Visit Time: | Time Only | H:m'
+TimeOnly = '@Visit Time:'
+Time = '@Visit Date: | DateAndSurvey123Offset | M/d/yyyy h:m:s tt'
 MergeWithComment = '@Maintenance Issues:'
-
-[[Visit.Times]]
-ColumnHeader = 'Visit Date:'
-Type = 'DateAndSurvey123Offset'
-Format = 'M/d/yyyy h:m:s tt'
 
 [[Readings]]
 ParameterId = 'HG'
