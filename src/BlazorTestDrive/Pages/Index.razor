@@ -53,6 +53,15 @@
                 <br />
                 <br />
                 <InputFile id="csvFile" OnChange="OnCsvFileSelected" />
+                <div>
+                    <label for="encoding">Encoding:</label>
+                    <select id="encoding" @bind="@SelectedEncodingName">
+                        @foreach (var encoding in Encodings)
+                        {
+                            <option value="@encoding.Name" selected="@(encoding.Name.Equals(SelectedEncodingName) || string.IsNullOrEmpty(SelectedEncodingName) && encoding.Name.Equals("utf-8"))">@encoding.Name</option>
+                        }
+                    </select>
+                </div>
             </td>
             <td>
                 <textarea rows="4" cols="100" wrap="off" style="font-family: monospace;" @bind="Csv"></textarea>
@@ -754,8 +763,11 @@ else
 
     private List<Example> Examples { get; } = BlazorTestDrive.Examples.AllExamples;
 
+    private List<EncodingInfo> Encodings { get; } = BlazorTestDrive.Encodings.AllEncodings;
+
     private string Config { get; set; }
     private string Csv { get; set; }
+    private byte[] CsvBytes { get; set; }
 
     private string Details { get; set; }
     private string Location { get; set; }
@@ -793,12 +805,42 @@ else
         var file = CsvFile;
         CsvFile = null;
 
-        Csv = await LoadFileAsText(file);
+        CsvBytes = await LoadFileAsBytesAsync(file);
+        var encodingInfo = SelectedEncodingInfo;
+        Csv = await LoadBytesAsTextAsync(CsvBytes, encodingInfo);
+
+        UpdateEncoderInfo(encodingInfo);
     }
 
-    private async Task<string> LoadFileAsText(IFileListEntry file)
+    private void UpdateEncoderInfo(EncodingInfo encodingInfo)
     {
-        using (var reader = new StreamReader(file.Data))
+        Details = $"{CsvBytes.Length} bytes encoded as {Csv.Length} characters with EncodingName='{encodingInfo?.Name ?? "utf-8"}'.";
+    }
+
+    private EncodingInfo SelectedEncodingInfo => Encodings.FirstOrDefault(e => e.Name == SelectedEncodingName);
+
+    private async Task<byte[]> LoadFileAsBytesAsync(IFileListEntry file)
+    {
+        using (var stream = await file.ReadAllAsync(10_000_000))
+        using (var reader = new BinaryReader(stream))
+        {
+            return reader.ReadBytes((int)file.Size);
+        }
+    }
+
+    private async Task<string> LoadFileAsText(IFileListEntry file, EncodingInfo encodingInfo = null)
+    {
+        return await LoadBytesAsTextAsync(await LoadFileAsBytesAsync(file), encodingInfo);
+    }
+
+    private async Task<string> LoadBytesAsTextAsync(byte[] bytes, EncodingInfo encodingInfo = null)
+    {
+        var encoder = encodingInfo == null
+            ? Encoding.UTF8
+            : Encoding.GetEncoding(encodingInfo.CodePage);
+
+        using (var stream = new MemoryStream(bytes))
+        using (var reader = new StreamReader(stream, encoder, true))
         {
             return await reader.ReadToEndAsync();
         }
@@ -819,6 +861,7 @@ else
             {
                 Config = example.ConfigText.Trim();
                 Csv = example.CsvText.Trim();
+                CsvBytes = Encoding.UTF8.GetBytes(Csv);
 
                 Location = string.IsNullOrWhiteSpace(example.DefaultLocation)
                     ? string.Empty
@@ -833,6 +876,22 @@ else
         }
     }
 
+    private string _selectedEncodingName;
+
+    private string SelectedEncodingName
+    {
+        get => _selectedEncodingName;
+        set
+        {
+            _selectedEncodingName = value;
+
+            var encoderInfo = SelectedEncodingInfo;
+            Csv = LoadBytesAsTextAsync(CsvBytes, encoderInfo).Result;
+
+            UpdateEncoderInfo(encoderInfo);
+        }
+    }
+
     private string DescriptionHtml => FindExampleById(_selectedExampleId)?.Description?.Trim();
 
     private Example FindExampleById(string id)
@@ -840,6 +899,8 @@ else
         return Examples
             .FirstOrDefault(e => e.Id.Equals(id, StringComparison.InvariantCultureIgnoreCase));
     }
+
+    private EncodingInfo SelectedEncoding { get; set; }
 
     private const string QueryParameterName = "example";
 
@@ -938,6 +999,7 @@ else
                 Location = persistedState.Location;
                 TimeZone = persistedState.Timezone;
                 Csv = persistedState.Csv;
+                CsvBytes = Encoding.UTF8.GetBytes(Csv);
                 Config = persistedState.Config;
             }
         }
@@ -957,7 +1019,7 @@ else
             Details = "";
 
             var (details, results) = parser
-                .Parse(Config, Csv, Location, TimeZone);
+                .Parse(Config, CsvBytes, Location, TimeZone);
 
             SaveState();
 
