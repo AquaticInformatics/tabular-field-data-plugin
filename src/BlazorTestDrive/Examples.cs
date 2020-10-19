@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace BlazorTestDrive
 {
@@ -82,9 +84,29 @@ Uses aliases to work around old stations that have been renamed in AQUARIUS.",
                 example.ConfigText = EmbeddedResourceLoader.LoadAsText(Path.Combine("Examples", $"{example.Id}.toml"));
 
             if (string.IsNullOrWhiteSpace(example.CsvText))
-                example.CsvText = EmbeddedResourceLoader.LoadAsText(Path.Combine("Examples", $"{example.Id}.csv"));
+                example.CsvText = EmbeddedResourceLoader.LoadAsText(Path.Combine("Examples", $"{example.Id}.csv"), GetEncoding(example.EncodingName));
 
             return example;
+        }
+
+        private static Encoding GetEncoding(string encodingName)
+        {
+            encodingName = encodingName?.Trim();
+
+            if (string.IsNullOrEmpty(encodingName))
+                return null;
+
+            if (int.TryParse(encodingName, out var codePage))
+                return Encoding.GetEncoding(codePage);
+
+            var encodingInfo = Encoding
+                .GetEncodings()
+                .FirstOrDefault(e => e.Name.Equals(encodingName, StringComparison.InvariantCultureIgnoreCase));
+
+            if (encodingInfo == null)
+                return null;
+
+            return Encoding.GetEncoding(encodingInfo.CodePage);
         }
     }
 
@@ -95,6 +117,7 @@ Uses aliases to work around old stations that have been renamed in AQUARIUS.",
         public string Description { get; set; }
         public string DefaultLocation { get; set; }
         public string DefaultTimeZone { get; set; }
+        public string EncodingName { get; set; }
         public string ConfigText { get; set; }
         public string CsvText { get; set; }
     }

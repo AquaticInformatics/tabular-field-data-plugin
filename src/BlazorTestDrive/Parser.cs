@@ -23,8 +23,11 @@ namespace BlazorTestDrive
     {
         public FakeLogger Logger { get; } = new FakeLogger();
 
-        public (string Details, Results Results) Parse(string config, string csv,
-            string locationIdentifier, string timeZone)
+        public (string Details, Results Results) Parse(
+            string config,
+            byte[] csvBytes,
+            string locationIdentifier,
+            string timeZone)
         {
             var plugin = LoadTabularPlugin();
 
@@ -39,7 +42,7 @@ namespace BlazorTestDrive
             if (TryParseTimeSpan(timeZone, out var utcOffset))
                 appender.UtcOffset = utcOffset;
 
-            using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(csv)))
+            using (var stream = new MemoryStream(csvBytes))
             {
                 locationIdentifier = locationIdentifier?.Trim();
 
