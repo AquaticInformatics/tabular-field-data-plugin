@@ -26,9 +26,9 @@ namespace TabularCsv
 
         public ParseFileResult Parse(Stream stream, LocationInfo locationInfo = null)
         {
-            var csvText = ReadTextFromStream(stream);
+            var csvBytes = ReadBytesFromStream(stream);
 
-            if (csvText == null)
+            if (csvBytes == null)
                 return ParseFileResult.CannotParse();
 
             try
@@ -45,7 +45,7 @@ namespace TabularCsv
                     {
                         using (LocaleScope.WithLocale(configuration.LocaleName))
                         {
-                            result = ParseDataFile(configuration, csvText);
+                            result = ParseDataFile(configuration, csvBytes);
 
                             if (result.Status == ParseFileStatus.CannotParse) continue;
 
@@ -62,8 +62,10 @@ namespace TabularCsv
             }
         }
 
-        private ParseFileResult ParseDataFile(Configuration configuration, string csvText)
+        private ParseFileResult ParseDataFile(Configuration configuration, byte[] csvBytes)
         {
+            var csvText = ReadTextFromBytes(configuration, csvBytes);
+
             var rowParser = new RowParser
             {
                 Log = Log,
@@ -181,6 +183,38 @@ namespace TabularCsv
             }
         }
 
+        private string ReadTextFromBytes(Configuration configuration, byte[] csvBytes)
+        {
+            var encoding = GetEncoding(configuration.EncodingName) ?? Encoding.UTF8;
+
+            using(var stream = new MemoryStream(csvBytes))
+            using (var reader = new StreamReader(stream, encoding, true))
+            {
+                return reader.ReadToEnd();
+            }
+        }
+
+        private static Encoding GetEncoding(string encodingName)
+        {
+            encodingName = encodingName?.Trim();
+
+            if (string.IsNullOrEmpty(encodingName))
+                return null;
+
+            if (int.TryParse(encodingName, out var codePage))
+                return Encoding.GetEncoding(codePage);
+
+            var encodingInfo = Encoding
+                .GetEncodings()
+                .FirstOrDefault(e => e.Name.Equals(encodingName, StringComparison.InvariantCultureIgnoreCase));
+
+            if (encodingInfo == null)
+                return null;
+
+            return Encoding.GetEncoding(encodingInfo.CodePage);
+        }
+
+
         private CsvTextFieldParser GetCsvParser(StringReader reader, string delimiter)
         {
             var rowParser = new CsvTextFieldParser(reader)
@@ -236,17 +270,19 @@ namespace TabularCsv
                         break;
                 }
 
-                return (prefaceLines, new StringReader(reader.ReadToEnd()));
+                var remainingText = reader.ReadToEnd() ?? string.Empty;
+
+                return (prefaceLines, new StringReader(remainingText));
             }
         }
 
-        private string ReadTextFromStream(Stream stream)
+        private byte[] ReadBytesFromStream(Stream stream)
         {
             try
             {
-                using (var reader = new StreamReader(stream))
+                using (var reader = new BinaryReader(stream))
                 {
-                    return reader.ReadToEnd();
+                    return reader.ReadBytes((int)stream.Length);
                 }
             }
             catch (Exception)

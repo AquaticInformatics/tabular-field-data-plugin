@@ -11,6 +11,7 @@ namespace TabularCsv
         public int Priority { get; set; } = 1;
         public string Separator { get; set; }
         public string LocaleName { get; set; }
+        public string EncodingName { get; set; }
         public int PrefaceRowCount { get; set; }
         public string PrefaceEndsWith { get; set; }
         public string PrefaceEndsBefore { get; set; }
