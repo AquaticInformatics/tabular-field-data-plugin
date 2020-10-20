@@ -766,8 +766,26 @@ else
     private List<EncodingInfo> Encodings { get; } = BlazorTestDrive.Encodings.AllEncodings;
 
     private string Config { get; set; }
-    private string Csv { get; set; }
+
+    private string _csvContent;
+
+    private string Csv
+    {
+        get => _csvContent;
+        set => SetCsvUtf8Content(value);
+    }
     private byte[] CsvBytes { get; set; }
+
+    private void SetCsvUtf8Content(string csv)
+    {
+        SetCsvContentAsync(Encoding.UTF8.GetBytes(csv), Encoding.UTF8).Wait();
+    }
+
+    private async Task SetCsvContentAsync(byte[] bytes, Encoding encoding)
+    {
+        CsvBytes = bytes;
+        _csvContent = await LoadBytesAsTextAsync(CsvBytes, encoding);
+    }
 
     private string Details { get; set; }
     private string Location { get; set; }
@@ -805,19 +823,20 @@ else
         var file = CsvFile;
         CsvFile = null;
 
-        CsvBytes = await LoadFileAsBytesAsync(file);
-        var encodingInfo = SelectedEncodingInfo;
-        Csv = await LoadBytesAsTextAsync(CsvBytes, encodingInfo);
+        var encoding = SelectedEncoding;
+        await SetCsvContentAsync(await LoadFileAsBytesAsync(file), encoding);
 
-        UpdateEncoderInfo(encodingInfo);
+        UpdateEncodingInfo(encoding);
     }
 
-    private void UpdateEncoderInfo(EncodingInfo encodingInfo)
+    private void UpdateEncodingInfo(Encoding encoding)
     {
-        Details = $"{CsvBytes.Length} bytes encoded as {Csv.Length} characters with EncodingName='{encodingInfo?.Name ?? "utf-8"}'.";
+        Details = $"{CsvBytes.Length} bytes encoded as {Csv.Length} characters with EncodingName='{encoding.EncodingName}'.";
     }
 
-    private EncodingInfo SelectedEncodingInfo => Encodings.FirstOrDefault(e => e.Name == SelectedEncodingName);
+    private Encoding SelectedEncoding => Encodings
+        .FirstOrDefault(e => e.Name == SelectedEncodingName)
+        ?.GetEncoding() ?? Encoding.UTF8;
 
     private async Task<byte[]> LoadFileAsBytesAsync(IFileListEntry file)
     {
@@ -835,12 +854,13 @@ else
 
     private async Task<string> LoadBytesAsTextAsync(byte[] bytes, EncodingInfo encodingInfo = null)
     {
-        var encoder = encodingInfo == null
-            ? Encoding.UTF8
-            : Encoding.GetEncoding(encodingInfo.CodePage);
+        return await LoadBytesAsTextAsync(bytes, encodingInfo?.GetEncoding() ?? Encoding.UTF8);
+    }
 
+    private async Task<string> LoadBytesAsTextAsync(byte[] bytes, Encoding encoding)
+    {
         using (var stream = new MemoryStream(bytes))
-        using (var reader = new StreamReader(stream, encoder, true))
+        using (var reader = new StreamReader(stream, encoding, true))
         {
             return await reader.ReadToEndAsync();
         }
@@ -860,8 +880,8 @@ else
             if (example != null)
             {
                 Config = example.ConfigText.Trim();
-                Csv = example.CsvText.Trim();
-                CsvBytes = Encoding.UTF8.GetBytes(Csv);
+                SetCsvUtf8Content(example.CsvText.Trim());
+                SelectedEncodingName = "utf-8";
 
                 Location = string.IsNullOrWhiteSpace(example.DefaultLocation)
                     ? string.Empty
@@ -885,10 +905,10 @@ else
         {
             _selectedEncodingName = value;
 
-            var encoderInfo = SelectedEncodingInfo;
-            Csv = LoadBytesAsTextAsync(CsvBytes, encoderInfo).Result;
+            var encoding = SelectedEncoding;
+            SetCsvContentAsync(CsvBytes, encoding).Wait();
 
-            UpdateEncoderInfo(encoderInfo);
+            UpdateEncodingInfo(encoding);
         }
     }
 
@@ -899,8 +919,6 @@ else
         return Examples
             .FirstOrDefault(e => e.Id.Equals(id, StringComparison.InvariantCultureIgnoreCase));
     }
-
-    private EncodingInfo SelectedEncoding { get; set; }
 
     private const string QueryParameterName = "example";
 
