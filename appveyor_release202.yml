@@ -5,7 +5,7 @@ pull_requests:
 
 branches:
   only:
-    - master
+    - release/2020.2
 
 platform: Any CPU
 configuration: Release
