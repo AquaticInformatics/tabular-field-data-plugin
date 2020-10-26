@@ -6,7 +6,10 @@
 
 rm -Rf test-drive
 mkdir -p test-drive
+
+echo "* binary" > test-drive/.gitattributes
 touch test-drive/.nojekyll
+
 cp -R ../src/BlazorTestDrive/bin/Release/netstandard2.1/publish/wwwroot/* test-drive
 
 # Rename the _framework directory to lose the leading underscore, which confuses Jekyll even when you tell it not to be confused.
