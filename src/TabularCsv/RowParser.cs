@@ -386,18 +386,6 @@ namespace TabularCsv
             return new DateTimeInterval(start, end);
         }
 
-        private DateTimeOffset ParseDateTimeOffset(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns)
-        {
-            var dateTimeOffset = ParseNullableDateTimeOffset(locationInfo, timestampColumns);
-
-            if (!dateTimeOffset.HasValue)
-            {
-                throw new Exception($"Line {LineNumber}: No timestamp columns are configured. Can't figure out when this activity exists.");
-            }
-
-            return dateTimeOffset.Value;
-        }
-
         private const IFormatProvider CurrentThreadCulture = null;
 
         private DateTimeOffset? ParseNullableDateTimeOffset(LocationInfo locationInfo, List<TimestampDefinition> timestampColumns)
@@ -714,7 +702,7 @@ namespace TabularCsv
 
             if (definition.StandardDetailsExpirationDate != null)
             {
-                expirationDate = ParseDateTimeOffset(visitInfo.LocationInfo,
+                expirationDate = ParseNullableDateTimeOffset(visitInfo.LocationInfo,
                     new List<TimestampDefinition>
                     {
                         definition.StandardDetailsExpirationDate
@@ -741,7 +729,7 @@ namespace TabularCsv
 
             if (definition.AllTimes?.Any() ?? false)
             {
-                dateCleaned = ParseDateTimeOffset(visitInfo.LocationInfo, definition.AllTimes);
+                dateCleaned = ParseNullableDateTimeOffset(visitInfo.LocationInfo, definition.AllTimes);
             }
 
             var conditionType = GetString(definition.ConditionType);
