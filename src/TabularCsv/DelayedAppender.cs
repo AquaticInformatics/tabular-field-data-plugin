@@ -119,10 +119,7 @@ namespace TabularCsv
 
         private IEnumerable<DateTimeOffset?> GetTimes(Calibration item)
         {
-            return new[]
-            {
-                item.DateTimeOffset
-            };
+            return new DateTimeOffset?[0]; // Because calibration times can occur outside the visit range
         }
 
         private IEnumerable<DateTimeOffset?> GetTimes(LevelSurvey item)
