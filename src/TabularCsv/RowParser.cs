@@ -399,6 +399,9 @@ namespace TabularCsv
             {
                 var timeText = GetString(timestampColumn);
 
+                if (string.IsNullOrWhiteSpace(timeText))
+                    continue;
+
                 const DateTimeStyles styles = DateTimeStyles.AllowWhiteSpaces;
 
                 var formats = timestampColumn.Formats;
