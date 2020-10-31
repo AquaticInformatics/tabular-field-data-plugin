@@ -455,13 +455,13 @@ namespace TabularCsv
         {
             return new DateTimeOffset(
                 value.Date,
-                existing.Offset)
+                utcOffset ?? existing.Offset)
                 .Add(existing.TimeOfDay);
         }
 
         private static DateTimeOffset MergeDateTime(TimeSpan? utcOffset, DateTimeOffset existing, DateTimeOffset value)
         {
-            return new DateTimeOffset(value.DateTime, existing.Offset);
+            return new DateTimeOffset(value.DateTime, utcOffset ?? existing.Offset);
         }
 
         private static DateTimeOffset ReplaceDateTimeOffset(TimeSpan? utcOffset, DateTimeOffset existing, DateTimeOffset value)
