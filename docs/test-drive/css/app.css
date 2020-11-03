@@ -183,10 +183,14 @@ app {
 }
 
 textarea {
-    border: 1px solid #999999;
-    width: 100%;
-    margin: 5px 0;
-    padding: 3px;
+    /* https://stackoverflow.com/questions/51171360/display-line-number-in-textarea-without-jquery */
+    background: url(http://i.imgur.com/2cOaJ.png);
+    background-attachment: local;
+    background-repeat: no-repeat;
+    padding-left: 35px;
+    padding-top: 10px;
+    border-color: #ccc;
+    line-height: 16px;
 }
 
 .boxsizingBorder {
