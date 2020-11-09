@@ -563,6 +563,9 @@ namespace TabularCsv
             if (!string.IsNullOrWhiteSpace(method))
                 reading.Method = method;
 
+            if (!readingValue.HasValue && string.IsNullOrWhiteSpace(reading.Method))
+                reading.Method = "DefaultNone";
+
             var gradeCode = GetNullableInteger(definition.GradeCode);
             var gradeName = GetString(definition.GradeName);
 
