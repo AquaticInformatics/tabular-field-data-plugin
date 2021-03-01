@@ -1,7 +1,7 @@
 # This is our hint that it's an MF Pro file.
 PrefaceMustContain = 'Model: MF pro'
 
-Location = '???' # There is no location information in an MF Pro file, so you'll need to provide a location context elsewhere.
+Location = '/^Profile Name:\s*(?<value>.+)$/'
 
 # The next two settings tell the plugin that everything comes from the preface.
 MaximumPrefaceLines = 0
