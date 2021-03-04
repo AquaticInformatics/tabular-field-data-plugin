@@ -424,6 +424,7 @@ namespace TabularCsv
         private DateTimeOffset? ParseNullableDateTimeOffset(LocationInfo locationInfo, IEnumerable<TimestampBaseDefinition> timestampColumns)
         {
             var timestamp = (DateTimeOffset?) null;
+            var configurationUtcOffset = GetNullableTimeSpan(Configuration.UtcOffset);
 
             foreach (var timestampColumn in timestampColumns)
             {
@@ -454,7 +455,8 @@ namespace TabularCsv
                 if (!TimestampParsers.TryGetValue(timestampColumn.Type.Value, out var timeParser))
                     throw new Exception($"{timestampColumn.Name()} Type={timestampColumn.Type} is not a supported time type");
 
-                var utcOffset = GetNullableTimeSpan(timestampColumn.UtcOffset);
+                var utcOffset = GetNullableTimeSpan(timestampColumn.UtcOffset)
+                    ?? configurationUtcOffset;
 
                 if (!timestamp.HasValue)
                     timestamp = new DateTimeOffset(new DateTime(1900, 1, 1), LocationInfo?.UtcOffset ?? locationInfo.UtcOffset);
@@ -1357,6 +1359,9 @@ namespace TabularCsv
                 return null;
 
             if (TimeSpan.TryParse(valueText, CultureInfo.InvariantCulture, out var value))
+                return value;
+
+            if (ConfigurationLoader.TryParseUtcOffset(valueText, out value))
                 return value;
 
             throw new ArgumentException($"Line {LineNumber} '{column.Name()}': '{valueText}' is an invalid TimeSpan.");

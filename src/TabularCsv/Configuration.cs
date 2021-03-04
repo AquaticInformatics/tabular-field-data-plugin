@@ -26,6 +26,7 @@ namespace TabularCsv
         public Dictionary<string, Dictionary<string,string>> Aliases { get; set; } = new Dictionary<string, Dictionary<string, string>>();
 
         public PropertyDefinition Location { get; set; }
+        public PropertyDefinition UtcOffset { get; set; }
 
         public VisitDefinition Visit { get; set; }
         public ControlConditionDefinition ControlCondition { get; set; }
