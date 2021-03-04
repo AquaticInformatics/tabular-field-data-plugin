@@ -43,14 +43,12 @@ namespace TabularCsv
 
                     foreach (var configuration in configurations)
                     {
-                        using (LocaleScope.WithLocale(configuration.LocaleName))
-                        {
-                            result = ParseDataFile(configuration, csvBytes);
+                        result = ParseDataFileWithLocale(configuration, csvBytes);
 
-                            if (result.Status == ParseFileStatus.CannotParse) continue;
+                        if (result.Status == ParseFileStatus.CannotParse)
+                            continue;
 
-                            return result;
-                        }
+                        return result;
                     }
 
                     return result;
@@ -58,7 +56,24 @@ namespace TabularCsv
             }
             catch (Exception exception)
             {
-                return ParseFileResult.SuccessfullyParsedButDataInvalid(exception);
+                return ParseFileResult.CannotParse(exception);
+            }
+        }
+
+        private ParseFileResult ParseDataFileWithLocale(Configuration configuration, byte[] csvBytes)
+        {
+            using (LocaleScope.WithLocale(configuration.LocaleName))
+            {
+                try
+                {
+                    return ParseDataFile(configuration, csvBytes);
+                }
+                catch (Exception exception)
+                {
+                    Log.Error($"Configuration '{configuration.Id}' failed to parse file: {exception.Message}");
+
+                    return ParseFileResult.CannotParse(exception);
+                }
             }
         }
 

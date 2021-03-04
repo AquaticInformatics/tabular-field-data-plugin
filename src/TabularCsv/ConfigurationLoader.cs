@@ -343,7 +343,7 @@ namespace TabularCsv
             return timestamp;
         }
 
-        private bool TryParseUtcOffset(string text, out TimeSpan timeSpan)
+        public static bool TryParseUtcOffset(string text, out TimeSpan timeSpan)
         {
             timeSpan = TimeSpan.Zero;
 
@@ -352,6 +352,9 @@ namespace TabularCsv
             if (text.StartsWith(utcPrefix, StringComparison.InvariantCultureIgnoreCase))
             {
                 var timeSpanText = text.Substring(utcPrefix.Length);
+
+                if (string.IsNullOrEmpty(timeSpanText))
+                    return true;
 
                 if (timeSpanText.StartsWith("+"))
                     timeSpanText = timeSpanText.Substring(1);
