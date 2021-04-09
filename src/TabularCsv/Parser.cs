@@ -131,6 +131,9 @@ namespace TabularCsv
                     if (fields == null)
                         continue;
 
+                    if (fields.Length > 0 && fields.All(string.IsNullOrEmpty))
+                        continue;
+
                     if (fields.Length > 0 && !string.IsNullOrEmpty(configuration.CommentLinePrefix) && fields[0].StartsWith(configuration.CommentLinePrefix))
                         continue;
 
