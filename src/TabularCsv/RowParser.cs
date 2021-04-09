@@ -772,12 +772,15 @@ namespace TabularCsv
 
             if (definition.AllTimes?.Any() ?? false)
             {
-                dateCleaned = ParseNullableDateTimeOffset(visitInfo.LocationInfo, definition.AllTimes);
+                dateCleaned = ParseActivityTime(visitInfo, definition);
             }
 
             var conditionType = GetString(definition.ConditionType);
             var controlCode = GetString(definition.ControlCode);
             var controlCleanedType = GetNullableEnum<ControlCleanedType>(definition.ControlCleanedType);
+
+            if (controlCleanedType != ControlCleanedType.ControlCleaned)
+                dateCleaned = null;
 
             var controlCondition = new ControlCondition
             {
