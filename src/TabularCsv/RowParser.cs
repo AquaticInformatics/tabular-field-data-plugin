@@ -768,12 +768,7 @@ namespace TabularCsv
             if (definition == null)
                 return null;
 
-            DateTimeOffset? dateCleaned = null;
-
-            if (definition.AllTimes?.Any() ?? false)
-            {
-                dateCleaned = ParseActivityTime(visitInfo, definition);
-            }
+            DateTimeOffset? dateCleaned = ParseActivityTime(visitInfo, definition);
 
             var conditionType = GetString(definition.ConditionType);
             var controlCode = GetString(definition.ControlCode);
