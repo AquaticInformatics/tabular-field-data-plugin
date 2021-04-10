@@ -6,7 +6,7 @@
   "linkerEnabled": false,
   "resources": {
     "assembly": {
-      "BlazorTestDrive.dll": "sha256-ctdaWTGG4NVQdPl7ViaTeJCUQzDa5VRE4uBzgAcTG4g=",
+      "BlazorTestDrive.dll": "sha256-Momi8Ewp9U8YiT1hMi0on2CJP2meb1JePGEvNt3xjFo=",
       "Microsoft.Extensions.DependencyInjection.Abstractions.dll": "sha256-Bs1Wrmh4ex9dTEIT0yCRF52N\/wOmsBDt457BHr0\/ssM=",
       "netstandard.dll": "sha256-\/zcPVM75OAY+joGVM8yIC1gO1SFYWP1CFERgQ8PJkfA=",
       "System.Xml.Linq.dll": "sha256-IPbQMdJxZXdk8HTlaPyXdQ6Zb82iZLphnM74yO4EURQ=",
@@ -40,7 +40,7 @@
       "Microsoft.AspNetCore.WebUtilities.dll": "sha256-D5akJeBd7NNITuzAXxlX7zl2jfsc4uTKyeEKwwNhqoo=",
       "Microsoft.Extensions.Primitives.dll": "sha256-y\/FyJQOcW2TOcTp7Iuv8brGBzL5ZP0oJdG7ysK+gtKc=",
       "Microsoft.Net.Http.Headers.dll": "sha256-P66ftDrXwc6ayND8uYzIk0CPQy1GjNZAPHx9RMhi3V4=",
-      "TabularCsv.dll": "sha256-zENWr4d9wblumt7Qjc6fXTkEjguvTelyv8GPUwfJtTk=",
+      "TabularCsv.dll": "sha256-oETplccE+lH5z232UjhJcQvwFroYN2EKilTQxAsTACc=",
       "Humanizer.dll": "sha256-mJdFwwl+qFept741rhJCoPlNqkgX8LkE6\/GgHEawUfQ=",
       "Nett.dll": "sha256-JJfJ6mZk1QW4XkEGgaPln6B8KtcHB4SHkuZQM+jzL6k=",
       "CsvTextFieldParser.dll": "sha256-kAJCvPPiqw3sTv5MrrbCZ6YfdeIBS7ddOMaMO+GwJi4=",
