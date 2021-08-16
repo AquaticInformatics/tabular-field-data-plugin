@@ -32,15 +32,13 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CsvTextFieldParser, Version=1.2.2.0, Culture=neutral, PublicKeyToken=33e195ec8d055ecc, processorArchitecture=MSIL">
-      <HintPath>..\packages\CsvTextFieldParser.1.2.2-preview\lib\netstandard2.0\CsvTextFieldParser.dll</HintPath>
-    </Reference>
     <Reference Include="FieldDataPluginFramework, Version=2.10.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Aquarius.FieldDataFramework.20.3.0\lib\net472\FieldDataPluginFramework.dll</HintPath>
     </Reference>
     <Reference Include="Humanizer, Version=2.6.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
       <HintPath>..\packages\Humanizer.Core.2.6.2\lib\netstandard2.0\Humanizer.dll</HintPath>
     </Reference>
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="Nett, Version=0.15.0.0, Culture=neutral, PublicKeyToken=605dcfe7a1d3365b, processorArchitecture=MSIL">
       <HintPath>..\packages\Nett.0.15.0\lib\net40\Nett.dll</HintPath>
     </Reference>
@@ -70,6 +68,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(SolutionDir)packages\Aquarius.FieldDataFramework.20.3.0\tools\PluginPackager.exe $(TargetPath) /OutputPath=$(ProjectDir)deploy\$(Configuration)\$(TargetName).plugin</PostBuildEvent>
+    <PostBuildEvent>$(SolutionDir)packages\Aquarius.FieldDataFramework.20.3.8\tools\PluginPackager.exe $(TargetPath) /OutputPath=$(ProjectDir)deploy\$(Configuration)\$(TargetName).plugin</PostBuildEvent>
   </PropertyGroup>
 </Project>
