@@ -6,7 +6,7 @@ using System.Text;
 using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.Results;
-using NotVisualBasic.FileIO;
+using Microsoft.VisualBasic.FileIO;
 
 namespace TabularCsv
 {
@@ -232,10 +232,9 @@ namespace TabularCsv
             return Encoding.GetEncoding(encodingInfo.CodePage);
         }
 
-
-        private CsvTextFieldParser GetCsvParser(StringReader reader, string delimiter)
+        private TextFieldParser GetCsvParser(StringReader reader, string delimiter)
         {
-            var rowParser = new CsvTextFieldParser(reader)
+            var rowParser = new TextFieldParser(reader)
             {
                 Delimiters = new[] {delimiter},
                 TrimWhiteSpace = true,

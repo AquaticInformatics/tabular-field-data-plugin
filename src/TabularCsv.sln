@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6183BD37-E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocGenerator", "DocGenerator\DocGenerator.csproj", "{C54337B5-5115-4163-A76F-E8583C19A4B1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "BlazorTestDrive", "BlazorTestDrive\BlazorTestDrive.csproj", "{933D99BD-3A77-4401-9755-B3B5A6D059BF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorTestDrive", "BlazorTestDrive\BlazorTestDrive.csproj", "{91FC798D-5EAF-4F08-8643-A917A6C3E11C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +37,10 @@ Global
 		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{933D99BD-3A77-4401-9755-B3B5A6D059BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{933D99BD-3A77-4401-9755-B3B5A6D059BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{933D99BD-3A77-4401-9755-B3B5A6D059BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{933D99BD-3A77-4401-9755-B3B5A6D059BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91FC798D-5EAF-4F08-8643-A917A6C3E11C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91FC798D-5EAF-4F08-8643-A917A6C3E11C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91FC798D-5EAF-4F08-8643-A917A6C3E11C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91FC798D-5EAF-4F08-8643-A917A6C3E11C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
