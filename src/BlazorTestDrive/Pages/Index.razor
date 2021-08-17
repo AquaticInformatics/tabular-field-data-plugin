@@ -12,6 +12,7 @@
 @using FieldDataPluginFramework.DataModel.Meters
 @using System.IO
 @using FieldDataPluginFramework.DataModel.GageZeroFlow
+@using Microsoft.AspNetCore.WebUtilities
 
 <h1>Let's test drive your tabular field data!</h1>
 
@@ -793,19 +794,19 @@ else
 
     private Results Results { get; set; }
 
-    private IFileListEntry ConfigFile { get; set; }
-    private IFileListEntry CsvFile { get; set; }
+    private IBrowserFile ConfigFile { get; set; }
+    private IBrowserFile CsvFile { get; set; }
 
-    private async Task OnConfigFileSelected(IFileListEntry[] files)
+    private async Task OnConfigFileSelected(InputFileChangeEventArgs eventArgs)
     {
-        ConfigFile = files.FirstOrDefault();
+        ConfigFile = eventArgs.GetMultipleFiles().FirstOrDefault();
 
         await LoadConfigFile();
     }
 
-    private async Task OnCsvFileSelected(IFileListEntry[] files)
+    private async Task OnCsvFileSelected(InputFileChangeEventArgs eventArgs)
     {
-        CsvFile = files.FirstOrDefault();
+        CsvFile = eventArgs.GetMultipleFiles().FirstOrDefault();
 
         await LoadCsvFile();
     }
@@ -838,16 +839,16 @@ else
         .FirstOrDefault(e => e.Name == SelectedEncodingName)
         ?.GetEncoding() ?? Encoding.UTF8;
 
-    private async Task<byte[]> LoadFileAsBytesAsync(IFileListEntry file)
+    private async Task<byte[]> LoadFileAsBytesAsync(IBrowserFile file)
     {
-        using (var stream = await file.ReadAllAsync(10_000_000))
+        using (var stream = file.OpenReadStream(10_000_000))
         using (var reader = new BinaryReader(stream))
         {
             return reader.ReadBytes((int)file.Size);
         }
     }
 
-    private async Task<string> LoadFileAsText(IFileListEntry file, EncodingInfo encodingInfo = null)
+    private async Task<string> LoadFileAsText(IBrowserFile file, EncodingInfo encodingInfo = null)
     {
         return await LoadBytesAsTextAsync(await LoadFileAsBytesAsync(file), encodingInfo);
     }
