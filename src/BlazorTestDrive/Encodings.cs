@@ -7,7 +7,12 @@ namespace BlazorTestDrive
 {
     public class Encodings
     {
-        public static List<EncodingInfo> AllEncodings { get; } = Encoding
+        static Encodings()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        }
+
+        public static List<EncodingInfo> AllEncodings => Encoding
             .GetEncodings()
             .OrderBy(e => e.Name, StringComparer.InvariantCultureIgnoreCase)
             .ToList();
