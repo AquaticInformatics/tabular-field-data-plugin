@@ -841,10 +841,14 @@ else
 
     private async Task<byte[]> LoadFileAsBytesAsync(IBrowserFile file)
     {
-        using (var stream = file.OpenReadStream(10_000_000))
-        using (var reader = new BinaryReader(stream))
+        using (var writeSteam = new MemoryStream())
         {
-            return reader.ReadBytes((int)file.Size);
+            using (var readStream = file.OpenReadStream(10_000_000))
+            {
+                await readStream.CopyToAsync(writeSteam);
+            }
+
+            return writeSteam.GetBuffer();
         }
     }
 
