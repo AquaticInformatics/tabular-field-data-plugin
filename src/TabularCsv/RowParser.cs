@@ -636,7 +636,7 @@ namespace TabularCsv
                 reading.Method = method;
 
             if (!readingValue.HasValue && string.IsNullOrWhiteSpace(reading.Method))
-                reading.Method = "DefaultNone";
+                reading.Method = Defaults.MonitoringMethod;
 
             var gradeCode = GetNullableInteger(definition.GradeCode);
             var gradeName = GetString(definition.GradeName);
@@ -1085,7 +1085,7 @@ namespace TabularCsv
         private DischargeActivity ParseOtherDischarge(FieldVisitInfo visitInfo, OtherDischargeDefinition definition)
         {
             var totalDischarge = GetNullableDouble(definition.TotalDischarge);
-            var monitoringMethod = GetString(definition.MonitoringMethod);
+            var monitoringMethod = GetString(definition.MonitoringMethod) ?? Defaults.MonitoringMethod;
 
             if (!totalDischarge.HasValue || string.IsNullOrEmpty(monitoringMethod))
                 return null;
@@ -1093,7 +1093,7 @@ namespace TabularCsv
             var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
 
             var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
-            var distanceUnitId = GetString(definition.DistanceUnitId);
+            var distanceUnitId = GetString(definition.DistanceUnitId) ?? Defaults.DistanceUnitId;
 
             var sectionDischarge = GetNullableDouble(definition.SectionDischarge)
                                    ?? dischargeActivity.Discharge.Value;
@@ -1121,7 +1121,7 @@ namespace TabularCsv
             var dischargeActivity = ParseDischargeActivity(visitInfo, definition, totalDischarge.Value);
 
             var channelName = GetString(definition.ChannelName) ?? ChannelMeasurementBaseConstants.DefaultChannelName;
-            var distanceUnitId = GetString(definition.DistanceUnitId);
+            var distanceUnitId = GetString(definition.DistanceUnitId) ?? Defaults.DistanceUnitId;
 
             var sectionDischarge = GetNullableDouble(definition.SectionDischarge)
                                    ?? dischargeActivity.Discharge.Value;

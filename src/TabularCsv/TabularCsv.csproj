@@ -53,6 +53,7 @@
     <Compile Include="ColumnDecorator.cs" />
     <Compile Include="ColumnDefinition.cs" />
     <Compile Include="ConfigurationException.cs" />
+    <Compile Include="Defaults.cs" />
     <Compile Include="DelayedAppender.cs" />
     <Compile Include="Configuration.cs" />
     <Compile Include="Parser.cs" />
