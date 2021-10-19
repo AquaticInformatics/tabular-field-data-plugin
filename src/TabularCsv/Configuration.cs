@@ -17,6 +17,8 @@ namespace TabularCsv
         public string PrefaceEndsBefore { get; set; }
         public string PrefaceMustContain { get; set; }
         public Regex PrefaceMustMatchRegex { get; set; }
+        public string FooterStartsWith { get; set; }
+        public Regex FooterMatchesRegex { get; set; }
         public int MaximumPrefaceLines { get; set; } = 50;
         public int HeaderRowCount { get; set; }
         public bool NoDataRowsExpected { get; set; }
@@ -88,6 +90,9 @@ namespace TabularCsv
 
         public bool IsHeaderRowRequired => HeaderRowCount > 0
                                            || GetColumnDefinitions().Any(c => c.RequiresColumnHeader());
+
+        public bool IsFooterExpected => !string.IsNullOrEmpty(FooterStartsWith)
+                                        || FooterMatchesRegex != null;
 
         private List<ColumnDefinition> ColumnDefinitions { get; set; }
 

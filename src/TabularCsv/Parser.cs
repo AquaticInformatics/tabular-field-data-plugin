@@ -107,7 +107,8 @@ namespace TabularCsv
 
             using (var reader = dataRowReader)
             {
-                var fieldParser = GetCsvParser(reader, configuration.Separator ?? DefaultFieldSeparator);
+                var separator = configuration.Separator ?? DefaultFieldSeparator;
+                var fieldParser = GetCsvParser(reader, separator);
 
                 while(!fieldParser.EndOfData)
                 {
@@ -166,6 +167,9 @@ namespace TabularCsv
                         }
                     }
 
+                    if (IsFooterDetected(configuration, () => string.Join(separator, fields)))
+                        break;
+
                     try
                     {
                         rowParser.Parse(fields);
@@ -199,6 +203,19 @@ namespace TabularCsv
 
                 return ParseFileResult.SuccessfullyParsedAndDataValid();
             }
+        }
+
+        private bool IsFooterDetected(Configuration configuration, Func<string> lineFunc)
+        {
+            if (!configuration.IsFooterExpected)
+                return false;
+
+            var line = lineFunc();
+
+            if (!string.IsNullOrEmpty(configuration.FooterStartsWith) && line.StartsWith(configuration.FooterStartsWith, StringComparison.InvariantCultureIgnoreCase))
+                return true;
+
+            return configuration.FooterMatchesRegex?.IsMatch(line) ?? false;
         }
 
         private string ReadTextFromBytes(Configuration configuration, byte[] csvBytes)
