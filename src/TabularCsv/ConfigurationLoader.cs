@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using FieldDataPluginFramework;
 using Nett;
@@ -47,10 +48,26 @@ namespace TabularCsv
 
                 return configuration;
             }
-            catch (ParseException exception)
+            catch (Exception exception)
             {
-                throw new ConfigurationException($"Invalid configuration: {configurationName}: {exception.Message}");
+                var parseException = GetParseException(exception);
+
+                if (parseException != null)
+                    throw new ConfigurationException($"Invalid configuration: {configurationName}: {parseException.Message}");
+
+                throw;
             }
+        }
+
+        private static ParseException GetParseException(Exception exception)
+        {
+            if (exception is ParseException parseException)
+                return parseException;
+
+            if (exception.InnerException is ParseException innerException)
+                return innerException;
+
+            return null;
         }
 
         private Dictionary<string, Dictionary<string, string>> CreateCaseInsensitiveAliases(
@@ -108,19 +125,109 @@ namespace TabularCsv
         {
             var lineNumber = GuessSourceLine(tomlKeyChain, targetValue);
 
-            var typeName = targetObject
-                .GetType()
+            var targetType = targetObject
+                .GetType();
+
+            var typeName = targetType
                 .FullName
                 ?.Replace($"{nameof(TabularCsv)}.", string.Empty);
 
             var propertyName = $"{typeName}.{string.Join(".", tomlKeyChain)}";
 
-            var message = $"'{propertyName}' is not a valid key.";
+            var targetPropertyName = tomlKeyChain.LastOrDefault();
+            var targetSectionName = tomlKeyChain.Length > 1
+                ? tomlKeyChain[tomlKeyChain.Length - 2]
+                : default;
+
+            var message = $"'{propertyName}' is not a known property name.";
+
+            if (!string.IsNullOrEmpty(targetPropertyName) && !string.IsNullOrEmpty(targetSectionName))
+                message = $"'{targetPropertyName}' is not a known [{targetSectionName}] property name.";
+
+            if (!string.IsNullOrEmpty(targetPropertyName))
+            {
+                var bestGuess = BestGuess(
+                    targetPropertyName,
+                    targetType
+                        .GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.SetProperty)
+                        .Where(p => !ExcludedPropertyNames.Contains(p.Name)),
+                    propertyInfo => propertyInfo.Name);
+
+                if (!string.IsNullOrEmpty(bestGuess))
+                    message = $"{message} {bestGuess}";
+            }
+
+            message = $"{message} See https://github.com/AquaticInformatics/tabular-field-data-plugin/wiki/Configuration-Fields for details.";
 
             if (lineNumber.HasValue)
                 throw new ParseException($"Line {lineNumber}: {message}");
 
             throw new ParseException(message);
+        }
+
+        private static readonly HashSet<string> ExcludedPropertyNames = new HashSet<string>
+        {
+            nameof(Configuration.Aliases),
+            nameof(Configuration.AllAdcpDischarges),
+            nameof(Configuration.AllCalibrations),
+            nameof(Configuration.AllEndTimes),
+            nameof(Configuration.AllEngineeredStructureDischarges),
+            nameof(Configuration.AllInspections),
+            nameof(Configuration.AllLevelSurveys),
+            nameof(Configuration.AllMergeWithComments),
+            nameof(Configuration.AllOtherDischarges),
+            nameof(Configuration.AllPanelDischargeSummaries),
+            nameof(Configuration.AllReadings),
+            nameof(Configuration.AllStartTimes),
+            nameof(Configuration.AllTimes),
+            nameof(Configuration.AllVolumetricDischarges),
+        };
+
+        private string BestGuess<TItem>(string target, IEnumerable<TItem> items, Func<TItem, string> selector, int maximumGuessDistance = 7, int maximumGuesses = 4)
+        {
+            var lev = new Fastenshtein.Levenshtein(target);
+
+            var orderedItems = items
+                .Select(item => (Item: item, Text: selector(item), Distance: lev.DistanceFrom(selector(item))))
+                .OrderBy(tuple => tuple.Distance)
+                .ToList();
+
+            if (!orderedItems.Any())
+                return string.Empty;
+
+            var best = orderedItems.First();
+
+            if (best.Distance > maximumGuessDistance)
+                return string.Empty;
+
+            var guesses = orderedItems
+                .Where(tuple => tuple.Distance <= best.Distance + 1)
+                .OrderBy(tuple => tuple.Distance)
+                .ThenByDescending(tuple => tuple.Text.StartsWith(target, StringComparison.InvariantCultureIgnoreCase))
+                .ThenByDescending(tuple => tuple.Text.EndsWith(target, StringComparison.InvariantCultureIgnoreCase))
+                .ToList();
+
+            if (guesses.Count > maximumGuesses)
+                guesses = orderedItems
+                    .Where(tuple => tuple.Distance == best.Distance)
+                    .OrderByDescending(tuple => tuple.Text.StartsWith(target, StringComparison.InvariantCultureIgnoreCase))
+                    .ThenByDescending(tuple => tuple.Text.EndsWith(target, StringComparison.InvariantCultureIgnoreCase))
+                    .ToList();
+
+            if (!guesses.Any() || guesses.Count > maximumGuesses)
+                return string.Empty;
+
+            switch (guesses.Count)
+            {
+                case 1:
+                    return $"Did you mean '{guesses.Single().Text}'?";
+
+                case 2:
+                    return $"Did you mean '{guesses[0].Text}' or '{guesses[1].Text}'?";
+
+                default:
+                    return $"Did you mean '{string.Join("', or '", guesses.Select(tuple => tuple.Text))}'?";
+            }
         }
 
         private int? GuessSourceLine(string[] tomlKeyChain, TomlObject targetValue)
