@@ -269,6 +269,9 @@ namespace TabularCsv
                 fieldVisitInfo.LevelSurveys.Add(levelSurvey);
             }
 
+            if (IsVisitBlank(fieldVisitInfo))
+                return;
+
             // Now ensure the visit actually contains all of its activities
             ResultsAppender.AdjustVisitPeriodToContainAllActivities(fieldVisitInfo);
 
@@ -330,6 +333,38 @@ namespace TabularCsv
                 throw new Exception($"Line {LineNumber}: '{locationInfo.LocationIdentifier}': No timestamp columns are configured and none of the visit activities have a valid timestamp.");
 
             throw new Exception($"Line {LineNumber}: '{locationInfo.LocationIdentifier}': No timestamp could be calculated from these columns: {string.Join(", ", allTimeColumns.Select(c => c.Name()))}");
+        }
+
+        private bool IsVisitBlank(FieldVisitInfo fieldVisitInfo)
+        {
+            return IsVisitBlank(fieldVisitInfo.FieldVisitDetails)
+                   && !fieldVisitInfo.Readings.Any()
+                   && !fieldVisitInfo.DischargeActivities.Any()
+                   && !fieldVisitInfo.ControlConditions.Any()
+                   && !fieldVisitInfo.Calibrations.Any()
+                   && !fieldVisitInfo.Inspections.Any()
+                   && !fieldVisitInfo.LevelSurveys.Any()
+                   && !fieldVisitInfo.CrossSectionSurveys.Any();
+        }
+
+        private bool IsVisitBlank(FieldVisitDetails details)
+        {
+            return details.StartDate == DateTimeOffset.MinValue
+                   && details.EndDate == DateTimeOffset.MaxValue
+                   && new[]
+                   {
+                       details.CollectionAgency,
+                       details.Party,
+                       details.Weather,
+                   }.All(string.IsNullOrWhiteSpace)
+                   && !(details.CompletedVisitActivities.BiologicalSample
+                        || details.CompletedVisitActivities.ConductedLevelSurvey
+                        || details.CompletedVisitActivities.GroundWaterLevels
+                        || details.CompletedVisitActivities.OtherSample
+                        || details.CompletedVisitActivities.RecorderDataCollected
+                        || details.CompletedVisitActivities.SafetyInspectionPerformed
+                        || details.CompletedVisitActivities.SedimentSample
+                        || details.CompletedVisitActivities.WaterQualitySample);
         }
 
         private FieldVisitDetails ParseVisit(LocationInfo locationInfo)
