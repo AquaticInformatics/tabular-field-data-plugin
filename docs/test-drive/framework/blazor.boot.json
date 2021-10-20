@@ -3,7 +3,7 @@
   "config": [ ],
   "debugBuild": false,
   "entryAssembly": "BlazorTestDrive",
-  "icuDataMode": 0,
+  "icuDataMode": 1,
   "linkerEnabled": true,
   "resources": {
     "assembly": {
@@ -27,11 +27,11 @@
       "Microsoft.JSInterop.WebAssembly.dll": "sha256-eF6xbzCQBK4yEs2CC3wnJR1I1ZWXwlJp7GJ4R1UMM14=",
       "Microsoft.Net.Http.Headers.dll": "sha256-Wvp5b2xB1gZg9yya2UqQycv2STns92xStLKpmRv5Aww=",
       "System.IO.Pipelines.dll": "sha256-qZYTUS+ga7CydtH54fYPbehFCvx3B49I74G8dxreTog=",
-      "TabularCsv.dll": "sha256-3eRvQg589JJfkpw7Zu8IS0jvgp3DKj9GM6yzjQU529w=",
+      "TabularCsv.dll": "sha256-PvzkFPeUmoGsRxHfkHuC+jU6uYDXBwCSHgG\/OoJyicU=",
       "Nett.dll": "sha256-Y960+Tf4jIN+BroOKMwAX8fjgVOTQMZ8CsbxkdJ\/v68=",
       "Fastenshtein.dll": "sha256-3vSPPpb\/1ncYU2Wjei0u718BbXrPapvpylMDa+kWex0=",
       "Humanizer.dll": "sha256-9GsuFKSFGPOr+YQLre2RfqelWSmKMg6YzCGGG7QAaHs=",
-      "BlazorTestDrive.dll": "sha256-CYQu\/Aitcryp4UiebqEt1gnoun1m2bQLjBgGKLTUppo=",
+      "BlazorTestDrive.dll": "sha256-L117YSumrt9gclqOz0z5TWBqAnW68mTjOsQ8mMf75L0=",
       "Microsoft.VisualBasic.Core.dll": "sha256-lhZ+FZEiQXHLZWBlIYiwXtm0OdQZzgl4kIIcE5CSJ3A=",
       "System.Collections.Concurrent.dll": "sha256-VN33kBdzR4P9\/6Utrflr0OiQmf181xK4bEe2kjbBnqQ=",
       "System.Collections.Immutable.dll": "sha256-fTW7diqrUJ\/YxrQTeDI9nITeHOhtWBbj5Ywmj7GQQE4=",
