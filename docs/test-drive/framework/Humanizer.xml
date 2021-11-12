@@ -95,7 +95,7 @@
              than or equal to one.
             </summary>
         </member>
-        <member name="M:Humanizer.Bytes.ByteSize.ToFullWords">
+        <member name="M:Humanizer.Bytes.ByteSize.ToFullWords(System.String,System.IFormatProvider)">
             <summary>
             Converts the value of the current ByteSize object to a string with 
             full words. The metric prefix symbol (bit, byte, kilo, mega, giga, 
@@ -635,22 +635,22 @@
             Humanizes DateTime into human readable sentence
             </summary>
         </member>
-        <member name="M:Humanizer.DateHumanizeExtensions.Humanize(System.DateTime,System.Boolean,System.Nullable{System.DateTime},System.Globalization.CultureInfo)">
+        <member name="M:Humanizer.DateHumanizeExtensions.Humanize(System.DateTime,System.Nullable{System.Boolean},System.Nullable{System.DateTime},System.Globalization.CultureInfo)">
             <summary>
             Turns the current or provided date into a human readable sentence
             </summary>
             <param name="input">The date to be humanized</param>
-            <param name="utcDate">Boolean value indicating whether the date is in UTC or local</param>
+            <param name="utcDate">Nullable boolean value indicating whether the date is in UTC or local. If null, current date is used with the same DateTimeKind of input</param>
             <param name="dateToCompareAgainst">Date to compare the input against. If null, current date is used as base</param>
             <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
             <returns>distance of time in words</returns>
         </member>
-        <member name="M:Humanizer.DateHumanizeExtensions.Humanize(System.Nullable{System.DateTime},System.Boolean,System.Nullable{System.DateTime},System.Globalization.CultureInfo)">
+        <member name="M:Humanizer.DateHumanizeExtensions.Humanize(System.Nullable{System.DateTime},System.Nullable{System.Boolean},System.Nullable{System.DateTime},System.Globalization.CultureInfo)">
             <summary>
             Turns the current or provided date into a human readable sentence, overload for the nullable DateTime, returning 'never' in case null
             </summary>
             <param name="input">The date to be humanized</param>
-            <param name="utcDate">Boolean value indicating whether the date is in UTC or local</param>
+            <param name="utcDate">Nullable boolean value indicating whether the date is in UTC or local. If null, current date is used with the same DateTimeKind of input</param>
             <param name="dateToCompareAgainst">Date to compare the input against. If null, current date is used as base</param>
             <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
             <returns>distance of time in words</returns>
@@ -3774,6 +3774,7 @@
             This representation has a maximum deviation of 11.25 degrees.
             </summary>
             <returns>A textual representation of the heading</returns>
+            <param name="heading">The heading value</param>
             <param name="culture">The culture to return the textual representation in</param>
             <param name="style">Whether to return a short result or not. <see cref="T:Humanizer.HeadingStyle"/></param>
         </member>
@@ -3846,12 +3847,13 @@
             <param name="inputIsKnownToBeSingular">Normally you call Pluralize on singular words; but if you're unsure call it with false</param>
             <returns></returns>
         </member>
-        <member name="M:Humanizer.Inflections.Vocabulary.Singularize(System.String,System.Boolean)">
+        <member name="M:Humanizer.Inflections.Vocabulary.Singularize(System.String,System.Boolean,System.Boolean)">
             <summary>
             Singularizes the provided input considering irregular words
             </summary>
             <param name="word">Word to be singularized</param>
             <param name="inputIsKnownToBePlural">Normally you call Singularize on plural words; but if you're unsure call it with false</param>
+            <param name="skipSimpleWords">Skip singularizing single words that have an 's' on the end</param>
             <returns></returns>
         </member>
         <member name="T:Humanizer.InflectorExtensions">
@@ -3867,12 +3869,13 @@
             <param name="inputIsKnownToBeSingular">Normally you call Pluralize on singular words; but if you're unsure call it with false</param>
             <returns></returns>
         </member>
-        <member name="M:Humanizer.InflectorExtensions.Singularize(System.String,System.Boolean)">
+        <member name="M:Humanizer.InflectorExtensions.Singularize(System.String,System.Boolean,System.Boolean)">
             <summary>
             Singularizes the provided input considering irregular words
             </summary>
             <param name="word">Word to be singularized</param>
             <param name="inputIsKnownToBePlural">Normally you call Singularize on plural words; but if you're unsure call it with false</param>
+            <param name="skipSimpleWords">Skip singularizing single words that have an 's' on the end</param>
             <returns></returns>
         </member>
         <member name="M:Humanizer.InflectorExtensions.Titleize(System.String)">
@@ -3887,7 +3890,6 @@
             By default, pascalize converts strings to UpperCamelCase also removing underscores
             </summary>
             <param name="input"></param>
-            <param name="removeWhiteSpace">"This has a space" -> "ThisHasASpace" if true</param>
             <returns></returns>
         </member>
         <member name="M:Humanizer.InflectorExtensions.Camelize(System.String)">
@@ -3895,7 +3897,6 @@
             Same as Pascalize except that the first character is lower case
             </summary>
             <param name="input"></param>
-            <param name="removeWhiteSpace">"This has a space" -> "thisHasASpace" if true</param>
             <returns></returns>
         </member>
         <member name="M:Humanizer.InflectorExtensions.Underscore(System.String)">
@@ -3989,6 +3990,41 @@
             and using <paramref name="separator"/> before the final item.
             </summary>
         </member>
+        <member name="T:Humanizer.Localisation.DataUnit">
+            <summary>
+            Units of data
+            </summary>
+        </member>
+        <member name="F:Humanizer.Localisation.DataUnit.Bit">
+            <summary>
+            Bit
+            </summary>
+        </member>
+        <member name="F:Humanizer.Localisation.DataUnit.Byte">
+            <summary>
+            Byte
+            </summary>
+        </member>
+        <member name="F:Humanizer.Localisation.DataUnit.Kilobyte">
+            <summary>
+            Kilobyte
+            </summary>
+        </member>
+        <member name="F:Humanizer.Localisation.DataUnit.Megabyte">
+            <summary>
+            Megabyte
+            </summary>
+        </member>
+        <member name="F:Humanizer.Localisation.DataUnit.Gigabyte">
+            <summary>
+            Gigabyte
+            </summary>
+        </member>
+        <member name="F:Humanizer.Localisation.DataUnit.Terabyte">
+            <summary>
+            Terrabyte
+            </summary>
+        </member>
         <member name="T:Humanizer.Localisation.DateToOrdinalWords.IDateToOrdinalWordConverter">
             <summary>
             The interface used to localise the ToOrdinalWords method.
@@ -4056,6 +4092,9 @@
             <param name="toWords"></param>
             <returns></returns>
             <exception cref="T:System.ArgumentOutOfRangeException">Is thrown when timeUnit is larger than TimeUnit.Week</exception>
+        </member>
+        <member name="M:Humanizer.Localisation.Formatters.DefaultFormatter.DataUnitHumanize(Humanizer.Localisation.DataUnit,System.Double,System.Boolean)">
+            <inheritdoc cref="M:Humanizer.Localisation.Formatters.IFormatter.DataUnitHumanize(Humanizer.Localisation.DataUnit,System.Double,System.Boolean)"/>
         </member>
         <member name="M:Humanizer.Localisation.Formatters.DefaultFormatter.Format(System.String)">
             <summary>
@@ -4133,6 +4172,15 @@
             <param name="toWords"></param>
             <returns></returns>
         </member>
+        <member name="M:Humanizer.Localisation.Formatters.IFormatter.DataUnitHumanize(Humanizer.Localisation.DataUnit,System.Double,System.Boolean)">
+            <summary>
+            Returns the string representation of the provided DataUnit, either as a symbol or full word
+            </summary>
+            <param name="dataUnit">Data unit</param>
+            <param name="count">Number of said units, to adjust for singular/plural forms</param>
+            <param name="toSymbol">Indicates whether the data unit should be expressed as symbol or full word</param>
+            <returns>String representation of the provided DataUnit</returns>
+        </member>
         <member name="M:Humanizer.Localisation.NumberToWords.DefaultNumberToWordsConverter.#ctor(System.Globalization.CultureInfo)">
             <summary>
             Constructor.
@@ -4168,12 +4216,21 @@
             <param name="number"></param>
             <returns></returns>
         </member>
-        <member name="M:Humanizer.Localisation.NumberToWords.GenderedNumberToWordsConverter.Convert(System.Int64,Humanizer.GrammaticalGender)">
+        <member name="M:Humanizer.Localisation.NumberToWords.GenderedNumberToWordsConverter.Convert(System.Int64,System.Boolean)">
+            <summary>
+            Converts the number to string using the locale's default gramatical gender and adds "and"
+            </summary>
+            <param name="number"></param>
+            <param name="addAnd">Whether "and" should be included.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.Localisation.NumberToWords.GenderedNumberToWordsConverter.Convert(System.Int64,Humanizer.GrammaticalGender,System.Boolean)">
             <summary>
             Converts the number to string using the provided grammatical gender
             </summary>
             <param name="number"></param>
             <param name="gender"></param>
+            <param name="addAnd"></param>
             <returns></returns>
         </member>
         <member name="M:Humanizer.Localisation.NumberToWords.GenderedNumberToWordsConverter.ConvertToOrdinal(System.Int32)">
@@ -4198,12 +4255,21 @@
             <param name="number"></param>
             <returns></returns>
         </member>
-        <member name="M:Humanizer.Localisation.NumberToWords.GenderlessNumberToWordsConverter.Convert(System.Int64,Humanizer.GrammaticalGender)">
+        <member name="M:Humanizer.Localisation.NumberToWords.GenderlessNumberToWordsConverter.Convert(System.Int64,System.Boolean)">
+            <summary>
+            Converts the number to string
+            </summary>
+            <param name="number"></param>
+            <param name="addAnd">Whether "and" should be included.</param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.Localisation.NumberToWords.GenderlessNumberToWordsConverter.Convert(System.Int64,Humanizer.GrammaticalGender,System.Boolean)">
             <summary>
             Converts the number to string ignoring the provided grammatical gender
             </summary>
             <param name="number"></param>
             <param name="gender"></param>
+            <param name="addAnd"></param>
             <returns></returns>
         </member>
         <member name="M:Humanizer.Localisation.NumberToWords.GenderlessNumberToWordsConverter.ConvertToOrdinal(System.Int32)">
@@ -4233,12 +4299,21 @@
             <param name="number"></param>
             <returns></returns>
         </member>
-        <member name="M:Humanizer.Localisation.NumberToWords.INumberToWordsConverter.Convert(System.Int64,Humanizer.GrammaticalGender)">
+        <member name="M:Humanizer.Localisation.NumberToWords.INumberToWordsConverter.Convert(System.Int64,System.Boolean)">
+            <summary>
+            Converts the number to string using the locale's default grammatical gender with or without adding 'And'
+            </summary>
+            <param name="number"></param>
+            <param name="addAnd">Specify with our without adding "And"</param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.Localisation.NumberToWords.INumberToWordsConverter.Convert(System.Int64,Humanizer.GrammaticalGender,System.Boolean)">
             <summary>
             Converts the number to string using the provided grammatical gender
             </summary>
             <param name="number"></param>
             <param name="gender"></param>
+            <param name="addAnd"></param>
             <returns></returns>
         </member>
         <member name="M:Humanizer.Localisation.NumberToWords.INumberToWordsConverter.ConvertToOrdinal(System.Int32)">
@@ -4589,9 +4664,9 @@
             Symbols is a list of every symbols for the Metric system.
             </summary>
         </member>
-        <member name="F:Humanizer.MetricNumeralExtensions.Names">
+        <member name="F:Humanizer.MetricNumeralExtensions.UnitPrefixes">
             <summary>
-            Names link a Metric symbol (as key) to its name (as value).
+            UnitPrefixes link a Metric symbol (as key) to its prefix (as value).
             </summary>
             <remarks>
             We dont support :
@@ -4640,6 +4715,26 @@
             </example>
             <returns>A valid Metric representation</returns>
         </member>
+        <member name="M:Humanizer.MetricNumeralExtensions.ToMetric(System.Int32,System.Nullable{Humanizer.MetricNumeralFormats},System.Nullable{System.Int32})">
+            <summary>
+            Converts a number into a valid and Human-readable Metric representation.
+            </summary>
+            <remarks>
+            Inspired by a snippet from Thom Smith.
+            See <a href="http://stackoverflow.com/questions/12181024/formatting-a-number-with-a-metric-prefix">this link</a> for more.
+            </remarks>
+            <param name="input">Number to convert to a Metric representation.</param>
+            <param name="formats">A bitwise combination of <see cref="T:Humanizer.MetricNumeralFormats"/> enumeration values that format the metric representation.</param>
+            <param name="decimals">If not null it is the numbers of decimals to round the number to</param>
+            <example>
+            <code>
+            1000.ToMetric() => "1k"
+            123.ToMetric() => "123"
+            1E-1.ToMetric() => "100m"
+            </code>
+            </example>
+            <returns>A valid Metric representation</returns>
+        </member>
         <member name="M:Humanizer.MetricNumeralExtensions.ToMetric(System.Double,System.Boolean,System.Boolean,System.Nullable{System.Int32})">
             <summary>
             Converts a number into a valid and Human-readable Metric representation.
@@ -4651,6 +4746,26 @@
             <param name="input">Number to convert to a Metric representation.</param>
             <param name="hasSpace">True will split the number and the symbol with a whitespace.</param>
             <param name="useSymbol">True will use symbol instead of name</param>
+            <param name="decimals">If not null it is the numbers of decimals to round the number to</param>
+            <example>
+            <code>
+            1000d.ToMetric() => "1k"
+            123d.ToMetric() => "123"
+            1E-1.ToMetric() => "100m"
+            </code>
+            </example>
+            <returns>A valid Metric representation</returns>
+        </member>
+        <member name="M:Humanizer.MetricNumeralExtensions.ToMetric(System.Double,System.Nullable{Humanizer.MetricNumeralFormats},System.Nullable{System.Int32})">
+            <summary>
+            Converts a number into a valid and Human-readable Metric representation.
+            </summary>
+            <remarks>
+            Inspired by a snippet from Thom Smith.
+            See <a href="http://stackoverflow.com/questions/12181024/formatting-a-number-with-a-metric-prefix">this link</a> for more.
+            </remarks>
+            <param name="input">Number to convert to a Metric representation.</param>
+            <param name="formats">A bitwise combination of <see cref="T:Humanizer.MetricNumeralFormats"/> enumeration values that format the metric representation.</param>
             <param name="decimals">If not null it is the numbers of decimals to round the number to</param>
             <example>
             <code>
@@ -4691,34 +4806,32 @@
             <param name="input">Metric representation with a name or a symbol</param>
             <returns>A metric representation with a symbol</returns>
         </member>
-        <member name="M:Humanizer.MetricNumeralExtensions.BuildRepresentation(System.Double,System.Boolean,System.Boolean,System.Nullable{System.Int32})">
+        <member name="M:Humanizer.MetricNumeralExtensions.BuildRepresentation(System.Double,System.Nullable{Humanizer.MetricNumeralFormats},System.Nullable{System.Int32})">
             <summary>
             Build a Metric representation of the number.
             </summary>
             <param name="input">Number to convert to a Metric representation.</param>
-            <param name="hasSpace">True will split the number and the symbol with a whitespace.</param>
-            <param name="useSymbol">True will use symbol instead of name</param>
+            <param name="formats">A bitwise combination of <see cref="T:Humanizer.MetricNumeralFormats"/> enumeration values that format the metric representation.</param>
             <param name="decimals">If not null it is the numbers of decimals to round the number to</param>
             <returns>A number in a Metric representation</returns>
         </member>
-        <member name="M:Humanizer.MetricNumeralExtensions.BuildMetricRepresentation(System.Double,System.Int32,System.Boolean,System.Boolean,System.Nullable{System.Int32})">
+        <member name="M:Humanizer.MetricNumeralExtensions.BuildMetricRepresentation(System.Double,System.Int32,System.Nullable{Humanizer.MetricNumeralFormats},System.Nullable{System.Int32})">
             <summary>
             Build a Metric representation of the number.
             </summary>
             <param name="input">Number to convert to a Metric representation.</param>
             <param name="exponent">Exponent of the number in a scientific notation</param>
-            <param name="hasSpace">True will split the number and the symbol with a whitespace.</param>
-            <param name="useSymbol">True will use symbol instead of name</param>
+            <param name="formats">A bitwise combination of <see cref="T:Humanizer.MetricNumeralFormats"/> enumeration values that format the metric representation.</param>
             <param name="decimals">If not null it is the numbers of decimals to round the number to</param>
             <returns>A number in a Metric representation</returns>
         </member>
-        <member name="M:Humanizer.MetricNumeralExtensions.GetUnit(System.Char,System.Boolean)">
+        <member name="M:Humanizer.MetricNumeralExtensions.GetUnitText(System.Char,System.Nullable{Humanizer.MetricNumeralFormats})">
             <summary>
             Get the unit from a symbol of from the symbol's name.
             </summary>
             <param name="symbol">The symbol linked to the unit</param>
-            <param name="useSymbol">True will use symbol instead of name</param>
-            <returns>A symbol or a symbol's name</returns>
+            <param name="formats">A bitwise combination of <see cref="T:Humanizer.MetricNumeralFormats"/> enumeration values that format the metric representation.</param>
+            <returns>A symbol, a symbol's name, a symbol's short scale word or a symbol's long scale word</returns>
         </member>
         <member name="M:Humanizer.MetricNumeralExtensions.IsOutOfRange(System.Double)">
             <summary>
@@ -4738,6 +4851,31 @@
             </remarks>
             <param name="input">A string who might contain a invalid Metric representation.</param>
             <returns>True if input is not a valid Metric representation.</returns>
+        </member>
+        <member name="T:Humanizer.MetricNumeralFormats">
+            <summary>
+            Flags for formatting the metric representation of numerals.
+            </summary>
+        </member>
+        <member name="F:Humanizer.MetricNumeralFormats.UseLongScaleWord">
+            <summary>
+            Use the metric prefix <a href="https://en.wikipedia.org/wiki/Long_and_short_scales">long scale word</a>.
+            </summary>
+        </member>
+        <member name="F:Humanizer.MetricNumeralFormats.UseName">
+            <summary>
+            Use the metric prefix <a href="https://en.wikipedia.org/wiki/Metric_prefix#List_of_SI_prefixes">name</a> instead of the symbol.
+            </summary>
+        </member>
+        <member name="F:Humanizer.MetricNumeralFormats.UseShortScaleWord">
+            <summary>
+            Use the metric prefix <a href="https://en.wikipedia.org/wiki/Long_and_short_scales">short scale word</a>.
+            </summary>
+        </member>
+        <member name="F:Humanizer.MetricNumeralFormats.WithSpace">
+            <summary>
+            Include a space after the numeral.
+            </summary>
         </member>
         <member name="T:Humanizer.NoMatchFoundException">
             <summary>
@@ -5270,6 +5408,15 @@
             <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
             <returns></returns>
         </member>
+        <member name="M:Humanizer.NumberToWordsExtension.ToWords(System.Int32,System.Boolean,System.Globalization.CultureInfo)">
+            <summary>
+            3501.ToWords(false) -> "three thousand five hundred one"
+            </summary>
+            <param name="number">Number to be turned to words</param>
+            <param name="addAnd">To add 'and' before the last number.</param>
+            <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
+            <returns></returns>
+        </member>
         <member name="M:Humanizer.NumberToWordsExtension.ToWords(System.Int32,Humanizer.GrammaticalGender,System.Globalization.CultureInfo)">
             <summary>
             For locales that support gender-specific forms
@@ -5292,12 +5439,13 @@
             <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
             <returns></returns>
         </member>
-        <member name="M:Humanizer.NumberToWordsExtension.ToWords(System.Int64,System.Globalization.CultureInfo)">
+        <member name="M:Humanizer.NumberToWordsExtension.ToWords(System.Int64,System.Globalization.CultureInfo,System.Boolean)">
             <summary>
             3501.ToWords() -> "three thousand five hundred and one"
             </summary>
             <param name="number">Number to be turned to words</param>
             <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
+            <param name="addAnd">Whether "and" should be included or not.</param>
             <returns></returns>
         </member>
         <member name="M:Humanizer.NumberToWordsExtension.ToWords(System.Int64,Humanizer.GrammaticalGender,System.Globalization.CultureInfo)">
@@ -5368,6 +5516,14 @@
             <param name="numberString">The number, in string, to be ordinalized</param>
             <returns></returns>
         </member>
+        <member name="M:Humanizer.OrdinalizeExtensions.Ordinalize(System.String,System.Globalization.CultureInfo)">
+            <summary>
+            Turns a number into an ordinal string used to denote the position in an ordered sequence such as 1st, 2nd, 3rd, 4th.
+            </summary>
+            <param name="numberString">The number, in string, to be ordinalized</param>
+            <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
+            <returns></returns>
+        </member>
         <member name="M:Humanizer.OrdinalizeExtensions.Ordinalize(System.String,Humanizer.GrammaticalGender)">
             <summary>
             Turns a number into an ordinal string used to denote the position in an ordered sequence such as 1st, 2nd, 3rd, 4th.
@@ -5379,11 +5535,31 @@
             <param name="gender">The grammatical gender to use for output words</param>
             <returns></returns>
         </member>
+        <member name="M:Humanizer.OrdinalizeExtensions.Ordinalize(System.String,Humanizer.GrammaticalGender,System.Globalization.CultureInfo)">
+            <summary>
+            Turns a number into an ordinal string used to denote the position in an ordered sequence such as 1st, 2nd, 3rd, 4th.
+            Gender for Brazilian Portuguese locale
+            "1".Ordinalize(GrammaticalGender.Masculine) -> "1º"
+            "1".Ordinalize(GrammaticalGender.Feminine) -> "1ª"
+            </summary>
+            <param name="numberString">The number, in string, to be ordinalized</param>
+            <param name="gender">The grammatical gender to use for output words</param>
+            <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
+            <returns></returns>
+        </member>
         <member name="M:Humanizer.OrdinalizeExtensions.Ordinalize(System.Int32)">
             <summary>
             Turns a number into an ordinal number used to denote the position in an ordered sequence such as 1st, 2nd, 3rd, 4th.
             </summary>
             <param name="number">The number to be ordinalized</param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.OrdinalizeExtensions.Ordinalize(System.Int32,System.Globalization.CultureInfo)">
+            <summary>
+            Turns a number into an ordinal number used to denote the position in an ordered sequence such as 1st, 2nd, 3rd, 4th.
+            </summary>
+            <param name="number">The number to be ordinalized</param>
+            <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
             <returns></returns>
         </member>
         <member name="M:Humanizer.OrdinalizeExtensions.Ordinalize(System.Int32,Humanizer.GrammaticalGender)">
@@ -5395,6 +5571,18 @@
             </summary>
             <param name="number">The number to be ordinalized</param>
             <param name="gender">The grammatical gender to use for output words</param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.OrdinalizeExtensions.Ordinalize(System.Int32,Humanizer.GrammaticalGender,System.Globalization.CultureInfo)">
+            <summary>
+            Turns a number into an ordinal number used to denote the position in an ordered sequence such as 1st, 2nd, 3rd, 4th.
+            Gender for Brazilian Portuguese locale
+            1.Ordinalize(GrammaticalGender.Masculine) -> "1º"
+            1.Ordinalize(GrammaticalGender.Feminine) -> "1ª"
+            </summary>
+            <param name="number">The number to be ordinalized</param>
+            <param name="gender">The grammatical gender to use for output words</param>
+            <param name="culture">Culture to use. If null, current thread's UI culture is used.</param>
             <returns></returns>
         </member>
         <member name="T:Humanizer.Plurality">
@@ -5506,6 +5694,7 @@
             <param name="maxUnit">The maximum unit of time to output. The default value is <see cref="F:Humanizer.Localisation.TimeUnit.Week"/>. The time units <see cref="F:Humanizer.Localisation.TimeUnit.Month"/> and <see cref="F:Humanizer.Localisation.TimeUnit.Year"/> will give approximations for time spans bigger 30 days by calculating with 365.2425 days a year and 30.4369 days a month.</param>
             <param name="minUnit">The minimum unit of time to output.</param>
             <param name="collectionSeparator">The separator to use when combining humanized time parts. If null, the default collection formatter for the current culture is used.</param>
+            <param name="toWords">Uses words instead of numbers if true. E.g. one day.</param>
             <returns></returns>
         </member>
         <member name="M:Humanizer.TimeSpanHumanizeExtensions.Humanize(System.TimeSpan,System.Int32,System.Boolean,System.Globalization.CultureInfo,Humanizer.Localisation.TimeUnit,Humanizer.Localisation.TimeUnit,System.String,System.Boolean)">
@@ -5519,6 +5708,7 @@
             <param name="maxUnit">The maximum unit of time to output. The default value is <see cref="F:Humanizer.Localisation.TimeUnit.Week"/>. The time units <see cref="F:Humanizer.Localisation.TimeUnit.Month"/> and <see cref="F:Humanizer.Localisation.TimeUnit.Year"/> will give approximations for time spans bigger than 30 days by calculating with 365.2425 days a year and 30.4369 days a month.</param>
             <param name="minUnit">The minimum unit of time to output.</param>
             <param name="collectionSeparator">The separator to use when combining humanized time parts. If null, the default collection formatter for the current culture is used.</param>
+            <param name="toWords">Uses words instead of numbers if true. E.g. one day.</param>
             <returns></returns>
         </member>
         <member name="T:Humanizer.ShowQuantityAs">
@@ -5611,9 +5801,48 @@
             </example>
             <returns></returns>
         </member>
+        <member name="M:Humanizer.ToQuantityExtensions.ToQuantity(System.String,System.Double,System.String,System.IFormatProvider)">
+            <summary>
+            Prefixes the provided word with the number and accordingly pluralizes or singularizes the word
+            </summary>
+            <param name="input">The word to be prefixed</param>
+            <param name="quantity">The quantity of the word</param>
+            <param name="format">A standard or custom numeric format string.</param>
+            <param name="formatProvider">An object that supplies culture-specific formatting information.</param>
+            <example>
+            "request".ToQuantity(0.2) => "0.2 requests"
+            "request".ToQuantity(10.6, format: "N0") => "10.6 requests"
+            "request".ToQuantity(1.0, format: "N0") => "1 request"
+            </example>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.ToQuantityExtensions.ToQuantity(System.String,System.Double)">
+            <summary>
+            Prefixes the provided word with the number and accordingly pluralizes or singularizes the word
+            </summary>
+            <param name="input">The word to be prefixed</param>
+            <param name="quantity">The quantity of the word</param>
+            <example>
+            "request".ToQuantity(0.2) => "0.2 requests"
+            </example>
+            <returns></returns>
+        </member>
+        <member name="T:Humanizer.ICulturedStringTransformer">
+            <summary>
+            Can transform a string with the given culture
+            </summary>
+        </member>
+        <member name="M:Humanizer.ICulturedStringTransformer.Transform(System.String,System.Globalization.CultureInfo)">
+            <summary>
+            Transform the input
+            </summary>
+            <param name="input">String to be transformed</param>
+            <param name="culture">The culture</param>
+            <returns></returns>
+        </member>
         <member name="T:Humanizer.IStringTransformer">
             <summary>
-            Can tranform a string
+            Can transform a string
             </summary>
         </member>
         <member name="M:Humanizer.IStringTransformer.Transform(System.String)">
@@ -5633,6 +5862,15 @@
             Transforms a string using the provided transformers. Transformations are applied in the provided order.
             </summary>
             <param name="input"></param>
+            <param name="transformers"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Humanizer.To.Transform(System.String,System.Globalization.CultureInfo,Humanizer.ICulturedStringTransformer[])">
+            <summary>
+            Transforms a string using the provided transformers. Transformations are applied in the provided order.
+            </summary>
+            <param name="input"></param>
+            <param name="culture"></param>
             <param name="transformers"></param>
             <returns></returns>
         </member>
