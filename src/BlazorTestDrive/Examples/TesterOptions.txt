@@ -1,0 +1,11 @@
+-Data=..\..\..\BlazorTestDrive\Examples\*.csv
+/Setting=AirTemperature=@..\..\..\BlazorTestDrive\Examples\AirTemperature.toml
+/Setting=Aliases=@..\..\..\BlazorTestDrive\Examples\Aliases.toml
+/Setting=French=@..\..\..\BlazorTestDrive\Examples\French.toml
+/Setting=OttMFPro=@..\..\..\BlazorTestDrive\Examples\OttMFPro.toml
+/Setting=ReadingsWithDatumConversion=@..\..\..\BlazorTestDrive\Examples\ReadingsWithDatumConversion.toml
+/Setting=ReadingsWithGrades=@..\..\..\BlazorTestDrive\Examples\ReadingsWithGrades.toml
+/Setting=SeparateTimeAndDateColumns=@..\..\..\BlazorTestDrive\Examples\SeparateTimeAndDateColumns.toml
+/Setting=Spanish=@..\..\..\BlazorTestDrive\Examples\Spanish.toml
+/Setting=StageDischargeReadingsFormat=@..\..\..\BlazorTestDrive\Examples\StageDischargeReadingsFormat.toml
+/Setting=Survey123Example=@..\..\..\BlazorTestDrive\Examples\Survey123Example.toml
