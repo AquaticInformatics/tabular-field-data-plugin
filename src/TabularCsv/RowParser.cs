@@ -617,6 +617,7 @@ namespace TabularCsv
             reading.SubLocation = GetString(definition.SubLocation);
             reading.SensorUniqueId = GetNullableGuid(definition.SensorUniqueId);
             reading.Uncertainty = GetNullableDouble(definition.Uncertainty);
+            reading.AdjustmentAmount = GetNullableDouble(definition.AdjustmentAmount);
             reading.MeasurementDevice = ParseMeasurementDevice(
                 definition.MeasurementDeviceManufacturer,
                 definition.MeasurementDeviceModel,
