@@ -1246,6 +1246,8 @@ namespace TabularCsv
                 QualitativeUncertainty = GetNullableEnum<QualitativeUncertaintyType>(definition.QualitativeUncertainty),
                 QuantitativeUncertainty = GetNullableDouble(definition.QuantitativeUncertainty),
                 MeanGageHeightDurationHours = GetNullableDouble(definition.MeanGageHeightDurationHours),
+                GageHeightAdjustmentAmount = GetNullableDouble(definition.GageHeightAdjustmentAmount),
+                GageHeightComments = GetString(definition.GageHeightComments),
             };
 
             var showInDataCorrection = GetNullableBoolean(definition.ShowInDataCorrection);

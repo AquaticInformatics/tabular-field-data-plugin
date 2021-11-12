@@ -368,6 +368,8 @@ namespace TabularCsv
         public PropertyDefinition MeanGageHeightDurationHours { get; set; }
         public PropertyDefinition ManuallyCalculatedMeanGageHeight { get; set; }
         public PropertyDefinition MeanGageHeightDifferenceDuringVisit { get; set; }
+        public PropertyDefinition GageHeightAdjustmentAmount { get; set; }
+        public PropertyDefinition GageHeightComments { get; set; }
 
         public GageHeightMeasurementDefinition GageHeightMeasurement { get; set; }
         public List<GageHeightMeasurementDefinition> GageHeightMeasurements { get; set; } = new List<GageHeightMeasurementDefinition>();
