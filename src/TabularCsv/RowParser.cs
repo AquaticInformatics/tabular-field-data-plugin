@@ -617,6 +617,7 @@ namespace TabularCsv
             reading.SubLocation = GetString(definition.SubLocation);
             reading.SensorUniqueId = GetNullableGuid(definition.SensorUniqueId);
             reading.Uncertainty = GetNullableDouble(definition.Uncertainty);
+            reading.AdjustmentAmount = GetNullableDouble(definition.AdjustmentAmount);
             reading.MeasurementDevice = ParseMeasurementDevice(
                 definition.MeasurementDeviceManufacturer,
                 definition.MeasurementDeviceModel,
@@ -1245,6 +1246,8 @@ namespace TabularCsv
                 QualitativeUncertainty = GetNullableEnum<QualitativeUncertaintyType>(definition.QualitativeUncertainty),
                 QuantitativeUncertainty = GetNullableDouble(definition.QuantitativeUncertainty),
                 MeanGageHeightDurationHours = GetNullableDouble(definition.MeanGageHeightDurationHours),
+                GageHeightAdjustmentAmount = GetNullableDouble(definition.GageHeightAdjustmentAmount),
+                GageHeightComments = GetString(definition.GageHeightComments),
             };
 
             var showInDataCorrection = GetNullableBoolean(definition.ShowInDataCorrection);

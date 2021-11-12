@@ -209,6 +209,8 @@ else
                     <th>Time</th>
                     <th>Parameter</th>
                     <th>Value</th>
+                    <th>Observed Value</th>
+                    <th>Adjustment Amount</th>
                     <th>Reading Type</th>
                     <th>Method</th>
                     <th>Publish</th>
@@ -227,25 +229,27 @@ else
             <tbody>
                 @foreach (var item in Results.Readings)
                 {
-                    <tr>
-                        <td>@item.VisitIdentifier</td>
-                        <td>@item.Item.DateTimeOffset</td>
-                        <td>@item.Item.ParameterId</td>
-                        <td>@item.Item.Value (@item.Item.UnitId)</td>
-                        <td>@item.Item.ReadingType</td>
-                        <td>@item.Item.Method</td>
-                        <td>@item.Item.Publish</td>
-                        <td>@item.Item.SubLocation</td>
-                        <td>@item.Item.Uncertainty</td>
-                        <td>@Grade(item.Item.Grade)</td>
-                        <td>@Qualifiers(item.Item.ReadingQualifiers)</td>
-                        <td>@item.Item.ReferencePointName</td>
-                        <td>@item.Item.UseLocationDatumAsReference</td>
-                        <td>@item.Item.Comments</td>
-                        <td>@item.Item.SensorUniqueId</td>
-                        <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
-                        <td>@GroundwaterDetails(item.Item.GroundWaterMeasurementDetails)</td>
-                    </tr>
+                <tr>
+                    <td>@item.VisitIdentifier</td>
+                    <td>@item.Item.DateTimeOffset</td>
+                    <td>@item.Item.ParameterId</td>
+                    <td>@ReadingValue(item.Item)</td>
+                    <td>@ReadingObservedValue(item.Item)</td>
+                    <td>@ReadingAdjustmentAmount(item.Item)</td>
+                    <td>@item.Item.ReadingType</td>
+                    <td>@item.Item.Method</td>
+                    <td>@item.Item.Publish</td>
+                    <td>@item.Item.SubLocation</td>
+                    <td>@item.Item.Uncertainty</td>
+                    <td>@Grade(item.Item.Grade)</td>
+                    <td>@Qualifiers(item.Item.ReadingQualifiers)</td>
+                    <td>@item.Item.ReferencePointName</td>
+                    <td>@item.Item.UseLocationDatumAsReference</td>
+                    <td>@item.Item.Comments</td>
+                    <td>@item.Item.SensorUniqueId</td>
+                    <td>@MeasurementDevice(item.Item.MeasurementDevice)</td>
+                    <td>@GroundwaterDetails(item.Item.GroundWaterMeasurementDetails)</td>
+                </tr>
                 }
             </tbody>
         </table>
@@ -406,6 +410,8 @@ else
                     <th>Prevent Auto Publish?</th>
                     <th>Mean Gage Height Difference During Visit</th>
                     <th>Manually Calculated Mean Gage Height</th>
+                    <th>Gage Height Adjustment Amount</th>
+                    <th>Gage Height Comments</th>
                     <th>Gage Height Measurements</th>
                 </tr>
             </thead>
@@ -430,6 +436,8 @@ else
                         <td>@item.Item.PreventAutomaticPublishing</td>
                         <td>@Measurement(item.Item.MeanGageHeightDifferenceDuringVisit)</td>
                         <td>@Measurement(item.Item.ManuallyCalculatedMeanGageHeight)</td>
+                        <td>@item.Item.GageHeightAdjustmentAmount</td>
+                        <td>@item.Item.GageHeightComments</td>
 
                         @if (item.Item.GageHeightMeasurements.Any())
                         {
@@ -1170,6 +1178,25 @@ else
         return grade.Code.HasValue
             ? $"{grade.Code}"
             : grade.DisplayName;
+    }
+
+    private string ReadingValue(Reading reading)
+    {
+        return reading.AdjustmentAmount.HasValue
+            ? $"{reading.Value + reading.AdjustmentAmount} ({reading.UnitId})"
+            : $"{reading.Value} ({reading.UnitId})";
+    }
+
+    private string ReadingObservedValue(Reading reading)
+    {
+        return $"{reading.Value} ({reading.UnitId})";
+    }
+
+    private string ReadingAdjustmentAmount(Reading reading)
+    {
+        return reading.AdjustmentAmount.HasValue
+            ? $"{reading.AdjustmentAmount} ({reading.UnitId})"
+            : null;
     }
 
     private string Qualifiers(List<ReadingQualifierPickList> qualifiers)
