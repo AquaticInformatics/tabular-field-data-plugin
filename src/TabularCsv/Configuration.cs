@@ -253,6 +253,7 @@ namespace TabularCsv
         public PropertyDefinition CompletedBiologicalSample { get; set; }
         public PropertyDefinition CompletedSedimentSample { get; set; }
         public PropertyDefinition CompletedWaterQualitySample { get; set; }
+        public PropertyDefinition CompletedWaterQualityCrossSection { get; set; }
         public PropertyDefinition Party { get; set; }
     }
 

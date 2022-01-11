@@ -405,6 +405,7 @@ namespace TabularCsv
                 BiologicalSample = GetNullableBoolean(definition.CompletedBiologicalSample) ?? false,
                 SedimentSample = GetNullableBoolean(definition.CompletedSedimentSample) ?? false,
                 WaterQualitySample = GetNullableBoolean(definition.CompletedWaterQualitySample) ?? false,
+                WaterQualityCrossSection = GetNullableBoolean(definition.CompletedWaterQualityCrossSection) ?? false,
             };
         }
 

@@ -35,8 +35,8 @@
     <Reference Include="Fastenshtein, Version=1.0.0.8, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\Fastenshtein.1.0.0.8\lib\net452\Fastenshtein.dll</HintPath>
     </Reference>
-    <Reference Include="FieldDataPluginFramework, Version=2.12.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Aquarius.FieldDataFramework.21.3.0\lib\net472\FieldDataPluginFramework.dll</HintPath>
+    <Reference Include="FieldDataPluginFramework, Version=2.13.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Aquarius.FieldDataFramework.21.4.0\lib\net472\FieldDataPluginFramework.dll</HintPath>
     </Reference>
     <Reference Include="Humanizer, Version=2.11.0.0, Culture=neutral, PublicKeyToken=979442b78dfc278e, processorArchitecture=MSIL">
       <HintPath>..\packages\Humanizer.Core.2.11.10\lib\netstandard2.0\Humanizer.dll</HintPath>
@@ -72,7 +72,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>$(SolutionDir)packages\Aquarius.FieldDataFramework.21.3.0\tools\PluginPackager.exe $(TargetPath) /OutputPath=$(ProjectDir)deploy\$(Configuration)\$(TargetName).plugin
-$(SolutionDir)packages\Aquarius.FieldDataFramework.21.3.0\tools\PluginTester.exe /Plugin=$(TargetPath) @$(SolutionDir)BlazorTestDrive\Examples\TesterOptions.txt</PostBuildEvent>
+    <PostBuildEvent>$(SolutionDir)packages\Aquarius.FieldDataFramework.21.4.0\tools\PluginPackager.exe $(TargetPath) /OutputPath=$(ProjectDir)deploy\$(Configuration)\$(TargetName).plugin
+$(SolutionDir)packages\Aquarius.FieldDataFramework.21.4.0\tools\PluginTester.exe /Plugin=$(TargetPath) @$(SolutionDir)BlazorTestDrive\Examples\TesterOptions.txt</PostBuildEvent>
   </PropertyGroup>
 </Project>
