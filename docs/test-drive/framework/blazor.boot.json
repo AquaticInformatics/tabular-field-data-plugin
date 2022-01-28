@@ -7,7 +7,7 @@
   "linkerEnabled": true,
   "resources": {
     "assembly": {
-      "FieldDataPluginFramework.dll": "sha256-7DygpPi6bevM5ZeidUdV9BdV7bOfPtFEpL0GORQtiX4=",
+      "FieldDataPluginFramework.dll": "sha256-DLJemoMn3DaUiiOKldwOuzFrun0o074DC7m2gUweFAY=",
       "Blazored.LocalStorage.dll": "sha256-rmy85RB+Wa4Z6+oUHGAFmMAAhZgdwnVrHQlcIiMrzAc=",
       "Bunit.Core.dll": "sha256-f4WVliuncnjCIsytXGPYVvJeCxPmhefX9Dq482ypcQg=",
       "Microsoft.AspNetCore.Components.dll": "sha256-4qmrs6HvAlnSoG5GhFIg6Xz8JkwZUajPX4ejX5J6wso=",
@@ -27,11 +27,11 @@
       "Microsoft.JSInterop.WebAssembly.dll": "sha256-eF6xbzCQBK4yEs2CC3wnJR1I1ZWXwlJp7GJ4R1UMM14=",
       "Microsoft.Net.Http.Headers.dll": "sha256-Wvp5b2xB1gZg9yya2UqQycv2STns92xStLKpmRv5Aww=",
       "System.IO.Pipelines.dll": "sha256-qZYTUS+ga7CydtH54fYPbehFCvx3B49I74G8dxreTog=",
-      "TabularCsv.dll": "sha256-H3Y9ladZgo27tKEac9jed9ItHjPgUvQ2c6P5zaXE\/0g=",
+      "TabularCsv.dll": "sha256-UnWt\/3SiTUbfwwggwOBD5+\/eR0nRCqpjIjH10seGitk=",
       "Nett.dll": "sha256-Y960+Tf4jIN+BroOKMwAX8fjgVOTQMZ8CsbxkdJ\/v68=",
       "Fastenshtein.dll": "sha256-3vSPPpb\/1ncYU2Wjei0u718BbXrPapvpylMDa+kWex0=",
       "Humanizer.dll": "sha256-IOzoitCTleer0Yz3B+ChaJJWATY94f8h9e3OxUgB8W8=",
-      "BlazorTestDrive.dll": "sha256-lCf4boUa4y7QQRUbt8VLOWtX4qSIeezJMEfEUxlkQ2I=",
+      "BlazorTestDrive.dll": "sha256-ADmMTdW5Yg4\/oXHovL6NnYF8umeeG5sjGq62xMqXWdU=",
       "Microsoft.VisualBasic.Core.dll": "sha256-r20QwigD1GvZaZw680oiciT5boCF\/CnK9L1epM5q44A=",
       "System.Collections.Concurrent.dll": "sha256-LlC5omVd58b7raN2pNBmdbPR2XR0Bd5RsN\/emVvhnrM=",
       "System.Collections.Immutable.dll": "sha256-kbIolTDX4rV+AVRpKg9BZxTiu8Sm5yqus0NBwcFKmUk=",
