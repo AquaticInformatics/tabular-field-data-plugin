@@ -411,6 +411,7 @@ else
                     <th>Mean Gage Height Difference During Visit</th>
                     <th>Manually Calculated Mean Gage Height</th>
                     <th>Gage Height Adjustment Amount</th>
+                    <th>Gage Height Reference Point Name</th>
                     <th>Gage Height Comments</th>
                     <th>Gage Height Measurements</th>
                 </tr>
@@ -437,6 +438,7 @@ else
                         <td>@Measurement(item.Item.MeanGageHeightDifferenceDuringVisit)</td>
                         <td>@Measurement(item.Item.ManuallyCalculatedMeanGageHeight)</td>
                         <td>@item.Item.GageHeightAdjustmentAmount</td>
+                        <td>@item.Item.GageHeightReferencePointName</td>
                         <td>@item.Item.GageHeightComments</td>
 
                         @if (item.Item.GageHeightMeasurements.Any())

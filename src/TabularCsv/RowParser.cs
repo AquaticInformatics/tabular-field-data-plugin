@@ -1249,6 +1249,7 @@ namespace TabularCsv
                 MeanGageHeightDurationHours = GetNullableDouble(definition.MeanGageHeightDurationHours),
                 GageHeightAdjustmentAmount = GetNullableDouble(definition.GageHeightAdjustmentAmount),
                 GageHeightComments = GetString(definition.GageHeightComments),
+                GageHeightReferencePointName = GetString(definition.GageHeightReferencePointName),
             };
 
             var showInDataCorrection = GetNullableBoolean(definition.ShowInDataCorrection);
