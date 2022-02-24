@@ -18,6 +18,9 @@ namespace TabularCsv
 
         public Configuration Load(string name, string tomlText)
         {
+            if (string.IsNullOrWhiteSpace(tomlText))
+                return null;
+
             TomlText = tomlText;
 
             var configuration = LoadFromToml(name);
