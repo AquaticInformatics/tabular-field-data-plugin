@@ -342,10 +342,11 @@ namespace TabularCsv
 
             var allConfigurations = pluginConfigurations
                 .Select(kvp => configurationLoader.Load(kvp.Key, kvp.Value))
+                .Where(configuration => configuration != null)
                 .ToList();
 
             var configurations = allConfigurations
-                .Where(configuration => !configuration?.IsDisabled ?? false)
+                .Where(configuration => !configuration.IsDisabled)
                 .OrderBy(configuration => configuration.Priority)
                 .ToList();
 
