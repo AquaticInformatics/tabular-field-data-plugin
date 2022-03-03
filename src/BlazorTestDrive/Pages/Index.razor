@@ -149,7 +149,7 @@ else
                 {
                     <tr>
                         <td>@item.VisitIdentifier</td>
-                        <td>@item.Item.ConditionType</td>
+                        <td>@item.Item.ConditionType?.IdOrDisplayName</td>
                         <td>@item.Item.ControlCode?.IdOrDisplayName</td>
                         <td>@item.Item.ControlCleaned</td>
                         <td>@item.Item.DateCleaned</td>
