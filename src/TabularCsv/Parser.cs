@@ -81,13 +81,7 @@ namespace TabularCsv
         {
             var csvText = ReadTextFromBytes(configuration, csvBytes);
 
-            var rowParser = new RowParser
-            {
-                Log = Log,
-                LocationInfo = LocationInfo,
-                ResultsAppender = ResultsAppender,
-                Configuration = configuration,
-            };
+            var rowParser = new RowParser(configuration, ResultsAppender, LocationInfo);
 
             var (prefaceLines, dataRowReader) = ExtractPrefaceLines(configuration, csvText);
 
@@ -95,13 +89,6 @@ namespace TabularCsv
 
             if (!rowParser.IsPrefaceValid())
                 return ParseFileResult.CannotParse();
-
-            if (configuration.IsHeaderRowRequired)
-            {
-                rowParser.RemainingHeaderLines = configuration.HeaderRowCount > 0
-                    ? configuration.HeaderRowCount
-                    : 1;
-            }
 
             var dataRowCount = 0;
 

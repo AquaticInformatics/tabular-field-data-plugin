@@ -22,6 +22,18 @@ namespace TabularCsv
             if (Configuration.Separator?.Length > 1)
                 ThrowConfigurationException($"The {nameof(Configuration.Separator)} field can only be a single character. '{Configuration.Separator}' is too long.");
 
+            if (Configuration.HeaderRowCount < 0)
+                ThrowConfigurationException($"The {nameof(Configuration.HeaderRowCount)} field must be >= 0");
+
+            if (Configuration.IgnoredLeadingHeaderRows < 0)
+                ThrowConfigurationException($"The {nameof(Configuration.IgnoredLeadingHeaderRows)} field must be >= 0");
+
+            if (Configuration.IgnoredTrailingHeaderRows < 0)
+                ThrowConfigurationException($"The {nameof(Configuration.IgnoredTrailingHeaderRows)} field must be >= 0");
+
+            if (Configuration.HeaderRowCount > 0 && Configuration.HeaderRowCount <= Configuration.IgnoredLeadingHeaderRows + Configuration.IgnoredTrailingHeaderRows)
+                ThrowConfigurationException($"{nameof(Configuration.IgnoredLeadingHeaderRows)}={Configuration.IgnoredLeadingHeaderRows} + {nameof(Configuration.IgnoredTrailingHeaderRows)}={Configuration.IgnoredTrailingHeaderRows} must exceed {nameof(Configuration.HeaderRowCount)}={Configuration.HeaderRowCount}");
+
             var columnDefinitions = Configuration.GetColumnDefinitions();
 
             var invalidColumns = columnDefinitions
