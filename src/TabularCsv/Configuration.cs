@@ -21,6 +21,8 @@ namespace TabularCsv
         public Regex FooterMatchesRegex { get; set; }
         public int MaximumPrefaceLines { get; set; } = 50;
         public int HeaderRowCount { get; set; }
+        public int IgnoredLeadingHeaderRows { get; set; }
+        public int IgnoredTrailingHeaderRows { get; set; }
         public bool NoDataRowsExpected { get; set; }
         public string CommentLinePrefix { get; set; }
         public bool StrictMode { get; set; } = true;
@@ -89,6 +91,7 @@ namespace TabularCsv
                                                || GetColumnDefinitions().Any(c => c.HasPrefaceRegex);
 
         public bool IsHeaderRowRequired => HeaderRowCount > 0
+                                           || IgnoredLeadingHeaderRows + IgnoredTrailingHeaderRows > 0
                                            || GetColumnDefinitions().Any(c => c.RequiresColumnHeader());
 
         public bool IsFooterExpected => !string.IsNullOrEmpty(FooterStartsWith)

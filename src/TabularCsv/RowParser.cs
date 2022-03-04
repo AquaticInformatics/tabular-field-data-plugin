@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using FieldDataPluginFramework;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
 using FieldDataPluginFramework.DataModel.Calibrations;
@@ -23,12 +22,24 @@ namespace TabularCsv
 {
     public class RowParser
     {
-        public Configuration Configuration { get; set; }
         public long LineNumber { get; set; }
-        public ILog Log { get; set; }
-        public DelayedAppender ResultsAppender { get; set; }
-        public LocationInfo LocationInfo { get; set; }
-        public int RemainingHeaderLines { get; set; }
+        public int RemainingHeaderLines { get; private set; }
+
+        public RowParser(Configuration configuration, DelayedAppender resultsAppender, LocationInfo locationInfo)
+        {
+            Configuration = configuration;
+            ResultsAppender = resultsAppender;
+            LocationInfo = locationInfo;
+
+            ConfigureHeaderParser();
+        }
+
+        private Configuration Configuration { get; }
+        private DelayedAppender ResultsAppender { get; }
+        private LocationInfo LocationInfo { get; }
+        private int CurrentHeaderRowIndex { get; set; }
+        private int IgnoreHeaderRowsBeforeIndex { get; set; }
+        private int IgnoreHeaderRowsAfterIndex { get; set; }
 
         public int PrefaceLineCount => PrefaceLines.Count;
 
@@ -37,7 +48,19 @@ namespace TabularCsv
         private string MultilinePreface { get; set; }
         private Dictionary<Regex, string> PrefaceRegexMatches { get; } = new Dictionary<Regex, string>();
         private Dictionary<string, int> ColumnHeaderMap { get; set; } = new Dictionary<string, int>();
-        private Exception LastHeaderException { get; set; }
+
+        private void ConfigureHeaderParser()
+        {
+            if (!Configuration.IsHeaderRowRequired)
+                return;
+
+            RemainingHeaderLines = Configuration.HeaderRowCount > 0
+                ? Configuration.HeaderRowCount
+                : 1 + Configuration.IgnoredLeadingHeaderRows + Configuration.IgnoredTrailingHeaderRows;
+
+            IgnoreHeaderRowsBeforeIndex =  1 + Configuration.IgnoredLeadingHeaderRows;
+            IgnoreHeaderRowsAfterIndex = RemainingHeaderLines - Configuration.IgnoredTrailingHeaderRows;
+        }
 
         public void Parse(string[] fields)
         {
@@ -116,32 +139,49 @@ namespace TabularCsv
 
         public bool IsHeaderFullyParsed(string[] headerFields)
         {
-            if (!ColumnHeaderMap.Any())
-            {
-                var validator = new ConfigurationValidator
-                {
-                    Configuration = Configuration
-                };
-
-                try
-                {
-                    ColumnHeaderMap = validator.BuildColumnHeaderMap(headerFields);
-                }
-                catch (Exception exception)
-                {
-                    LastHeaderException = exception;
-                }
-            }
-
             --RemainingHeaderLines;
+            ++CurrentHeaderRowIndex;
+
+            if (CurrentHeaderRowIndex < IgnoreHeaderRowsBeforeIndex)
+                return false;
+
+            if (CurrentHeaderRowIndex <= IgnoreHeaderRowsAfterIndex)
+                MergeHeaderFields(headerFields);
 
             if (RemainingHeaderLines > 0)
                 return false;
 
-            if (!ColumnHeaderMap.Any() && LastHeaderException != null)
-                throw LastHeaderException;
+            var validator = new ConfigurationValidator
+            {
+                Configuration = Configuration
+            };
+
+            ColumnHeaderMap = validator.BuildColumnHeaderMap(MergedHeaderFields.ToArray());
 
             return true;
+        }
+
+        private List<string> MergedHeaderFields { get; } = new List<string>();
+
+        private void MergeHeaderFields(string[] headerFields)
+        {
+            if (!MergedHeaderFields.Any())
+            {
+                MergedHeaderFields.AddRange(headerFields);
+                return;
+            }
+
+            for (var i = 0; i < headerFields.Length; ++i)
+            {
+                var headerField = headerFields[i];
+
+                while (MergedHeaderFields.Count < i + 1)
+                {
+                    MergedHeaderFields.Add(string.Empty);
+                }
+
+                MergedHeaderFields[i] = $"{MergedHeaderFields[i]} {headerField}".Trim();
+            }
         }
 
         private void ParseRow()
