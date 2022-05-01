@@ -633,7 +633,19 @@ namespace TabularCsv
         private Reading ParseReading(FieldVisitInfo visitInfo, ReadingDefinition definition)
         {
             var allowEmptyValues = GetNullableBoolean(definition.AllowEmptyValues) ?? false;
-            var readingValue = GetNullableDouble(definition.Value);
+            var nonDetectPrefix = GetString(definition.NonDetectPrefix);
+            var valueText = GetString(definition.Value);
+
+            var isNonDetect = !string.IsNullOrEmpty(nonDetectPrefix)
+                              && (valueText?.StartsWith(nonDetectPrefix, StringComparison.InvariantCultureIgnoreCase) ?? false);
+
+            double? readingValue = null;
+
+            if (isNonDetect)
+                allowEmptyValues = true;
+            else
+                readingValue = GetNullableDouble(definition.Value);
+
             var parameterId = GetString(definition.ParameterId);
             var readingUnitId = GetString(definition.UnitId);
 

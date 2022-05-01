@@ -186,7 +186,7 @@ namespace TabularCsv
             nameof(Configuration.AllVolumetricDischarges),
         };
 
-        private string BestGuess<TItem>(string target, IEnumerable<TItem> items, Func<TItem, string> selector, int maximumGuessDistance = 7, int maximumGuesses = 4)
+        public static string BestGuess<TItem>(string target, IEnumerable<TItem> items, Func<TItem, string> selector, int maximumGuessDistance = 7, int maximumGuesses = 4)
         {
             var lev = new Fastenshtein.Levenshtein(target);
 
