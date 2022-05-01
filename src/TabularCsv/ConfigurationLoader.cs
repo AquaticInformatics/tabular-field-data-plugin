@@ -599,6 +599,20 @@ namespace TabularCsv
                 .Aggregate(0, (column, letter) => 26 * column + letter - 'A' + 1);
         }
 
+        public static string ConvertOneBasedIndexToExcelColumn(int columnIndex)
+        {
+            var columnName = "";
+
+            while (columnIndex > 0)
+            {
+                var modulo = (columnIndex - 1) % 26;
+                columnName = Convert.ToChar('A' + modulo) + columnName;
+                columnIndex = (columnIndex - modulo) / 26;
+            }
+
+            return columnName;
+        }
+
         private Regex ConvertRegexFromString(ITomlRoot root, TomlString tomlString)
         {
             var text = tomlString.Value;
