@@ -92,13 +92,13 @@ namespace TabularCsv
                 .ToList();
 
             var unknownHeadersMessage =
-                $"{"missing column".ToQuantity(unknownHeaderColumns.Count)}: {string.Join(", ", unknownHeaderColumns.Select(column => column.Name()))}";
+                $"{"missing column".ToQuantity(unknownHeaderColumns.Count)}:\n{string.Join("\n", unknownHeaderColumns.Select(column => column.Name()))}";
 
             if (unknownHeaderColumns.Count == headerColumns.Count)
                 throw new AllHeadersMissingException(unknownHeadersMessage);
 
             if (unknownHeaderColumns.Any())
-                ThrowConfigurationException(unknownHeadersMessage);
+                ThrowConfigurationException($"{unknownHeadersMessage}\n\n{"header column".ToQuantity(headerColumns.Count)} detected:\n{string.Join("\n", headerFields.Select((text, i) => $"'@#{i+1}' '@#{ConfigurationLoader.ConvertOneBasedIndexToExcelColumn(i+1)}' '@{text}'"))}");
 
             var duplicateHeaderFields = headerColumns
                 .Where(column => headerFields.Count(field => FieldMatchesColumn(field, column)) > 1)

@@ -104,7 +104,7 @@ namespace TabularCsv
                 .ToList();
 
             if (Configuration.StrictMode && unmatchedRegexColumns.Any())
-                throw new ArgumentException($"{"preface regex column".ToQuantity(unmatchedRegexColumns.Count)} did not match anything from the {"preface line".ToQuantity(PrefaceLines.Count)}: {string.Join(", ", unmatchedRegexColumns.Select(c => c.Name()))}");
+                throw new ArgumentException($"{"preface regex column".ToQuantity(unmatchedRegexColumns.Count)} did not match anything from the {"preface line".ToQuantity(PrefaceLines.Count)}: {string.Join("\n", unmatchedRegexColumns.Select(c => c.Name()))}");
         }
 
         private void AddPrefaceRegexMatch(Regex regex, Match match)
@@ -377,7 +377,7 @@ namespace TabularCsv
 
         private bool IsVisitBlank(FieldVisitInfo fieldVisitInfo)
         {
-            return IsVisitBlank(fieldVisitInfo.FieldVisitDetails)
+            return (Configuration.SkipVisitIfNoActivities || IsVisitBlank(fieldVisitInfo.FieldVisitDetails))
                    && !fieldVisitInfo.Readings.Any()
                    && !fieldVisitInfo.DischargeActivities.Any()
                    && !fieldVisitInfo.ControlConditions.Any()
@@ -636,6 +636,10 @@ namespace TabularCsv
             var readingValue = GetNullableDouble(definition.Value);
             var parameterId = GetString(definition.ParameterId);
             var readingUnitId = GetString(definition.UnitId);
+
+            if (!readingValue.HasValue && definition.Value != null && !string.IsNullOrWhiteSpace(GetColumnValue(definition.Value)))
+                // This allows a reading to use non-detect aliases (mapped to empty strings) but still create a reading
+                allowEmptyValues = true;
 
             if (!allowEmptyValues && !readingValue.HasValue)
                 return null;
@@ -1519,10 +1523,13 @@ namespace TabularCsv
 
             if (column.HasAlias)
             {
-                if (Configuration.Aliases.TryGetValue(column.Alias, out var aliasedValues)
-                    && aliasedValues.TryGetValue(value, out var aliasedValue))
+                if (Configuration.Aliases.TryGetValue(column.Alias, out var aliasedValues))
                 {
-                    return aliasedValue;
+                    if (aliasedValues.TryGetValue(value, out var aliasedValue))
+                        return aliasedValue;
+
+                    if (aliasedValues.TryGetValue(string.Empty, out aliasedValue))
+                        value = aliasedValue;
                 }
             }
 
