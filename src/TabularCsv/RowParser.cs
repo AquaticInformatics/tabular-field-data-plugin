@@ -632,31 +632,43 @@ namespace TabularCsv
 
         private Reading ParseReading(FieldVisitInfo visitInfo, ReadingDefinition definition)
         {
-            var allowEmptyValues = GetNullableBoolean(definition.AllowEmptyValues) ?? false;
-            var nonDetectPrefix = GetString(definition.NonDetectPrefix);
-            var valueText = GetString(definition.Value);
-
-            var isNonDetect = !string.IsNullOrEmpty(nonDetectPrefix)
-                              && (valueText?.StartsWith(nonDetectPrefix, StringComparison.InvariantCultureIgnoreCase) ?? false);
-
             double? readingValue = null;
+            var nonDetectComment = string.Empty;
 
-            if (isNonDetect)
-                allowEmptyValues = true;
-            else
-                readingValue = GetNullableDouble(definition.Value);
+            var nonDetectPrefix = GetString(definition.NonDetectPrefix);
+            var allowNonDetects = GetNullableBoolean(definition.AllowNonDetects) ?? !string.IsNullOrWhiteSpace(nonDetectPrefix);
+            var allowEmptyValues = GetNullableBoolean(definition.AllowEmptyValues) ?? false;
+            var valueText = GetString(definition.Value);
+            var unaliasedValue = definition.Value == null ? null : GetColumnValue(definition.Value);
+
+            if (!string.IsNullOrEmpty(valueText))
+            {
+                if (double.TryParse(valueText, out var numericValue))
+                    // Happy path, where the reading value is numeric
+                    readingValue = numericValue;
+                else if (allowNonDetects)
+                    // When not-numeric but empty values are allowed, use the value text as a comment
+                    nonDetectComment = $"{nonDetectPrefix} {valueText}".Trim();
+                else
+                    // Otherwise throw an error
+                    readingValue = GetNullableDouble(definition.Value);
+            }
 
             var parameterId = GetString(definition.ParameterId);
             var readingUnitId = GetString(definition.UnitId);
 
-            if (!readingValue.HasValue && definition.Value != null && !string.IsNullOrWhiteSpace(GetColumnValue(definition.Value)))
+            if (!readingValue.HasValue && !string.IsNullOrWhiteSpace(unaliasedValue))
+            {
                 // This allows a reading to use non-detect aliases (mapped to empty strings) but still create a reading
-                allowEmptyValues = true;
+                nonDetectComment = $"{nonDetectPrefix} {unaliasedValue}".Trim();
+            }
 
-            if (!allowEmptyValues && !readingValue.HasValue)
+            var isNonDetect = !string.IsNullOrWhiteSpace(nonDetectComment);
+
+            if (!readingValue.HasValue && !allowEmptyValues && !isNonDetect)
                 return null;
 
-            if (allowEmptyValues && string.IsNullOrEmpty(parameterId))
+            if (string.IsNullOrEmpty(parameterId) && allowEmptyValues)
                 return null;
 
             var reading = readingValue.HasValue
@@ -668,8 +680,15 @@ namespace TabularCsv
                     readingUnitId,
                     null);
 
+            var comments = string.Join("\n", new[]
+                {
+                    nonDetectComment,
+                    MergeCommentText(definition)
+                }
+                .Where(s => !string.IsNullOrWhiteSpace(s)));
+
             reading.DateTimeOffset = ParseActivityTime(visitInfo, definition);
-            reading.Comments = MergeCommentText(definition);
+            reading.Comments = comments;
             reading.ReferencePointName = GetString(definition.ReferencePointName);
             reading.SubLocation = GetString(definition.SubLocation);
             reading.SensorUniqueId = GetNullableGuid(definition.SensorUniqueId);

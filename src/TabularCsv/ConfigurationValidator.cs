@@ -94,9 +94,9 @@ namespace TabularCsv
             string BestGuess(string columnName)
             {
                 var bestGuess = ConfigurationLoader.BestGuess(
-                    columnName,
+                    $"@{columnName}",
                     headerFields,
-                    field => field);
+                    field => $"@{field}");
 
                 return string.IsNullOrEmpty(bestGuess) ? bestGuess : $" => {bestGuess}";
             }
