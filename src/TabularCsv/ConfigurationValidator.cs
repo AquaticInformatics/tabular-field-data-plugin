@@ -91,8 +91,18 @@ namespace TabularCsv
                 .Where(column => !headerFields.Any(field => FieldMatchesColumn(field, column)))
                 .ToList();
 
+            string BestGuess(string columnName)
+            {
+                var bestGuess = ConfigurationLoader.BestGuess(
+                    $"@{columnName}",
+                    headerFields,
+                    field => $"@{field}");
+
+                return string.IsNullOrEmpty(bestGuess) ? bestGuess : $" => {bestGuess}";
+            }
+
             var unknownHeadersMessage =
-                $"{"missing column".ToQuantity(unknownHeaderColumns.Count)}:\n{string.Join("\n", unknownHeaderColumns.Select(column => column.Name()))}";
+                $"{"missing column".ToQuantity(unknownHeaderColumns.Count)}:\n{string.Join("\n", unknownHeaderColumns.Select(column => $"{column.Name()}{BestGuess(column.ColumnHeader)}"))}";
 
             if (unknownHeaderColumns.Count == headerColumns.Count)
                 throw new AllHeadersMissingException(unknownHeadersMessage);

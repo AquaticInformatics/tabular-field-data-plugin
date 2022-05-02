@@ -287,6 +287,8 @@ namespace TabularCsv
         public PropertyDefinition MeasurementDetailsTapeCorrection { get; set; }
         public PropertyDefinition MeasurementDetailsWaterLevel { get; set; }
         public PropertyDefinition AdjustmentAmount { get; set; }
+        public PropertyDefinition AllowNonDetects { get; set; }
+        public PropertyDefinition NonDetectPrefix { get; set; }
     }
 
     public class InspectionDefinition : ActivityDefinition
