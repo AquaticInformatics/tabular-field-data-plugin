@@ -163,7 +163,8 @@ namespace TabularCsv
                     }
                     catch (Exception exception)
                     {
-                        if (!ResultsAppender.AnyResultsAppended) throw;
+                        if (!ResultsAppender.AnyResultsAppended)
+                            throw;
 
                         Log.Error($"Ignoring invalid CSV row: {exception.Message}");
                     }

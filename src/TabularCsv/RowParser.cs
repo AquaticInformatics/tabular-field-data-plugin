@@ -188,7 +188,10 @@ namespace TabularCsv
         {
             var locationIdentifier = GetString(Configuration.Location);
 
-            var locationInfo = LocationInfo ?? ResultsAppender.GetLocationByIdentifier(locationIdentifier);
+            var locationInfo = LocationInfo 
+                               ?? (!string.IsNullOrWhiteSpace(locationIdentifier)
+                                   ? ResultsAppender.GetLocationByIdentifier(locationIdentifier)
+                                   : throw new ArgumentException($"Line {LineNumber} has no location identifier."));
 
             var fieldVisitInfo = DelayedAppender.InternalConstructor<FieldVisitInfo>.Invoke(
                 locationInfo,
