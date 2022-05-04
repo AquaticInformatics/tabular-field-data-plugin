@@ -923,7 +923,21 @@ namespace TabularCsv
                 controlCondition.DistanceToGage = new Measurement(distanceToGage.Value, unitId);
             }
 
+            if (IsControlConditionEmpty(controlCondition))
+                return null;
+
             return controlCondition;
+        }
+
+        private bool IsControlConditionEmpty(ControlCondition controlCondition)
+        {
+            // We don't include "empty" tests for DateCleaned, since that is often inherited from the visit
+            return string.IsNullOrWhiteSpace(controlCondition.Party)
+                   && string.IsNullOrWhiteSpace(controlCondition.Comments)
+                   && controlCondition.ControlCode == null
+                   && controlCondition.ConditionType == null
+                   && controlCondition.ControlCleaned == ControlCleanedType.Unknown
+                   && controlCondition.DistanceToGage == null;
         }
 
         private GageZeroFlowActivity ParseGageAtZeroFlow(FieldVisitInfo visitInfo, GageAtZeroFlowDefinition definition)
