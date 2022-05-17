@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30204.135
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TabularCsv", "TabularCsv\TabularCsv.csproj", "{519AF63B-97A0-456A-A793-34418BD52892}"
 EndProject
@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{6183BD37-E
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DocGenerator", "DocGenerator\DocGenerator.csproj", "{C54337B5-5115-4163-A76F-E8583C19A4B1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorTestDrive", "BlazorTestDrive\BlazorTestDrive.csproj", "{91FC798D-5EAF-4F08-8643-A917A6C3E11C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlazorTestDrive", "BlazorTestDrive\BlazorTestDrive.csproj", "{1B28206C-ECA2-4012-8C05-C1583736D457}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,10 +37,10 @@ Global
 		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C54337B5-5115-4163-A76F-E8583C19A4B1}.Release|Any CPU.Build.0 = Release|Any CPU
-		{91FC798D-5EAF-4F08-8643-A917A6C3E11C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{91FC798D-5EAF-4F08-8643-A917A6C3E11C}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{91FC798D-5EAF-4F08-8643-A917A6C3E11C}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{91FC798D-5EAF-4F08-8643-A917A6C3E11C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1B28206C-ECA2-4012-8C05-C1583736D457}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1B28206C-ECA2-4012-8C05-C1583736D457}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1B28206C-ECA2-4012-8C05-C1583736D457}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1B28206C-ECA2-4012-8C05-C1583736D457}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

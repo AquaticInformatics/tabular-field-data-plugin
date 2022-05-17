@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using System.Text;
 
 namespace BlazorTestDrive
@@ -19,16 +18,15 @@ namespace BlazorTestDrive
             return stream;
         }
 
-        public static string LoadAsText(string path, Encoding encoding = null)
+        public static string LoadAsText(string path, Encoding? encoding = null)
         {
-            using (var stream = LoadEmbeddedResourceStream(path))
-            using (var reader = CreateTextReader(stream, encoding))
-            {
-                return reader.ReadToEnd();
-            }
+            using var stream = LoadEmbeddedResourceStream(path);
+            using var reader = CreateTextReader(stream, encoding);
+
+            return reader.ReadToEnd();
         }
 
-        private static StreamReader CreateTextReader(Stream stream, Encoding encoding)
+        private static StreamReader CreateTextReader(Stream stream, Encoding? encoding)
         {
             if (encoding == null)
                 return new StreamReader(stream);
@@ -38,11 +36,10 @@ namespace BlazorTestDrive
 
         public static byte[] LoadAsBytes(string path)
         {
-            using (var stream = LoadEmbeddedResourceStream(path))
-            using (var reader = new BinaryReader(stream))
-            {
-                return reader.ReadBytes((int)stream.Length);
-            }
+            using var stream = LoadEmbeddedResourceStream(path);
+            using var reader = new BinaryReader(stream);
+
+            return reader.ReadBytes((int)stream.Length);
         }
     }
 }
