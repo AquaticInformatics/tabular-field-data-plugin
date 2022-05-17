@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace BlazorTestDrive
+﻿namespace BlazorTestDrive
 {
     public class TimeZones
     {

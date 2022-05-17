@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+﻿using System.Text;
 
 namespace BlazorTestDrive
 {
@@ -89,7 +85,7 @@ Uses aliases to work around old stations that have been renamed in AQUARIUS.",
             return example;
         }
 
-        private static Encoding GetEncoding(string encodingName)
+        private static Encoding? GetEncoding(string? encodingName)
         {
             encodingName = encodingName?.Trim();
 
@@ -117,7 +113,7 @@ Uses aliases to work around old stations that have been renamed in AQUARIUS.",
         public string Description { get; set; }
         public string DefaultLocation { get; set; }
         public string DefaultTimeZone { get; set; }
-        public string EncodingName { get; set; }
+        public string? EncodingName { get; set; }
         public string ConfigText { get; set; }
         public string CsvText { get; set; }
     }
