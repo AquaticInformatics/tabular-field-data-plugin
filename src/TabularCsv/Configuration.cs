@@ -27,6 +27,8 @@ namespace TabularCsv
         public string CommentLinePrefix { get; set; }
         public bool StrictMode { get; set; } = true;
         public bool SkipVisitIfNoActivities { get; set; }
+        public int? SheetNumber { get; set; }
+        public string SheetName { get; set; }
 
         public Dictionary<string, Dictionary<string,string>> Aliases { get; set; } = new Dictionary<string, Dictionary<string, string>>();
 
