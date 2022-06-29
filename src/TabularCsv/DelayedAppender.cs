@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using FieldDataPluginFramework.Context;
 using FieldDataPluginFramework.DataModel;
 using FieldDataPluginFramework.DataModel.Calibrations;
@@ -13,6 +14,7 @@ using FieldDataPluginFramework.DataModel.Inspections;
 using FieldDataPluginFramework.DataModel.LevelSurveys;
 using FieldDataPluginFramework.DataModel.Readings;
 using FieldDataPluginFramework.Results;
+using Humanizer;
 
 namespace TabularCsv
 {
@@ -215,6 +217,47 @@ namespace TabularCsv
         private List<FieldVisitInfo> DelayedFieldVisits { get; } = new List<FieldVisitInfo>();
 
         public bool AnyResultsAppended => DelayedFieldVisits.Any();
+
+        public string SummaryInfo()
+        {
+            var builder = new StringBuilder();
+
+            var sortedVisits = DelayedFieldVisits
+                .OrderBy(fvi => fvi.StartDate)
+                .ThenBy(fvi => fvi.EndDate)
+                .ToList();
+
+            var distinctLocations = sortedVisits
+                .Select(fvi => fvi.LocationInfo.LocationIdentifier)
+                .Distinct()
+                .OrderBy(s => s)
+                .ToList();
+
+            builder.Append($"{"visit".ToQuantity(sortedVisits.Count)} in {"location".ToQuantity(distinctLocations.Count)}");
+
+            if (distinctLocations.Any())
+            {
+                const int maxLocations = 5;
+                var locationsSummary = string.Join("', '", distinctLocations.Take(maxLocations));
+
+                builder.Append(distinctLocations.Count > maxLocations
+                    ? $" ('{locationsSummary}', ...)"
+                    : $" ('{locationsSummary}')");
+            }
+
+            if (sortedVisits.Any())
+            {
+                var start = sortedVisits.First().StartDate;
+                var end = sortedVisits.Last().EndDate;
+                var elapsed = end - start;
+
+                builder.Append(start < end
+                    ? $" with data from {start:O} to {end:O} ({elapsed.Humanize()})"
+                    : $" with data at {start:O}");
+            }
+
+            return builder.ToString();
+        }
 
         public FieldVisitInfo AddFieldVisit(LocationInfo location, FieldVisitDetails fieldVisitDetails)
         {

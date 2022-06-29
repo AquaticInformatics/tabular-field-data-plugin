@@ -192,6 +192,8 @@ namespace TabularCsv
                     }
                 }
 
+                Log.Info($"Configuration='{configuration.Id}' Priority={configuration.Priority} parsed {ResultsAppender.SummaryInfo()}.");
+
                 return ParseFileResult.SuccessfullyParsedAndDataValid();
             }
         }
