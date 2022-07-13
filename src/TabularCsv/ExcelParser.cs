@@ -114,16 +114,19 @@ namespace TabularCsv
                     columns.RemoveAt(i);
                 }
 
-                writer.WriteLine(string.Join(", ", columns));
+                writer.WriteLine(string.Join(",", columns));
             }
         }
 
         private string FormatCell(object cell)
         {
+            if (cell == null)
+                return string.Empty;
+
             if (cell is DateTime dateTime)
                 return dateTime.ToString("O");
 
-            return $"{cell}";
+            return cell.ToString().Trim();
         }
 
         private static string CsvEscapedColumn(string text)
