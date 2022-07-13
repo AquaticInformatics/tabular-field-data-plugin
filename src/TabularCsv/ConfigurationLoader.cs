@@ -557,7 +557,7 @@ namespace TabularCsv
 
         private static bool TryParseInteger(string text, out int value)
         {
-            value = 0;
+            value = default;
 
             if (!text.StartsWith("#"))
                 return false;
@@ -573,6 +573,17 @@ namespace TabularCsv
                 return false;
 
             value = ConvertExcelColumnToIndex(match.Groups["columnName"].Value.Trim());
+
+            const int minExcelColumnIndex = 1;
+            const int maxExcelColumnIndex = 16384;
+
+            if (value < minExcelColumnIndex || value > maxExcelColumnIndex)
+            {
+                // This ducks around weird edge cases like when a column named "# Sections" converts the "Sections" text to a weird -424898077 value.
+                value = default;
+                return false;
+            }
+
             return true;
         }
 
