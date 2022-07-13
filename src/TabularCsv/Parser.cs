@@ -66,6 +66,9 @@ namespace TabularCsv
             {
                 try
                 {
+                    if (new ExcelParser().TryLoadSingleSheet(configuration, csvBytes, out var sheetBytes))
+                        csvBytes = sheetBytes;
+
                     return ParseDataFile(configuration, csvBytes);
                 }
                 catch (Exception exception)
@@ -188,6 +191,8 @@ namespace TabularCsv
                         return ParseFileResult.CannotParse();
                     }
                 }
+
+                Log.Info($"Configuration='{configuration.Id}' Priority={configuration.Priority} parsed {ResultsAppender.SummaryInfo()}.");
 
                 return ParseFileResult.SuccessfullyParsedAndDataValid();
             }

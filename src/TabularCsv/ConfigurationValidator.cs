@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using FieldDataPluginFramework.Context;
 using Humanizer;
 
@@ -87,6 +88,8 @@ namespace TabularCsv
                 .Where(column => column.RequiresColumnHeader())
                 .ToList();
 
+            headerFields = ResolveAmbiguousHeaderFields(headerFields, headerColumns);
+
             var unknownHeaderColumns = headerColumns
                 .Where(column => !headerFields.Any(field => FieldMatchesColumn(field, column)))
                 .ToList();
@@ -113,7 +116,7 @@ namespace TabularCsv
             var duplicateHeaderFields = headerColumns
                 .Where(column => headerFields.Count(field => FieldMatchesColumn(field, column)) > 1)
                 .Select(column => column.ColumnHeader)
-                .Distinct()
+                .Distinct(StringComparer.CurrentCultureIgnoreCase)
                 .ToList();
 
             if (duplicateHeaderFields.Any())
@@ -161,5 +164,45 @@ namespace TabularCsv
 
             return field.Equals(column.ColumnHeader, StringComparison.CurrentCultureIgnoreCase);
         }
+
+        private string[] ResolveAmbiguousHeaderFields(string[] headerFields, List<ColumnDefinition> headerColumns)
+        {
+            var resolvedHeaderFields = new List<string>(headerFields.Length);
+
+            var duplicateHeaderColumns = headerColumns
+                .Where(column => DuplicateColumnHeaderRegex.IsMatch(column.ColumnHeader))
+                .ToList();
+
+            var duplicateHeaderFields = new HashSet<string>(
+                duplicateHeaderColumns
+                    .Select(column => DuplicateColumnHeaderRegex.Match(column.ColumnHeader).Groups["label"].Value)
+                    .Distinct(StringComparer.CurrentCultureIgnoreCase),
+                StringComparer.CurrentCultureIgnoreCase);
+
+            foreach (var field in headerFields)
+            {
+                if (!duplicateHeaderFields.Contains(field))
+                {
+                    // We can keep this field as-is
+                    resolvedHeaderFields.Add(field);
+                    continue;
+                }
+
+                for (var attempt = 1;; ++attempt)
+                {
+                    var resolvedHeaderField = $"{field}#{attempt}";
+
+                    if (!resolvedHeaderFields.Contains(resolvedHeaderField))
+                    {
+                        resolvedHeaderFields.Add(resolvedHeaderField);
+                        break;
+                    }
+                }
+            }
+
+            return resolvedHeaderFields.ToArray();
+        }
+
+        private static readonly Regex DuplicateColumnHeaderRegex = new Regex(@"^(?<label>.+)#(?<count>\d+)$");
     }
 }

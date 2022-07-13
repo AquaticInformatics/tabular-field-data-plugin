@@ -471,7 +471,7 @@ namespace TabularCsv
                 lines.Add(value);
             }
 
-            return string.Join("\n", lines);
+            return string.Join("\n", lines); // TODO: Should this be a configurable join text?
         }
 
         private DateTimeInterval ParseInterval(
@@ -660,7 +660,7 @@ namespace TabularCsv
             var parameterId = GetString(definition.ParameterId);
             var readingUnitId = GetString(definition.UnitId);
 
-            if (!readingValue.HasValue && !string.IsNullOrWhiteSpace(unaliasedValue))
+            if (!readingValue.HasValue && allowNonDetects && !string.IsNullOrWhiteSpace(unaliasedValue))
             {
                 // This allows a reading to use non-detect aliases (mapped to empty strings) but still create a reading
                 nonDetectComment = $"{nonDetectPrefix} {unaliasedValue}".Trim();

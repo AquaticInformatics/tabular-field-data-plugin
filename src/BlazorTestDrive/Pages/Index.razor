@@ -13,6 +13,8 @@
 @using System.IO
 @using FieldDataPluginFramework.DataModel.GageZeroFlow
 @using Microsoft.AspNetCore.WebUtilities
+@using TabularCsv
+@using Parser = BlazorTestDrive.Parser
 
 <h1>Let's test drive your tabular field data!</h1>
 
@@ -835,9 +837,34 @@ else
         CsvFile = null;
 
         var encoding = SelectedEncoding;
-        await SetCsvContentAsync(await LoadFileAsBytesAsync(file), encoding);
+        var fileBytes = await LoadFileAsBytesAsync(file);
+
+        if (TryLoadSingleSheet(fileBytes, out var csvBytes) && csvBytes != null)
+        {
+            encoding = Encoding.UTF8;
+            fileBytes = csvBytes;
+        }
+
+        await SetCsvContentAsync(fileBytes, encoding);
 
         UpdateEncodingInfo(encoding);
+    }
+
+    private bool TryLoadSingleSheet(byte[] fileBytes, out byte[]? csvBytes)
+    {
+        csvBytes = null;
+
+        if (string.IsNullOrWhiteSpace(Config))
+            return false;
+
+        var configuration = new ConfigurationLoader()
+            .Load("my config", Config);
+
+        if (configuration == null)
+            return false;
+
+        return new ExcelParser()
+            .TryLoadSingleSheet(configuration, fileBytes, out csvBytes);
     }
 
     private void UpdateEncodingInfo(Encoding encoding)
