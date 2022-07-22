@@ -146,6 +146,7 @@ namespace TabularCsv
 
     public abstract class CoreDefinition
     {
+        public PropertyDefinition Disabled { get; set; }
         public PropertyDefinition Comment { get; set; }
         public PropertyDefinition MergeWithComment { get; set; }
         public List<PropertyDefinition> MergeWithComments { get; set; } = new List<PropertyDefinition>();
@@ -448,6 +449,7 @@ namespace TabularCsv
 
     public class MeterCalibrationEquationDefinition
     {
+        public PropertyDefinition Disabled { get; set; }
         public PropertyDefinition Slope { get; set; }
         public PropertyDefinition RangeStart { get; set; }
         public PropertyDefinition RangeEnd { get; set; }
@@ -477,6 +479,7 @@ namespace TabularCsv
 
     public class VolumetricReadingDefinition
     {
+        public PropertyDefinition Disabled { get; set; }
         public PropertyDefinition IsUsed { get; set; }
         public PropertyDefinition Name { get; set; }
         public PropertyDefinition Discharge { get; set; }

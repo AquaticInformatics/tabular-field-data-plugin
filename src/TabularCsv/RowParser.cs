@@ -633,8 +633,27 @@ namespace TabularCsv
             throw new ArgumentException($"Line {LineNumber}: '{visitInfo.LocationInfo.LocationIdentifier}': No time interval could be calculated from these columns: {string.Join(", ", allTimeColumns.Select(c => c.Name()))}");
         }
 
+        private bool IsDefinitionDisabled(CoreDefinition definition)
+        {
+            if (definition == null)
+                return true;
+
+            return IsDefinitionDisabled(definition.Disabled);
+        }
+
+        private bool IsDefinitionDisabled(PropertyDefinition definition)
+        {
+            if (definition == null)
+                return false;
+
+            return GetNullableBoolean(definition) ?? false;
+        }
+
         private Reading ParseReading(FieldVisitInfo visitInfo, ReadingDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             double? readingValue = null;
             var nonDetectComment = string.Empty;
 
@@ -798,6 +817,9 @@ namespace TabularCsv
 
         private Inspection ParseInspection(FieldVisitInfo visitInfo, InspectionDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+            
             var inspectionType = GetNullableEnum<InspectionType>(definition.InspectionType);
 
             if (!inspectionType.HasValue)
@@ -819,6 +841,9 @@ namespace TabularCsv
 
         private Calibration ParseCalibration(FieldVisitInfo visitInfo, CalibrationDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var calibrationValue = GetNullableDouble(definition.Value);
 
             if (!calibrationValue.HasValue)
@@ -880,7 +905,7 @@ namespace TabularCsv
 
         private ControlCondition ParseControlCondition(FieldVisitInfo visitInfo, ControlConditionDefinition definition)
         {
-            if (definition == null)
+            if (IsDefinitionDisabled(definition))
                 return null;
 
             DateTimeOffset? dateCleaned = ParseActivityTime(visitInfo, definition);
@@ -942,7 +967,7 @@ namespace TabularCsv
 
         private GageZeroFlowActivity ParseGageAtZeroFlow(FieldVisitInfo visitInfo, GageAtZeroFlowDefinition definition)
         {
-            if (definition == null)
+            if (IsDefinitionDisabled(definition))
                 return null;
 
             var unitId = GetString(definition.UnitId);
@@ -974,6 +999,9 @@ namespace TabularCsv
 
         private DischargeActivity ParseAdcpDischarge(FieldVisitInfo visitInfo, AdcpDischargeDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var totalDischarge = GetNullableDouble(definition.TotalDischarge);
 
             if (!totalDischarge.HasValue)
@@ -1053,6 +1081,9 @@ namespace TabularCsv
 
         private DischargeActivity ParsePanelSectionDischarge(FieldVisitInfo visitInfo, ManualGaugingDischargeDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var totalDischarge = GetNullableDouble(definition.TotalDischarge);
 
             if (!totalDischarge.HasValue)
@@ -1161,6 +1192,9 @@ namespace TabularCsv
 
         private MeterCalibrationEquation ParseMeterCalibrationEquation(MeterCalibrationEquationDefinition definition)
         {
+            if (IsDefinitionDisabled(definition.Disabled))
+                return null;
+
             var slope = GetNullableDouble(definition.Slope);
 
             if (!slope.HasValue)
@@ -1178,6 +1212,9 @@ namespace TabularCsv
 
         private DischargeActivity ParseOtherDischarge(FieldVisitInfo visitInfo, OtherDischargeDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var totalDischarge = GetNullableDouble(definition.TotalDischarge);
             var monitoringMethod = GetString(definition.MonitoringMethod) ?? Defaults.MonitoringMethod;
 
@@ -1206,6 +1243,9 @@ namespace TabularCsv
 
         private DischargeActivity ParseVolumetricDischarge(FieldVisitInfo visitInfo, VolumetricDischargeDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var totalDischarge = GetNullableDouble(definition.TotalDischarge);
             var measurementContainerUnitId = GetString(definition.ContainerUnitId);
 
@@ -1247,6 +1287,9 @@ namespace TabularCsv
 
         private VolumetricDischargeReading ParseVolumetricReading(VolumetricReadingDefinition definition)
         {
+            if (IsDefinitionDisabled(definition.Disabled))
+                return null;
+
             var readingName = GetString(definition.Name);
 
             if (string.IsNullOrEmpty(readingName))
@@ -1266,6 +1309,9 @@ namespace TabularCsv
 
         private DischargeActivity ParseEngineeredStructureDischarge(FieldVisitInfo visitInfo, EngineeredStructureDischargeDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var totalDischarge = GetNullableDouble(definition.TotalDischarge);
 
             if (!totalDischarge.HasValue)
@@ -1305,6 +1351,9 @@ namespace TabularCsv
 
         private EngineeredStructureHeadReading ParseEngineeredStructureReading(FieldVisitInfo visitInfo, EngineeredStructureHeadReadingDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var readingTime = ParseActivityTime(visitInfo, definition);
             
             var head = GetNullableDouble(definition.Head);
@@ -1412,6 +1461,9 @@ namespace TabularCsv
             string distanceUnitId,
             DateTimeOffset dischargeTime)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var gageHeightValue = GetNullableDouble(definition.Value);
 
             if (!gageHeightValue.HasValue)
@@ -1427,6 +1479,9 @@ namespace TabularCsv
 
         private LevelSurvey ParseLevelSurvey(FieldVisitInfo visitInfo, LevelSurveyDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var originReferencePointName = GetString(definition.OriginReferencePointName);
 
             if (string.IsNullOrEmpty(originReferencePointName))
@@ -1454,6 +1509,9 @@ namespace TabularCsv
 
         private LevelSurveyMeasurement ParseLevelSurveyMeasurement(FieldVisitInfo visitInfo, LevelSurveyMeasurementDefinition definition)
         {
+            if (IsDefinitionDisabled(definition))
+                return null;
+
             var measuredElevation = GetNullableDouble(definition.MeasuredElevation);
 
             if (!measuredElevation.HasValue)
