@@ -99,6 +99,7 @@ namespace TabularCsv
                 .Concat(visit.LevelSurveys.SelectMany(GetTimes))
                 .Concat(visit.DischargeActivities.SelectMany(GetTimes))
                 .Concat(visit.GageZeroFlowActivities.SelectMany(GetTimes))
+                .Concat(visit.ControlConditions.SelectMany(GetTimes))
                 .Where(dt => dt.HasValue)
                 .Select(dt => dt.Value);
         }
@@ -156,6 +157,14 @@ namespace TabularCsv
             return new DateTimeOffset?[]
             {
                 item.ObservationDate,
+            };
+        }
+
+        private IEnumerable<DateTimeOffset?> GetTimes(ControlCondition item)
+        {
+            return new[]
+            {
+                item.DateCleaned,
             };
         }
 
