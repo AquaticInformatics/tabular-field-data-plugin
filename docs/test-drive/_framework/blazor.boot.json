@@ -8,7 +8,7 @@
   "resources": {
     "assembly": {
       "Blazored.LocalStorage.dll": "sha256-6RRoYeDP3d0xabXmcCMF66wXeJlXVPem28Trs8sQiis=",
-      "BlazorTestDrive.dll": "sha256-SW30DW5yZDxoZ8fYLfsdJRKjF4R9dZgNXjbUI6AjGhM=",
+      "BlazorTestDrive.dll": "sha256-FA3caS5nWRTP3rawoLzKsBjCzJfRFl4jgtJi7Tfdi2c=",
       "ExcelDataReader.DataSet.dll": "sha256-psiBU4wfpUbJxmD6JqL31nw+5BVamxZsMedAftxtvHI=",
       "ExcelDataReader.dll": "sha256-6hvMAj7Is\/B2040UpwiQbVdWI2k5FYX4qMKBjZMAsEc=",
       "Fastenshtein.dll": "sha256-I3EXMUzdWKlCyVw347TclXMMVYlax1DLAbHpRY9bNrQ=",
@@ -75,7 +75,7 @@
       "System.Text.RegularExpressions.dll": "sha256-gDC1b\/AjNDUyoHiZamh966dsFyyHl45AZ\/5pxU4rtQQ=",
       "System.Threading.dll": "sha256-UFaW3YJuroLAjvomxsp5rVTvpkJ2wt4wjRAHElZXIUU=",
       "System.Xml.dll": "sha256-tdwXiZqBKOs6bBC245svqjwRajMAQpynN2yFjHt0mVA=",
-      "TabularCsv.dll": "sha256-PHGPAT2GZVvmpZhCDm2R0uDfVIqb5QeRVr4bcKJYkpI="
+      "TabularCsv.dll": "sha256-OjlUKCDczEeoEgVQiM2xhylBInX3cZpiMEhJLJ\/3HhI="
     },
     "extensions": null,
     "lazyAssembly": null,
