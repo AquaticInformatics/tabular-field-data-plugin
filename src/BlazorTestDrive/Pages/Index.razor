@@ -11,6 +11,7 @@
 @using FieldDataPluginFramework.DataModel.ChannelMeasurements
 @using FieldDataPluginFramework.DataModel.Meters
 @using System.IO
+@using System.Text.RegularExpressions
 @using FieldDataPluginFramework.DataModel.GageZeroFlow
 @using Microsoft.AspNetCore.WebUtilities
 @using TabularCsv
@@ -857,15 +858,34 @@ else
         if (string.IsNullOrWhiteSpace(Config))
             return false;
 
-        var configuration = new ConfigurationLoader()
-            .Load("my config", Config);
-
-        if (configuration == null)
-            return false;
-
         return new ExcelParser()
-            .TryLoadSingleSheet(configuration, fileBytes, out csvBytes);
+            .TryLoadSingleSheet(CreatePartialExcelConfiguration(), fileBytes, out csvBytes);
     }
+
+    private Configuration CreatePartialExcelConfiguration()
+    {
+        string? sheetName = null;
+        int? sheetNumber = null;
+
+        var match = SheetNameRegex.Match(Config);
+
+        if (match.Success)
+            sheetName = match.Groups["name"].Value;
+
+        match = SheetNumberRegex.Match(Config);
+
+        if (match.Success && int.TryParse(match.Groups["number"].Value, out var number))
+            sheetNumber = number;
+
+        return new Configuration
+        {
+            SheetName = sheetName,
+            SheetNumber = sheetNumber,
+        };
+    }
+
+    private static readonly Regex SheetNameRegex = new Regex(@"^\s*SheetName\s*=\s*((""(?<name>[^""]+)"")|('(?<name>[^']+)'))", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+    private static readonly Regex SheetNumberRegex = new Regex(@"^\s*SheetNumber\s*=\s*(?<number>\d+)\s*$", RegexOptions.Multiline | RegexOptions.IgnoreCase);
 
     private void UpdateEncodingInfo(Encoding encoding)
     {
