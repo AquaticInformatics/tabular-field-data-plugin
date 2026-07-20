@@ -1,0 +1,26 @@
+Location = '@The Location'
+Time = '@The Time'
+
+[WellIntegrity]
+
+[[WellIntegrity.WellAquiferConnections]]
+WellAquiferConnectivityType = '@AquiferConnectivity'
+WellInspectionMethodType = '@InspectionMethodType'
+Comment = '@Comments'
+
+[[WellIntegrity.WellInspections]]
+WellComponentType = '@WellComponent'
+WellConditionType = '@WellCondition'
+WellInspectionMethod = '@InspectionMethod'
+DistanceFrom = '@DistanceFrom'
+DistanceTo = '@DistanceTo'
+DistanceUnitId = 'ft'
+Comment = '@Comments'
+
+[[WellIntegrity.WellRedevelopments]]
+WellRedevelopmentMethodType = '@RedevelopmentMethod'
+Comment = '@Comments'
+
+[[WellIntegrity.WellRepairs]]
+WellRepairType = '@RepairType'
+Comment = '@Comments'

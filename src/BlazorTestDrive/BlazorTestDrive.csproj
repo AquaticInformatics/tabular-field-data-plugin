@@ -2,9 +2,8 @@
 
   <PropertyGroup>
 	<TargetFramework>net10.0</TargetFramework>
-	  <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
-
-	         <Nullable>enable</Nullable>
+    <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+    <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
@@ -32,6 +31,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Examples\WellIntegrity.csv" />
+    <EmbeddedResource Include="Examples\WellIntegrity.toml" />
     <EmbeddedResource Include="Examples\HydraulicTests.csv" />
     <EmbeddedResource Include="Examples\HydraulicTests.toml" />
     <EmbeddedResource Include="Examples\AirTemperatureWithExtendedAttributes.csv" />

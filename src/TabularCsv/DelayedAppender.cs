@@ -417,7 +417,38 @@ namespace TabularCsv
 
         public void AddWellIntegrity(FieldVisitInfo fieldVisit, WellIntegrity wellIntegrity)
         {
-            fieldVisit.WellIntegrity.Add(wellIntegrity);
+            var existingWellIntegrity = fieldVisit.WellIntegrity.FirstOrDefault();
+            if (existingWellIntegrity != null)
+            {
+                MergeWellIntegrity(existingWellIntegrity, wellIntegrity);
+            }
+            else
+            {
+                fieldVisit.WellIntegrity.Add(wellIntegrity);
+            }
+        }
+
+        private void MergeWellIntegrity(WellIntegrity existing, WellIntegrity incoming)
+        {
+            foreach (var connection in incoming.WellAquiferConnections)
+            {
+                existing.WellAquiferConnections.Add(connection);
+            }
+
+            foreach (var inspection in incoming.WellInspections)
+            {
+                existing.WellInspections.Add(inspection);
+            }
+
+            foreach (var redevelopment in incoming.WellRedevelopments)
+            {
+                existing.WellRedevelopments.Add(redevelopment);
+            }
+
+            foreach (var repair in incoming.WellRepairs)
+            {
+                existing.WellRepairs.Add(repair);
+            }
         }
 
         public void AddHydraulicTest(FieldVisitInfo fieldVisit, HydraulicTest hydraulicTest)

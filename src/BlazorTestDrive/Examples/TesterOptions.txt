@@ -11,3 +11,4 @@
 /Setting=Spanish=@..\..\..\BlazorTestDrive\Examples\Spanish.toml
 /Setting=StageDischargeReadingsFormat=@..\..\..\BlazorTestDrive\Examples\StageDischargeReadingsFormat.toml
 /Setting=Survey123Example=@..\..\..\BlazorTestDrive\Examples\Survey123Example.toml
+/Setting=WellIntegrity=@..\..\..\BlazorTestDrive\Examples\WellIntegrity.toml

@@ -1,0 +1,9 @@
+The Location, The Time, AquiferConnectivity, InspectionMethodType, WellComponent, WellCondition, InspectionMethod, DistanceFrom, DistanceTo, RedevelopmentMethod, RepairType, Comments
+LOC1, 2020-Jan-12 12:35,              con 1,               insp 1
+LOC1, 2020-Jan-12 12:35,              con 2,               insp 2
+LOC1, 2020-Jan-12 12:35,              con 1,               insp 1,        comp 1,         cond 1,          insp 1,           12,         20,
+LOC1, 2020-Jan-12 12:35,              con 1,               insp 1,        comp 1,         cond 1,          insp 1,           12,         20,          redevmeth1, repairtyp1, my comment
+
+
+LOC2, 1988-Aug-8 15:10,                    ,                    ,              ,                ,               ,             ,            ,          redevMeth1, repair type 1
+LOC2, 1988-Aug-8 15:10,                    ,                    ,              ,                ,               ,             ,            ,          redevMeth2, repair type 2

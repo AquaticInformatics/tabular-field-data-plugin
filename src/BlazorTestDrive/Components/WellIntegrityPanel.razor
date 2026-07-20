@@ -1,0 +1,204 @@
+@using System.Text
+@using FieldDataPluginFramework.DataModel
+@using FieldDataPluginFramework.DataModel.WellIntegrity
+
+@inherits Microsoft.AspNetCore.Components.ComponentBase
+
+@code {
+    private WellIntegrity _wellIntegrity;
+    [Parameter] public WellIntegrity Activity
+    {
+        get => _wellIntegrity;
+        set
+        {
+            _wellIntegrity = value;
+            SetupTabDisplayNames();
+        }
+    }
+
+    private int SelectedTab { get; set; }
+    private void Select(int index) => SelectedTab = index;
+
+    private enum Tab
+    {
+        AquiferConnections = 0,
+        Inspections = 1,
+        Redevelopments = 2,
+        Repairs = 3,
+    }
+
+    private Dictionary<Tab, string> TabDisplayNames = new Dictionary<Tab, string>();
+
+    private void SetupTabDisplayNames()
+    {
+        TabDisplayNames.Clear();
+        if (Activity == null) return;
+
+        var aquiferConnectionCount = Activity.WellAquiferConnections.Count();
+        var inspectionCount = Activity.WellInspections.Count();
+        var redevelopmentCount = Activity.WellRedevelopments.Count();
+        var repairCount = Activity.WellRepairs.Count();
+
+        TabDisplayNames[Tab.AquiferConnections] = "Aquifer Connections" + (aquiferConnectionCount > 0 ? $" ({aquiferConnectionCount})" : "");
+        TabDisplayNames[Tab.Inspections] = "Inspections" + (inspectionCount > 0 ? $" ({inspectionCount})" : "");
+        TabDisplayNames[Tab.Redevelopments] = "Redevelopments" + (redevelopmentCount > 0 ? $" ({redevelopmentCount})" : "");
+        TabDisplayNames[Tab.Repairs] = "Repairs" + (repairCount > 0 ? $" ({repairCount})" : "");
+    }
+}
+
+<details class="well-integrity-panel" style="margin-bottom:12px;">
+
+    <div class="tab-row">
+        @foreach (var kvp in TabDisplayNames)
+        {
+            <button class="tab-button" style="margin-right:6px; padding:4px 8px;" @onclick="() => Select((int)kvp.Key)">
+                @kvp.Value
+            </button>
+        }
+    </div>
+
+    <div class="tab-content">
+        @switch ((Tab)SelectedTab)
+        {
+            case Tab.AquiferConnections:
+                <div>
+                    @if (Activity.WellAquiferConnections.Any())
+                    {
+                        <table class="RTable">
+                            <thead>
+                                <tr>
+                                    <th>Start Date</th>
+                                    <th>Aquifer Connectivity Type</th>
+                                    <th>Inspection Method</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var ac in Activity.WellAquiferConnections)
+                                {
+                                    <tr>
+                                        <td>@ac.StartDate</td>
+                                        <td>@ac.WellAquiferConnectivityType.IdOrDisplayName</td>
+                                        <td>@ac.WellInspectionMethodType.IdOrDisplayName</td>
+                                        <td>@ac.Comments</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div>No well aquifer connections.</div>
+                    }
+                </div>
+                break;
+
+            case Tab.Inspections:
+                <div>
+                @if (Activity.WellInspections.Any())
+                    {
+                        <table class="RTable">
+                            <thead>
+                                <tr>
+                                    <th>Start Date</th>
+                                    <th>Well Component Type</th>
+                                    <th>Well Condition Type</th>
+                                    <th>Well Inspection Method</th>
+                                    <th>Distance From</th>
+                                    <th>Distance To</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var i in Activity.WellInspections)
+                                {
+                                    <tr>
+                                        <td>@i.StartDate</td>
+                                        <td>@i.WellComponentType.IdOrDisplayName</td>
+                                        <td>@i.WellConditionType.IdOrDisplayName</td>
+                                        <td>@i.WellInspectionMethod.IdOrDisplayName</td>
+                                        <td>@VisitHelpers.Measurement(new Measurement(i.DistanceFrom, i.DistanceUnitId))</td>
+                                        <td>@VisitHelpers.Measurement(new Measurement(i.DistanceTo, i.DistanceUnitId))</td>
+                                        <td>@i.Comments</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div>No well inspections.</div>
+                    }
+                </div>
+                break;
+
+            case Tab.Redevelopments:
+                <div>
+                    @if (Activity.WellRedevelopments.Any())
+                    {
+                        <table class="RTable">
+                            <thead>
+                                <tr>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Attempt</th>
+                                    <th>Redevelopment Method Type</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in Activity.WellRedevelopments)
+                                {
+                                    <tr>
+                                        <td>@r.StartDate</td>
+                                        <td>@r.EndDate</td>
+                                        <td>@r.Attempt</td>
+                                        <td>@r.WellRedevelopmentMethodType.IdOrDisplayName</td>
+                                        <td>@r.Comments</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div>No well redevelopments.</div>
+                    }
+                </div>
+                break;
+
+            case Tab.Repairs:
+                <div>
+                    @if (Activity.WellRepairs.Any())
+                    {
+                        <table class="RTable">
+                            <thead>
+                                <tr>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Repair Type</th>
+                                    <th>Comments</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in Activity.WellRepairs)
+                                {
+                                    <tr>
+                                        <td>@r.StartDate</td>
+                                        <td>@r.EndDate</td>
+                                        <td>@r.WellRepairType.IdOrDisplayName</td>
+                                        <td>@r.Comments</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <div>No well repairs.</div>
+                    }
+                </div>
+                break;
+        }
+    </div>
+</details>

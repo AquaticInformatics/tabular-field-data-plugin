@@ -82,7 +82,12 @@ Uses aliases to work around old stations that have been renamed in AQUARIUS.",
                 Name = "Hydraulic test data",
                 Description = "This example demonstrates how to parse hydraulic test data.",
             },
-
+            new Example
+            {
+                Id = "WellIntegrity",
+                Name = "Well integrity records",
+                Description = "This example demonstrates how to parse well integrity records.",
+            },
         }
             .Select(LoadEmbeddedResources)
             .ToList();

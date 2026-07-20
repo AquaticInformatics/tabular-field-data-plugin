@@ -529,33 +529,7 @@
                         {
                             @foreach (var item in Visit.WellIntegrity)
                             {
-                                <div style="margin-bottom:8px;">
-                                    @if (item.WellAquiferConnections.Any())
-                                    {
-                                        <h5>@($"WellAquiferConnections {item.WellAquiferConnections.Count}")</h5>
-                                        <table class="RTable">
-                                            <thead>
-                                                <tr>
-                                                    <th>Start Date</th>
-                                                    <th>Aquifer Connectivity Type</th>
-                                                    <th>Inspection Method</th>
-                                                    <th>Comments</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach (var ac in item.WellAquiferConnections)
-                                                {
-                                                    <tr>
-                                                        <td>@ac.StartDate</td>
-                                                        <td>@ac.WellAquiferConnectivityType.IdOrDisplayName</td>
-                                                        <td>@ac.WellInspectionMethodType.IdOrDisplayName</td>
-                                                        <td>@ac.Comments</td>
-                                                    </tr>
-                                                }
-                                            </tbody>
-                                        </table>
-                                    }
-                                </div>
+                                <WellIntegrityPanel Activity="item" />
                             }
                         }
                         else
