@@ -60,7 +60,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aquarius.FieldDataFramework" Version="25.4.1" />
+    <PackageReference Include="Aquarius.FieldDataFramework" Version="26.3.3" />
     <PackageReference Include="Blazored.LocalStorage" Version="4.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.0" PrivateAssets="all" />
