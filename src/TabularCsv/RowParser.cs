@@ -60,7 +60,7 @@ namespace TabularCsv
                 ? Configuration.HeaderRowCount
                 : 1 + Configuration.IgnoredLeadingHeaderRows + Configuration.IgnoredTrailingHeaderRows;
 
-            IgnoreHeaderRowsBeforeIndex = 1 + Configuration.IgnoredLeadingHeaderRows;
+            IgnoreHeaderRowsBeforeIndex =  1 + Configuration.IgnoredLeadingHeaderRows;
             IgnoreHeaderRowsAfterIndex = RemainingHeaderLines - Configuration.IgnoredTrailingHeaderRows;
         }
 
@@ -190,7 +190,7 @@ namespace TabularCsv
         {
             var locationIdentifier = GetString(Configuration.Location);
 
-            var locationInfo = LocationInfo
+            var locationInfo = LocationInfo 
                                ?? (!string.IsNullOrWhiteSpace(locationIdentifier)
                                    ? ResultsAppender.GetLocationByIdentifier(locationIdentifier)
                                    : throw new ArgumentException($"Line {LineNumber} has no location identifier."));
@@ -498,7 +498,7 @@ namespace TabularCsv
 
         private string MergeCommentText(CoreDefinition definition)
         {
-            var lines = new[] { definition.Comment }
+            var lines = new[] {definition.Comment}
                 .Where(d => d != null)
                 .Select(GetString)
                 .Where(s => !string.IsNullOrWhiteSpace(s))
@@ -544,40 +544,9 @@ namespace TabularCsv
 
         private const IFormatProvider CurrentThreadCulture = null;
 
-        // Matches a period immediately following a letter (e.g. the trailing "." in an abbreviated
-        // month name like "Ene."), but not a decimal point following a digit (e.g. fractional seconds).
-        private static readonly Regex TrailingAbbreviationPeriodRegex = new Regex(@"(?<=\p{L})\.", RegexOptions.Compiled);
-
-        // .NET's ICU-based globalization (net10.0+) and the legacy NLS-based globalization (net472)
-        // disagree on some cultures' abbreviated month names — e.g. es-ES's abbreviated "enero" is
-        // "Ene." under NLS but "ene" (no trailing period) under ICU. Try the text as-is first (so
-        // whichever runtime's native abbreviation format is used still works unmodified), then retry
-        // with abbreviation-trailing periods stripped to accept the other runtime's format too.
-        private static bool TryParseDateTimeOffset(string timeText, DateTimeStyles styles, out DateTimeOffset value)
-        {
-            if (DateTimeOffset.TryParse(timeText, CurrentThreadCulture, styles, out value))
-                return true;
-
-            var normalizedTimeText = TrailingAbbreviationPeriodRegex.Replace(timeText, string.Empty);
-
-            return normalizedTimeText != timeText
-                   && DateTimeOffset.TryParse(normalizedTimeText, CurrentThreadCulture, styles, out value);
-        }
-
-        private static bool TryParseExactDateTimeOffset(string timeText, string[] formats, DateTimeStyles styles, out DateTimeOffset value)
-        {
-            if (DateTimeOffset.TryParseExact(timeText, formats, CurrentThreadCulture, styles, out value))
-                return true;
-
-            var normalizedTimeText = TrailingAbbreviationPeriodRegex.Replace(timeText, string.Empty);
-
-            return normalizedTimeText != timeText
-                   && DateTimeOffset.TryParseExact(normalizedTimeText, formats, CurrentThreadCulture, styles, out value);
-        }
-
         private DateTimeOffset? ParseNullableDateTimeOffset(LocationInfo locationInfo, IEnumerable<TimestampBaseDefinition> timestampColumns)
         {
-            var timestamp = (DateTimeOffset?)null;
+            var timestamp = (DateTimeOffset?) null;
             var configurationUtcOffset = GetNullableTimeSpan(Configuration.UtcOffset);
 
             foreach (var timestampColumn in timestampColumns)
@@ -594,12 +563,12 @@ namespace TabularCsv
 
                 if (formats == null || !formats.Any())
                 {
-                    if (!TryParseDateTimeOffset(timeText, styles, out value))
+                    if (!DateTimeOffset.TryParse(timeText, CurrentThreadCulture, styles, out value))
                         throw new Exception($"Line {LineNumber}: '{timeText}' can't be parsed as a timestamp using the default format.");
                 }
                 else
                 {
-                    if (!TryParseExactDateTimeOffset(timeText, formats, styles, out value))
+                    if (!DateTimeOffset.TryParseExact(timeText, timestampColumn.Formats, CurrentThreadCulture, styles, out value))
                         throw new Exception($"Line {LineNumber}: '{timeText}' can't be parsed as a timestamp using the '{string.Join(", ", formats)}' {"format".ToQuantity(formats.Length, ShowQuantityAs.None)}.");
                 }
 
@@ -894,7 +863,7 @@ namespace TabularCsv
         {
             if (IsDefinitionDisabled(definition))
                 return null;
-
+            
             var inspectionType = GetNullableEnum<InspectionType>(definition.InspectionType);
 
             if (!inspectionType.HasValue)
@@ -1430,7 +1399,7 @@ namespace TabularCsv
                 return null;
 
             var readingTime = ParseActivityTime(visitInfo, definition);
-
+            
             var head = GetNullableDouble(definition.Head);
 
             if (!head.HasValue)
@@ -1608,7 +1577,7 @@ namespace TabularCsv
 
             var wellIntegrity = new WellIntegrity();
 
-            foreach (var connectionDefinition in definition.AllWellAquiferConnections)
+            foreach(var connectionDefinition in definition.AllWellAquiferConnections)
             {
                 var connection = ParseWellAquiferConnection(visitInfo, connectionDefinition);
                 if (connection != null)
@@ -1638,7 +1607,7 @@ namespace TabularCsv
 
             if (!wellIntegrity.WellAquiferConnections.Any() && !wellIntegrity.WellInspections.Any()
                 && !wellIntegrity.WellRedevelopments.Any() && !wellIntegrity.WellRepairs.Any())
-                return null;
+                return null;    
 
             return wellIntegrity;
         }
@@ -1726,7 +1695,7 @@ namespace TabularCsv
             if (string.IsNullOrEmpty(redevelopmentTypeText))
                 return null;
 
-            return new WellRedevelopment(attempt.Value, interval.Start, interval.End, new WellRedevelopmentMethodTypePickList(redevelopmentTypeText))
+            return new WellRedevelopment(attempt.Value,interval.Start, interval.End, new WellRedevelopmentMethodTypePickList(redevelopmentTypeText))
             {
                 Comments = MergeCommentText(definition),
             };
@@ -1746,7 +1715,7 @@ namespace TabularCsv
                 return null;
 
             return new WellRepair(interval.Start, interval.End, new WellRepairTypePickList(repairTypeText))
-            {
+            { 
                 Comments = MergeCommentText(definition),
             };
         }
